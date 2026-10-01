@@ -716,3 +716,5 @@ body.kb-open .actionbar, body.kb-open .cookbar { padding-bottom: 10px; }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: .001ms !important; animation-iteration-count: 1 !important; transition-duration: .001ms !important; scroll-behavior: auto !important; }
 }
+
+.inventory-summary{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:0 0 14px}.inventory-summary .muted{margin-right:auto}.stock-list{display:grid;gap:10px}.stock-row{display:grid;grid-template-columns:1fr auto;gap:10px;padding:14px;border:1px solid var(--line);border-radius:18px;background:var(--card)}.stock-main{min-width:0}.stock-title{font-weight:700;font-size:17px}.stock-meta{font-size:13px;color:var(--muted);margin-top:4px;line-height:1.4}.stock-state{align-self:start;font-size:11px;font-weight:800;letter-spacing:.06em;padding:5px 8px;border-radius:999px}.stock-row.ok .stock-state{background:#35a62a1f;color:#35a56a}.stock-row.low .stock-state{background:#d79a282e;color:#d79a28}.stock-row.empty .stock-state{background:#d94a4a2e;color:#d94a4a}.stock-actions{grid-column:1/-1;display:flex;align-items:center;gap:7px;justify-content:flex-end}

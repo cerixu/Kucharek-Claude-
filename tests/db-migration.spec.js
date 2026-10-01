@@ -178,6 +178,16 @@ test('v2 stores są zapisywalne', async ({ page }) => {
 
 test('Magazyn: zapis, korekta stanu, próg minimum i trwałość danych', async ({ page }) => {
   await page.goto('/');
+  await page.waitForFunction(async (name) => {
+    const req = indexedDB.open(name);
+    const db = await new Promise((resolve, reject) => {
+      req.onsuccess = () => resolve(req.result);
+      req.onerror = () => reject(req.error);
+    });
+    const ready = db.version >= 2 && db.objectStoreNames.contains('inventory') && db.objectStoreNames.contains('inventoryLog');
+    db.close();
+    return ready;
+  }, DB_NAME);
   await page.evaluate(async (name) => {
     const db = await new Promise((resolve, reject) => {
       const req = indexedDB.open(name);

@@ -5,7 +5,6 @@ const DB_NAME = 'kucharzyna-claude-db';
 test.describe.configure({ mode: 'serial' });
 
 async function seedV1(page) {
-  page.on('console', msg => console.log(`[browser:${msg.type()}] ${msg.text()}`));
   await page.route('**/app.js*', route => route.abort());
   await page.goto('/');
 

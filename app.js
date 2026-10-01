@@ -2,7 +2,7 @@
    app.js — start aplikacji: baza, ustawienia, motyw, nawigacja dolna,
    obsługa klawiatury iOS (visualViewport), trasy, service worker.
    ========================================================================== */
-import { openDB } from './db.js';
+import { openDB } from './db.js?v=20261001';
 import { loadAll, state, subscribe, getSetting } from './recipes.js';
 import { h, icon, toast, $ } from './ui.js';
 import { route, startRouter, navigate } from './router.js';

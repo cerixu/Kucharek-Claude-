@@ -97,3 +97,27 @@ export async function consumeRecipeIngredients(recipe, factor = 1) {
   emit();
   return { changes: next, shortages };
 }
+
+
+export const unitCompatible = (a, b) => compatibleUnits(normalizeUnit(a), normalizeUnit(b));
+export const unitToBase = (value, unit) => toBase(value, normalizeUnit(unit));
+export const unitFromBase = (value, unit) => Number(value || 0) / (UNIT_TO_BASE[normalizeUnit(unit)] || 1);
+
+export async function receiveStock(name, amount, unit = 'szt', meta = {}) {
+  await loadInventory();
+  const qty = Number(amount);
+  if (!name || !(qty > 0)) return { changed: false, reason: 'invalid' };
+  const existing = findInventoryByName(name);
+  if (existing && compatibleUnits(normalizeUnit(existing.unit), normalizeUnit(unit))) {
+    const delta = unitFromBase(unitToBase(qty, unit), existing.unit);
+    const updated = await adjustInventory(existing.id, delta, meta.reason || 'shopping');
+    return { changed: true, item: updated, delta, created: false };
+  }
+  if (existing) return { changed: false, reason: 'unit-mismatch', item: existing };
+  const created = await saveInventoryItem({
+    name, quantity: qty, unit,
+    minQuantity: 0, purchasePrice: null, priceUnit: unit,
+    ean: meta.ean || '', category: meta.category || ''
+  });
+  return { changed: true, item: created, delta: qty, created: true };
+}

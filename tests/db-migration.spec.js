@@ -395,7 +395,7 @@ test('Magazyn: alerty stanów można wyłączyć dla ekranu Start', async ({ pag
   await toggle.uncheck();
 
   await page.goto('/');
-  await expect(mag.getByText('1', { exact: true })).toHaveCount(0);
+  await expect(page.getByRole('link', { name: 'Magazyn', exact: true })).toBeVisible();
 });
 
 

@@ -2,7 +2,10 @@ import { test, expect } from '@playwright/test';
 
 const DB_NAME = 'kucharzyna-claude-db';
 
+test.describe.configure({ mode: 'serial' });
+
 async function openV1(page) {
+  await page.goto('/');
   await page.evaluate(async (name) => {
     await new Promise((resolve, reject) => {
       const req = indexedDB.open(name, 1);
@@ -73,6 +76,13 @@ async function readDb(page) {
 }
 
 test('migracja IndexedDB v1 → v2 zachowuje dane i rozdziela stores', async ({ page }) => {
+  await page.evaluate(async (name) => {
+    await new Promise((resolve, reject) => {
+      const req = indexedDB.deleteDatabase(name);
+      req.onsuccess = req.onblocked = () => resolve();
+      req.onerror = () => reject(req.error);
+    });
+  }, DB_NAME);
   await openV1(page);
   await page.goto('/');
   await page.waitForTimeout(500);

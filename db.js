@@ -21,6 +21,7 @@ export const STORES = {
 };
 
 let dbPromise = null;
+let needsLegacyMigration = false;
 
 function createStore(d, name, keyPath) {
   if (d.objectStoreNames.contains(name)) return d.transaction.objectStore(name);
@@ -43,6 +44,7 @@ export function openDB() {
     rq.onupgradeneeded = (event) => {
       const d = rq.result;
       const oldVersion = event.oldVersion;
+      const tx = rq.transaction;
 
       // Stores istniejące od v1.
       for (const [name, keyPath] of Object.entries(STORES)) {
@@ -53,15 +55,15 @@ export function openDB() {
 
       // Indeksy wspólne.
       if (d.objectStoreNames.contains('history')) {
-        addIndex(d.transaction.objectStore('history'), 'recipeId', 'recipeId');
+        addIndex(tx.objectStore('history'), 'recipeId', 'recipeId');
       }
 
       // v2: dedykowane stores.
       if (oldVersion < 2) {
-        const cook = d.objectStore('cookSessions');
-        const drafts = d.objectStore('drafts');
-        const inventory = d.objectStore('inventory');
-        const log = d.objectStore('inventoryLog');
+        const cook = tx.objectStore('cookSessions');
+        const drafts = tx.objectStore('drafts');
+        const inventory = tx.objectStore('inventory');
+        const log = tx.objectStore('inventoryLog');
 
         addIndex(cook, 'updatedAt', 'updatedAt');
         addIndex(drafts, 'recipeId', 'recipeId');
@@ -73,41 +75,7 @@ export function openDB() {
         addIndex(log, 'type', 'type');
         addIndex(log, 'at', 'at');
 
-        // Migracja v1: cook:<recipeId> i draft:<recipeId> z settings.
-        // IndexedDB upgrade transaction może czytać/zapisywać do istniejących stores.
-        const settings = d.transaction.objectStore('settings');
-        settings.openCursor().onsuccess = (e) => {
-          const cursor = e.target.result;
-          if (!cursor) return;
-
-          const key = String(cursor.key);
-          const value = cursor.value?.value;
-
-          if (key.startsWith('cook:') && value && typeof value === 'object') {
-            const recipeId = key.slice(5);
-            if (recipeId) {
-              cook.put({
-                ...value,
-                recipeId,
-                updatedAt: value.updatedAt || Date.now(),
-              });
-            }
-          }
-
-          if (key.startsWith('draft:') && value && typeof value === 'object') {
-            const id = key.slice(6);
-            if (id) {
-              drafts.put({
-                ...value,
-                id,
-                recipeId: id === 'new' ? null : id,
-                savedAt: value.savedAt || Date.now(),
-              });
-            }
-          }
-
-          cursor.continue();
-        };
+        needsLegacyMigration = true;
       }
     };
 
@@ -123,7 +91,52 @@ export function openDB() {
         dbPromise = null;
       };
 
-      resolve(d);
+      const finish = async () => {
+        if (needsLegacyMigration) {
+          const t = d.transaction(['settings', 'cookSessions', 'drafts'], 'readwrite');
+          const settingsReq = t.objectStore('settings').getAll();
+          settingsReq.onsuccess = () => {
+            for (const row of settingsReq.result || []) {
+              const key = String(row?.key ?? '');
+              const value = row?.value;
+
+              if (key.startsWith('cook:') && value && typeof value === 'object') {
+                const recipeId = key.slice(5);
+                if (recipeId) {
+                  t.objectStore('cookSessions').put({
+                    ...value,
+                    recipeId,
+                    updatedAt: value.updatedAt || Date.now(),
+                  });
+                }
+              }
+
+              if (key.startsWith('draft:') && value && typeof value === 'object') {
+                const id = key.slice(6);
+                if (id) {
+                  t.objectStore('drafts').put({
+                    ...value,
+                    id,
+                    recipeId: id === 'new' ? null : id,
+                    savedAt: value.savedAt || Date.now(),
+                  });
+                }
+              }
+            }
+          };
+
+          await done(t);
+          needsLegacyMigration = false;
+        }
+
+        resolve(d);
+      };
+
+      finish().catch((error) => {
+        dbPromise = null;
+        d.close();
+        reject(error);
+      });
     };
 
     rq.onerror = () => {

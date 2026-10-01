@@ -1,6 +1,7 @@
 import { db } from './db.js';
 import { uid } from './util.js';
-import { loadInventory, listInventory, saveInventoryItem, adjustInventory, findInventoryMatch, unitCompatible, unitToBase, unitFromBase } from './inventory.js';
+import { loadInventory, reloadInventory, listInventory, saveInventoryItem, adjustInventory, findInventoryMatch, unitCompatible, unitToBase, unitFromBase, consumeRecipeIngredients } from './inventory.js';
+import { getRecipe } from './recipes.js';
 
 const now = () => Date.now();
 const num = (v, fallback = 0) => Number.isFinite(Number(v)) ? Number(v) : fallback;
@@ -117,6 +118,7 @@ export async function finalizeStocktake(id) {
     }
     t.put('stocktakes',{...take,status:'closed',closedAt:at,updatedAt:at});
   });
+  await reloadInventory();
   return {...take,status:'closed',closedAt:at,updatedAt:at};
 }
 
@@ -129,6 +131,7 @@ export async function completeProductionBatch(id) {
   const row=await db.get('productionBatches',id); if(!row) throw new Error('Produkcja nie istnieje.');
   if(row.status==='completed') return row;
   await loadInventory();
+  if(row.recipeId){ const recipe=getRecipe(row.recipeId); if(recipe) await consumeRecipeIngredients(recipe, row.factor || 1); }
   const existing=findInventoryMatch({name:row.productName})?.item;
   let item;
   if(existing&&unitCompatible(existing.unit,row.unit)){
@@ -166,8 +169,8 @@ export async function analyticsSummary() {
   await loadInventory();
   const inv=listInventory();
   const [deliveries,waste,movements,prices,takes,orders]=await Promise.all([all('deliveries'),all('waste'),all('stockMovements'),all('priceHistory'),all('stocktakes'),all('purchaseOrders')]);
-  const stockValue=inv.reduce((s,x)=>s+(num(x.quantity)*num(x.purchasePrice)/({'kg':1000,'l':1000}[x.unit]||1)),0);
-  const wasteValue=waste.reduce((s,x)=>{const i=inv.find(y=>y.id===x.inventoryId);return s+(i?num(x.amount)*num(i.purchasePrice)/({'kg':1000,'l':1000}[i.unit]||1):0)},0);
+  const stockValue=inv.reduce((s,x)=>{if(x.purchasePrice==null)return s;const factor=({'g':0.001,'kg':1,'ml':0.001,'l':1,'szt':1,'opak':1}[x.unit]||1);const priceFactor=({'g':1,'kg':1000,'ml':1,'l':1000,'szt':1,'opak':1}[x.priceUnit]||1);return s+(num(x.quantity)*factor/priceFactor*num(x.purchasePrice));},0);
+  const wasteValue=waste.reduce((s,x)=>{const i=inv.find(y=>y.id===x.inventoryId);return s+(i&&i.purchasePrice!=null?num(x.amount)*({'g':0.001,'kg':1,'ml':0.001,'l':1,'szt':1,'opak':1}[x.unit]||1)/({'g':1,'kg':1000,'ml':1,'l':1000,'szt':1,'opak':1}[i.priceUnit]||1)*num(i.purchasePrice):0)},0);
   const byType={}; movements.forEach(m=>byType[m.type]=(byType[m.type]||0)+Math.abs(num(m.delta)));
   const latestPrices={}; prices.forEach(p=>{if(!latestPrices[p.inventoryId])latestPrices[p.inventoryId]=p});
   const priceChanges=Object.values(latestPrices).map(p=>{const old=prices.filter(x=>x.inventoryId===p.inventoryId).sort((a,b)=>a.at-b.at)[0];return {...p,firstPrice:old?.price||p.price,change:p.price-(old?.price||p.price)}});

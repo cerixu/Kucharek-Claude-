@@ -131,7 +131,7 @@ export async function completeProductionBatch(id) {
   const row=await db.get('productionBatches',id); if(!row) throw new Error('Produkcja nie istnieje.');
   if(row.status==='completed') return row;
   await loadInventory();
-  if(row.recipeId){ const recipe=getRecipe(row.recipeId); if(recipe) await consumeRecipeIngredients(recipe, row.factor || 1); }
+  if(row.recipeId){ const recipe=getRecipe(row.recipeId) || await db.get('recipes',row.recipeId); if(recipe) await consumeRecipeIngredients(recipe, row.factor || 1); }
   const existing=findInventoryMatch({name:row.productName})?.item;
   let item;
   if(existing&&unitCompatible(existing.unit,row.unit)){

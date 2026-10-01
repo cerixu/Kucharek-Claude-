@@ -61,7 +61,7 @@ export async function consumeRecipeIngredients(recipe, factor = 1) {
     const required = Number(ing.amount) * Number(factor || 1);
     if (!(required > 0)) continue;
 
-    const item = findInventoryByName(ing.name);
+    const item = findInventoryMatch(ing)?.item;
     const itemUnit = normalizeUnit(item?.unit);
     const ingredientUnit = normalizeUnit(ing.unit);
     if (!item || !compatibleUnits(itemUnit, ingredientUnit)) {

@@ -8,7 +8,7 @@ import {
   h, icon, screen, button, iconBtn, toast, openSheet, confirmDialog, emptyState, field, textInput, numInput, selectEl, segmented,
 } from './ui.js';
 import { navigate } from './router.js';
-import { loadInventory, findInventoryByName, unitCompatible, unitToBase, unitFromBase, receiveStock } from './inventory.js';
+import { loadInventory, findInventoryByName, findInventoryMatch, unitCompatible, unitToBase, unitFromBase, receiveStock } from './inventory.js';
 
 /* ---------- Logika ---------- */
 
@@ -61,7 +61,7 @@ export async function addMissingFromRecipe(recipe, factor = 1) {
     if (!ing?.name || ing.amount == null || ing.unit === '%') continue;
     const required = Number(ing.amount) * Number(factor || 1);
     if (!(required > 0)) continue;
-    const stock = findInventoryByName(ing.name);
+    const stock = findInventoryMatch(ing)?.item;
     if (!stock || !unitCompatible(stock.unit, ing.unit)) { missing.push({ name: ing.name, amount: required, unit: ing.unit, recipeId: recipe.id, recipeName: recipe.name }); continue; }
     const need = unitToBase(required, ing.unit), have = unitToBase(stock.quantity, stock.unit);
     if (have < need) missing.push({ name: ing.name, amount: unitFromBase(need - have, ing.unit), unit: ing.unit, recipeId: recipe.id, recipeName: recipe.name });

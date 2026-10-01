@@ -17,6 +17,7 @@ import { calcView } from './views-calc.js';
 import { shoppingView, pendingCount } from './shopping.js';
 import { importView } from './views-import.js';
 import { settingsView } from './views-settings.js';
+import { inventoryView } from './views-inventory.js';
 
 const root = document.documentElement;
 
@@ -49,6 +50,7 @@ const TABS = [
   ['recipes', 'Receptury', 'book', '/recipes'],
   ['calc', 'Kalkulatory', 'calc', '/calc'],
   ['shopping', 'Zakupy', 'cart', '/shopping'],
+  ['inventory', 'Magazyn', 'list', '/inventory'],
   ['settings', 'Ustawienia', 'sliders', '/settings'],
 ];
 
@@ -135,6 +137,7 @@ route('/import', (p, q) => importView(q), { tab: 'recipes' });
 route('/calc', () => calcView({}), { tab: 'calc' });
 route('/calc/:kind', (p, q) => calcView(p, q), { tab: 'calc' });
 route('/shopping', () => shoppingView(), { tab: 'shopping' });
+route('/inventory', () => inventoryView(), { tab: 'inventory' });
 route('/settings', () => settingsView(), { tab: 'settings' });
 
 /* ---------- Start ---------- */

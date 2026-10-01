@@ -16,6 +16,7 @@ export function validEAN(value) {
 export const ingredientKey = (value) => norm(value).replace(/[^a-z0-9]+/g, ' ').trim();
 
 const emit = () => listeners.forEach((fn) => { try { fn(); } catch (_) {} });
+export async function reloadInventory() { loaded = false; items = []; return loadInventory(); }
 export async function loadInventory() { if (!loaded) { items = (await db.getAll('inventory')).sort((a,b)=>String(a.name||'').localeCompare(String(b.name||''),'pl')); loaded=true; } return items; }
 export const listInventory = () => items.slice();
 export function stockState(item) { const qty=Number(item.quantity||0), min=Number(item.minQuantity||0); if(qty<=0)return 'empty'; if(min>0&&qty<=min)return 'low'; return 'ok'; }

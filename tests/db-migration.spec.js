@@ -267,3 +267,18 @@ test('Gotuję: zakończenie receptury odejmuje składniki z Magazynu', async ({ 
   expect(stock[3].quantity).toBe(12);
   expect(stock[4].quantity).toBe(10);
 });
+
+
+test('Magazyn: alerty stanów można włączyć i wyłączyć', async ({ page }) => {
+  await page.goto('/#/inventory');
+  await page.getByRole('button', { name: 'Ustawienia magazynu' }).click();
+  const toggle = page.getByRole('switch', { name: /Alerty stanów magazynowych/i });
+  await expect(toggle).toBeVisible();
+  await expect(toggle).toBeChecked();
+  await toggle.uncheck();
+  await page.getByRole('button', { name: 'Zamknij' }).click();
+  await page.reload();
+  await page.goto('/#/inventory');
+  await page.getByRole('button', { name: 'Ustawienia magazynu' }).click();
+  await expect(page.getByRole('switch', { name: /Alerty stanów magazynowych/i })).not.toBeChecked();
+});

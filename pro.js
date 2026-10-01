@@ -123,7 +123,7 @@ export async function finalizeStocktake(id) {
 }
 
 export async function createProductionBatch(data) {
-  const row={id:data.id||uid('prod_'),productName:String(data.productName||'').trim(),quantity:num(data.quantity),unit:data.unit||'g',recipeId:data.recipeId||null,recipeName:data.recipeName||'',yieldPercent:data.yieldPercent==null?100:num(data.yieldPercent),at:data.at||now(),expiryAt:data.expiryAt?Number(data.expiryAt):null,notes:data.notes||'',status:'planned',createdAt:now()};
+  const row={id:data.id||uid('prod_'),productName:String(data.productName||'').trim(),quantity:num(data.quantity),unit:data.unit||'g',recipeId:data.recipeId||null,recipeName:data.recipeName||'',yieldPercent:data.yieldPercent==null?100:num(data.yieldPercent),factor:data.factor==null?1:num(data.factor),at:data.at||now(),expiryAt:data.expiryAt?Number(data.expiryAt):null,notes:data.notes||'',status:'planned',createdAt:now()};
   if(!row.productName||!(row.quantity>0)) throw new Error('Podaj półprodukt i ilość.');
   return put('productionBatches',row);
 }

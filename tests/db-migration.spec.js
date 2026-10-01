@@ -4,6 +4,15 @@ const DB_NAME = 'kucharzyna-claude-db';
 
 test.describe.configure({ mode: 'serial' });
 
+async function resetDb(page) {
+  await page.evaluate(async (name) => {
+    await new Promise((resolve, reject) => {
+      const req = indexedDB.deleteDatabase(name);
+      req.onsuccess = req.onblocked = req.onerror = () => resolve();
+    });
+  }, DB_NAME);
+}
+
 async function openV1(page) {
   await page.evaluate(async (name) => {
     await new Promise((resolve, reject) => {
@@ -75,7 +84,8 @@ async function readDb(page) {
 }
 
 test('migracja IndexedDB v1 → v2 zachowuje dane i rozdziela stores', async ({ page }) => {
-  await page.goto('/tests/db-migration.spec.js');
+  await page.goto('/');
+  await resetDb(page);
   await openV1(page);
   await page.goto('/');
   await page.waitForTimeout(500);
@@ -178,6 +188,8 @@ test('v2 stores są zapisywalne', async ({ page }) => {
 
 test('Magazyn: zapis, korekta stanu, próg minimum i trwałość danych', async ({ page }) => {
   await page.goto('/');
+  await resetDb(page);
+  await page.reload();
   await page.waitForFunction(async (name) => {
     const req = indexedDB.open(name);
     const db = await new Promise((resolve, reject) => {

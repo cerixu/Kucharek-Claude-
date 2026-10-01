@@ -21,6 +21,7 @@ export const STORES = {
 };
 
 let dbPromise = null;
+let needsLegacyMigration = false;
 
 function createStore(d, name, keyPath) {
   if (d.objectStoreNames.contains(name)) return d.transaction.objectStore(name);
@@ -74,41 +75,7 @@ export function openDB() {
         addIndex(log, 'type', 'type');
         addIndex(log, 'at', 'at');
 
-        // Migracja v1: cook:<recipeId> i draft:<recipeId> z settings.
-        // IndexedDB upgrade transaction może czytać/zapisywać do istniejących stores.
-        const settings = tx.objectStore('settings');
-        settings.openCursor().onsuccess = (e) => {
-          const cursor = e.target.result;
-          if (!cursor) return;
-
-          const key = String(cursor.key);
-          const value = cursor.value?.value;
-
-          if (key.startsWith('cook:') && value && typeof value === 'object') {
-            const recipeId = key.slice(5);
-            if (recipeId) {
-              cook.put({
-                ...value,
-                recipeId,
-                updatedAt: value.updatedAt || Date.now(),
-              });
-            }
-          }
-
-          if (key.startsWith('draft:') && value && typeof value === 'object') {
-            const id = key.slice(6);
-            if (id) {
-              drafts.put({
-                ...value,
-                id,
-                recipeId: id === 'new' ? null : id,
-                savedAt: value.savedAt || Date.now(),
-              });
-            }
-          }
-
-          cursor.continue();
-        };
+        needsLegacyMigration = true;
       }
     };
 
@@ -124,7 +91,52 @@ export function openDB() {
         dbPromise = null;
       };
 
-      resolve(d);
+      const finish = async () => {
+        if (needsLegacyMigration) {
+          const t = d.transaction(['settings', 'cookSessions', 'drafts'], 'readwrite');
+          const settingsReq = t.objectStore('settings').getAll();
+          settingsReq.onsuccess = () => {
+            for (const row of settingsReq.result || []) {
+              const key = String(row?.key ?? '');
+              const value = row?.value;
+
+              if (key.startsWith('cook:') && value && typeof value === 'object') {
+                const recipeId = key.slice(5);
+                if (recipeId) {
+                  t.objectStore('cookSessions').put({
+                    ...value,
+                    recipeId,
+                    updatedAt: value.updatedAt || Date.now(),
+                  });
+                }
+              }
+
+              if (key.startsWith('draft:') && value && typeof value === 'object') {
+                const id = key.slice(6);
+                if (id) {
+                  t.objectStore('drafts').put({
+                    ...value,
+                    id,
+                    recipeId: id === 'new' ? null : id,
+                    savedAt: value.savedAt || Date.now(),
+                  });
+                }
+              }
+            }
+          };
+
+          await done(t);
+          needsLegacyMigration = false;
+        }
+
+        resolve(d);
+      };
+
+      finish().catch((error) => {
+        dbPromise = null;
+        d.close();
+        reject(error);
+      });
     };
 
     rq.onerror = () => {

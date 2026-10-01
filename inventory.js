@@ -3,7 +3,7 @@ import { uid, norm } from './util.js';
 let items = []; let loaded = false; const listeners = new Set();
 export const subscribeInventory = (fn) => { listeners.add(fn); return () => listeners.delete(fn); };
 export function normalizeEAN(value) {
-  const ean = String(value ?? '').replace(/\\D/g, '');
+  const ean = String(value ?? '').replace(/\D/g, '');
   return ean || '';
 }
 export function validEAN(value) {

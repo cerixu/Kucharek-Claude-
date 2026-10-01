@@ -38,7 +38,8 @@ export function startView() {
         tile('Ostatnio używane', 'clock', '/recipes?f=recent'),
         tile('Ulubione', 'heart', '/recipes?f=fav'),
         tile('Kalkulatory', 'calc', '/calc'),
-        tile('Lista zakupów', 'cart', '/shopping', { badge: n })),
+        tile('Lista zakupów', 'cart', '/shopping', { badge: n }),
+        tile('Magazyn', 'list', '/inventory')),
     ];
 
     if (backupDue()) {

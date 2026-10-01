@@ -85,11 +85,17 @@ async function readDb(page) {
 }
 
 test('migracja IndexedDB v1 → v2 zachowuje dane i rozdziela stores', async ({ page }) => {
+  const pageErrors = [];
+  page.on('pageerror', (error) => pageErrors.push(String(error?.stack || error)));
   await page.goto('about:blank');
   await resetDb(page);
   await openV1(page);
   await page.goto('/');
-  await page.waitForFunction(() => window.__kucharzyna?.ready === true, null, { timeout: 10000 });
+  await page.waitForTimeout(1000);
+  if (!await page.evaluate(() => window.__kucharzyna?.ready === true)) {
+    const view = await page.locator('#view').innerText().catch(() => '');
+    throw new Error(`App boot nie zakończył się. pageerror: ${pageErrors.join(' | ')} | view: ${view}`);
+  }
 
   const db = await readDb(page);
 

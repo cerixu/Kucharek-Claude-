@@ -163,8 +163,9 @@ export function unitPrice(ing) {
   }
 }
 
-export function ingredientCost(ing, k = 1) {
-  const up = unitPrice(ing);
+export function ingredientCost(ing, k = 1, priceOverride = null) {
+  const source = priceOverride && typeof priceOverride === 'object' ? { ...ing, ...priceOverride } : ing;
+  const up = unitPrice(source);
   if (!up || !Number.isFinite(ing.amount)) return null;
   const amt = ing.amount * k;
   if (up.dim === 'count') return ing.unit === 'szt.' ? amt * up.v : null;
@@ -172,8 +173,17 @@ export function ingredientCost(ing, k = 1) {
   return g == null ? null : g * up.v;
 }
 
-export function recipeCost(r, k = 1) {
-  const lines = allIngredients(r).map((ing) => ({ ing, cost: ingredientCost(ing, k) }));
+/**
+ * Koszt receptury. options.priceResolver może dostarczyć cenę zakupu
+ * z zewnętrznego źródła, np. Magazynu. Gdy resolver zwróci null, używana
+ * jest cena zapisana bezpośrednio przy składniku.
+ */
+export function recipeCost(r, k = 1, options = {}) {
+  const resolve = typeof options.priceResolver === 'function' ? options.priceResolver : () => null;
+  const lines = allIngredients(r).map((ing) => {
+    const override = resolve(ing);
+    return { ing, cost: ingredientCost(ing, k, override), priceSource: override ? 'inventory' : (unitPrice(ing) ? 'recipe' : null), price: override || null };
+  });
   const total = sum(lines.map((l) => l.cost));
   const missing = lines.filter((l) => l.cost == null).length;
   const portions = r.servings > 0 ? r.servings * k : null;

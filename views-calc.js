@@ -16,7 +16,7 @@ import {
 import { fmtAmount, fmtNum, fmtMoney, debounce } from './util.js';
 import { qtyParts } from './components.js';
 import { addItems, openAddToShopping } from './shopping.js';
-import { loadInventory, findInventoryByName } from './inventory.js';
+import { loadInventory, findInventoryMatch } from './inventory.js';
 
 const CARDS = [
   ['pizza', 'Pizza i ciasto', 'Kulki, hydracja, sól, drożdże → mąka, woda, sól, drożdże', 'pizza'],
@@ -263,9 +263,9 @@ function costCalculator() {
   const cur$ = () => getSetting('currency') || 'zł';
 
   function inventoryPrice(i) {
-    const item = findInventoryByName(i.name);
+    const match = findInventoryMatch(i); const item = match?.item;
     if (!item || !Number.isFinite(Number(item.purchasePrice)) || Number(item.purchasePrice) < 0) return null;
-    return { price: Number(item.purchasePrice), priceUnit: item.priceUnit || 'kg' };
+    return { price: Number(item.purchasePrice), priceUnit: item.priceUnit || 'kg', matchSource: match.source };
   }
 
   function build() {

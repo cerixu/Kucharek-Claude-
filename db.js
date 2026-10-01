@@ -5,7 +5,7 @@
    ========================================================================== */
 
 const DB_NAME = 'kucharzyna-claude-db';
-const DB_VERSION = 2;
+const DB_VERSION = 3;
 
 export const STORES = {
   recipes: 'id',
@@ -71,6 +71,7 @@ export function openDB() {
         addIndex(inventory, 'ean', 'ean');
         addIndex(inventory, 'name', 'name');
         addIndex(inventory, 'updatedAt', 'updatedAt');
+        addIndex(inventory, 'ean', 'ean', { unique: false });
         addIndex(log, 'ingredientId', 'ingredientId');
         addIndex(log, 'type', 'type');
         addIndex(log, 'at', 'at');

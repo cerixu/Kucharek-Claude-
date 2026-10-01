@@ -373,6 +373,7 @@ test('Magazyn: alerty stanów można wyłączyć dla ekranu Start', async ({ pag
     });
     await new Promise((resolve, reject) => {
       const tx = db.transaction('inventory', 'readwrite');
+      tx.objectStore('inventory').clear();
       tx.objectStore('inventory').put({
         id: 'e2e-alert-stock', name: 'Alert E2E', quantity: 0, unit: 'g',
         minQuantity: 1, purchasePrice: null, priceUnit: 'kg', ean: '', category: '',
@@ -384,7 +385,7 @@ test('Magazyn: alerty stanów można wyłączyć dla ekranu Start', async ({ pag
     db.close();
   }, DB_NAME);
   await page.reload();
-  const mag = page.getByRole('link', { name: /Magazyn/ });
+  const mag = page.getByRole('link', { name: '1 Magazyn', exact: true });
   await expect(mag).toBeVisible();
   await expect(mag.getByText('1', { exact: true })).toBeVisible();
 

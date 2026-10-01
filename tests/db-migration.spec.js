@@ -99,7 +99,7 @@ test('migracja IndexedDB v1 → v2 zachowuje dane i rozdziela stores', async ({ 
 
   const db = await readDb(page);
 
-  expect(db.version).toBe(2);
+  expect(db.version).toBe(3);
   expect(db.stores).toEqual(expect.arrayContaining([
     'recipes',
     'ingredients',

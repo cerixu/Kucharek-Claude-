@@ -53,11 +53,6 @@ export function openDB() {
         }
       }
 
-      // Indeksy wspólne.
-      if (d.objectStoreNames.contains('history')) {
-        addIndex(tx.objectStore('history'), 'recipeId', 'recipeId');
-      }
-
       // v2: dedykowane stores.
       if (oldVersion < 2) {
         const cook = d.objectStore('cookSessions');

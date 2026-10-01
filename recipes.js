@@ -299,11 +299,14 @@ export const markOpened = (id) => {
 
 export async function deleteRecipe(id) {
   const hist = await db.byIndex('history', 'recipeId', id);
-  await db.tx(['recipes', 'history', 'settings'], (t) => {
+  await db.tx(['recipes', 'history', 'settings', 'cookSessions', 'drafts'], (t) => {
     t.delete('recipes', id);
     hist.forEach((h) => t.delete('history', h.id));
+    // Usuń również legacy klucze, jeśli stara wersja aplikacji zostawiła je w settings.
     t.delete('settings', 'cook:' + id);
     t.delete('settings', 'draft:' + id);
+    t.delete('cookSessions', id);
+    t.delete('drafts', id);
   });
   state.recipes.delete(id);
   emit('recipes');

@@ -13,6 +13,7 @@ import {
   ingredientNames, catalogLookup, kv,
 } from './recipes.js';
 import { bakersTable } from './calculator.js';
+import { db } from './db.js';
 import { parseIngredientLine, cleanStep } from './importer.js';
 import { UNITS, debounce, fmtDateTime } from './util.js';
 
@@ -74,7 +75,7 @@ export function editorView({ id }, query) {
   const draftKey = isNew ? 'draft:new' : 'draft:' + id;
   const amateur = () => state.settings.mode === 'amateur';
 
-  const saveDraft = debounce(() => { kv.set(draftKey, { savedAt: Date.now(), recipe: work }).catch(() => {}); }, 700);
+  const saveDraft = debounce(() => { db.put('drafts', { id: isNew ? 'new' : id, recipeId: isNew ? null : id, savedAt: Date.now(), recipe: work }).catch(() => {}); }, 700);
   const touch = () => { saveDraft(); };
   const isDirty = () => JSON.stringify(work) !== baseline;
 
@@ -94,7 +95,7 @@ export function editorView({ id }, query) {
   /* ----- Wyjście / zapis ----- */
 
   async function leave() {
-    if (!isDirty()) { saveDraft.cancel(); await kv.del(draftKey).catch(() => {}); return back(); }
+    if (!isDirty()) { saveDraft.cancel(); await db.delete('drafts', isNew ? 'new' : id).catch(() => {}); return back(); }
     const choice = await new Promise((resolve) => {
       let res = 'stay';
       openSheet({
@@ -405,10 +406,10 @@ export function editorView({ id }, query) {
   (async () => {
     try {
       if (isNew && query && query.get && query.get('import')) {
-        const pend = await kv.get('draft:new-import');
+        const pend = await db.get('settings', 'draft:new-import').then((r) => r?.value);
         if (pend && pend.recipe) {
           work = normalizeRecipe(pend.recipe); issues = pend.issues || [];
-          await kv.del('draft:new-import');
+          await db.delete('settings', 'draft:new-import');
           baseline = '';
           renderAll(); touch();
           showBanner('warn', [h('strong', null, 'Sprawdź zaimportowaną recepturę'), issues.length ? h('ul', { class: 'plain small' }, issues.map((i) => h('li', null, i))) : h('span', { class: 'muted' }, 'Wszystko rozpoznane — przejrzyj i zapisz.')],
@@ -416,11 +417,11 @@ export function editorView({ id }, query) {
           return;
         }
       }
-      const d = await kv.get(draftKey);
+      const d = await db.get('drafts', isNew ? 'new' : id);
       if (!d || !d.recipe) return;
       const differs = JSON.stringify(d.recipe) !== baseline;
       const meaningful = isNew ? (d.recipe.name || d.recipe.sections.some((x) => x.ingredients.some((i) => i.name)) || d.recipe.steps.length) : differs && d.savedAt > existing.updatedAt;
-      if (!meaningful) { await kv.del(draftKey); return; }
+      if (!meaningful) { await db.delete('drafts', isNew ? 'new' : id); return; }
       showBanner('info', [h('strong', null, 'Znaleziono niezapisany szkic'), h('span', { class: 'muted' }, `z ${fmtDateTime(d.savedAt)}`)], [
         button('Wznów', { sm: true, kind: 'primary', onClick: () => { work = normalizeRecipe(d.recipe); renderAll(); banner.replaceChildren(); touch(); } }),
         button('Odrzuć', { sm: true, kind: 'ghost', onClick: async () => { await kv.del(draftKey); banner.replaceChildren(); toast('Szkic odrzucony'); } }),

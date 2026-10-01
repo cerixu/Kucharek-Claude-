@@ -5,7 +5,8 @@
    ========================================================================== */
 import { h, icon, screen, button, iconBtn, toast, openSheet, confirmDialog, numInput, textArea, field, emptyState } from './ui.js';
 import { navigate, goBack } from './router.js';
-import { getRecipe, kv, patchRecipe, getSetting } from './recipes.js';
+import { getRecipe, patchRecipe, getSetting } from './recipes.js';
+import { db } from './db.js';
 import { scaleRecipe, factorFromServings } from './calculator.js';
 import { qtyParts } from './components.js';
 import { fmtNum, fmtClock, debounce, parseNum } from './util.js';
@@ -91,7 +92,7 @@ export function cookView({ id }) {
   let loaded = false;
   const base = () => getRecipe(id) || r0;
   const view = () => scaleRecipe(base(), prog.factor || 1);
-  const saveProg = debounce(() => { kv.set('cook:' + id, prog).catch(() => {}); }, 300);
+  const saveProg = debounce(() => { db.put('cookSessions', { ...prog, recipeId: id, updatedAt: Date.now() }).catch(() => {}); }, 300);
 
   const s = screen({ title: r0.name, left: iconBtn('left', 'Wróć do receptury', () => goBack('/recipe/' + id)), cls: 'cook',
     right: h('div', { class: 'row' },
@@ -303,7 +304,7 @@ export function cookView({ id }) {
 
   s.el.style.setProperty('--cook-ts', String(prog.ts));
   paint(); paintTimer();
-  kv.get('cook:' + id).then((p) => {
+  db.get('cookSessions', id).then((p) => {
     if (p && typeof p === 'object') {
       prog = { ing: {}, steps: {}, factor: 1, tab: 'ing', ts: 1.15, ...p };
       s.el.style.setProperty('--cook-ts', String(prog.ts));

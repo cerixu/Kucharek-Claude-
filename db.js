@@ -60,15 +60,6 @@ export function openDB() {
         const inventory = d.objectStore('inventory');
         const log = d.objectStore('inventoryLog');
 
-        addIndex(cook, 'updatedAt', 'updatedAt');
-        addIndex(drafts, 'recipeId', 'recipeId');
-        addIndex(drafts, 'savedAt', 'savedAt');
-        addIndex(inventory, 'ean', 'ean');
-        addIndex(inventory, 'name', 'name');
-        addIndex(inventory, 'updatedAt', 'updatedAt');
-        addIndex(log, 'ingredientId', 'ingredientId');
-        addIndex(log, 'type', 'type');
-        addIndex(log, 'at', 'at');
 
         needsLegacyMigration = true;
       }

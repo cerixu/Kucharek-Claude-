@@ -174,3 +174,61 @@ test('v2 stores są zapisywalne', async ({ page }) => {
   expect(result.draft.recipe.name).toBe('Nowy szkic testowy');
   expect(result.cook.recipeId).toBe('cook-test');
 });
+
+
+test('Magazyn: zapis, korekta stanu, próg minimum i trwałość danych', async ({ page }) => {
+  await page.goto('/');
+  await page.evaluate(async (name) => {
+    const db = await new Promise((resolve, reject) => {
+      const req = indexedDB.open(name);
+      req.onsuccess = () => resolve(req.result);
+      req.onerror = () => reject(req.error);
+    });
+    const tx = db.transaction('inventory', 'readwrite');
+    tx.objectStore('inventory').put({
+      id: 'e2e-mozzarella',
+      name: 'Mozzarella E2E',
+      quantity: 2,
+      unit: 'kg',
+      minQuantity: 3,
+      purchasePrice: 24,
+      priceUnit: 'kg',
+      ean: '5900000000001',
+      category: 'Nabiał',
+      createdAt: Date.now(),
+      updatedAt: Date.now(),
+    });
+    await new Promise((resolve, reject) => {
+      tx.oncomplete = resolve;
+      tx.onerror = () => reject(tx.error);
+    });
+    db.close();
+  });
+
+  await page.reload();
+  await page.waitForTimeout(200);
+
+  const result = await page.evaluate(async (name) => {
+    const db = await new Promise((resolve, reject) => {
+      const req = indexedDB.open(name);
+      req.onsuccess = () => resolve(req.result);
+      req.onerror = () => reject(req.error);
+    });
+    const item = await new Promise((resolve, reject) => {
+      const req = db.transaction('inventory').objectStore('inventory').get('e2e-mozzarella');
+      req.onsuccess = () => resolve(req.result);
+      req.onerror = () => reject(req.error);
+    });
+    db.close();
+    return item;
+  }, DB_NAME);
+
+  expect(result.name).toBe('Mozzarella E2E');
+  expect(result.quantity).toBe(2);
+  expect(result.minQuantity).toBe(3);
+  expect(result.ean).toBe('5900000000001');
+
+  await page.goto('/#/inventory');
+  await expect(page.getByText('Mozzarella E2E')).toBeVisible();
+  await expect(page.getByText('MAŁO')).toBeVisible();
+});

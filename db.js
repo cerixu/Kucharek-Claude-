@@ -43,6 +43,7 @@ export function openDB() {
     rq.onupgradeneeded = (event) => {
       const d = rq.result;
       const oldVersion = event.oldVersion;
+      const tx = event.target.transaction;
 
       // Stores istniejące od v1.
       for (const [name, keyPath] of Object.entries(STORES)) {
@@ -53,7 +54,7 @@ export function openDB() {
 
       // Indeksy wspólne.
       if (d.objectStoreNames.contains('history')) {
-        addIndex(d.transaction.objectStore('history'), 'recipeId', 'recipeId');
+        addIndex(tx.objectStore('history'), 'recipeId', 'recipeId');
       }
 
       // v2: dedykowane stores.
@@ -75,7 +76,7 @@ export function openDB() {
 
         // Migracja v1: cook:<recipeId> i draft:<recipeId> z settings.
         // IndexedDB upgrade transaction może czytać/zapisywać do istniejących stores.
-        const settings = d.transaction.objectStore('settings');
+        const settings = tx.objectStore('settings');
         settings.openCursor().onsuccess = (e) => {
           const cursor = e.target.result;
           if (!cursor) return;

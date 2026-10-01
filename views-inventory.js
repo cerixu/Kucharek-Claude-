@@ -1,10 +1,11 @@
 import { h, icon, screen, button, iconBtn, openSheet, confirmDialog, emptyState, toast, field, textInput, selectEl } from './ui.js';
+import { navigate } from './router.js';
 import { loadInventory, listInventory, saveInventoryItem, adjustInventory, removeInventoryItem, stockState, subscribeInventory, normalizeEAN, validEAN } from './inventory.js';
 const UNITS=[['g','g'],['kg','kg'],['ml','ml'],['l','l'],['szt','szt'],['opak','opak']];
 const fmt=n=>Number.isInteger(n)?String(n):String(Number(n.toFixed(3)));
 export function inventoryView(){
  const search=h('input',{class:'input search-input',type:'search',placeholder:'Szukaj produktu…','aria-label':'Szukaj produktu',autocomplete:'off'});
- const s=screen({title:'Magazyn',right:iconBtn('plus','Dodaj produkt',()=>openEditor()),sub:h('div',{class:'searchbox'},icon('search',20),search),cls:'inventory'});
+ const s=screen({title:'Magazyn',right:h('div',{class:'row'},button('PRO',{sm:true,onClick:()=>navigate('/pro')}),iconBtn('plus','Dodaj produkt',()=>openEditor())),sub:h('div',{class:'searchbox'},icon('search',20),search),cls:'inventory'});
  let lowOnly=false,q='';
  const matches=item=>{const text=(item.name+' '+(item.category||'')+' '+(item.ean||'')).toLocaleLowerCase();return(!q||text.includes(q.toLocaleLowerCase()))&&(!lowOnly||stockState(item)!=='ok');};
  const row=item=>{const st=stockState(item),label=st==='empty'?'BRAK':st==='low'?'MAŁO':'OK';return h('article',{class:'stock-row '+st},

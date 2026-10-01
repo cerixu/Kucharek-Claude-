@@ -84,7 +84,7 @@ async function readDb(page) {
 }
 
 test('migracja IndexedDB v1 → v2 zachowuje dane i rozdziela stores', async ({ page }) => {
-  await page.goto('/');
+  await page.goto('about:blank');
   await resetDb(page);
   await openV1(page);
   await page.goto('/');
@@ -187,9 +187,9 @@ test('v2 stores są zapisywalne', async ({ page }) => {
 
 
 test('Magazyn: zapis, korekta stanu, próg minimum i trwałość danych', async ({ page }) => {
-  await page.goto('/');
+  await page.goto('about:blank');
   await resetDb(page);
-  await page.reload();
+  await page.goto('/');
   await page.waitForFunction(async (name) => {
     const req = indexedDB.open(name);
     const db = await new Promise((resolve, reject) => {

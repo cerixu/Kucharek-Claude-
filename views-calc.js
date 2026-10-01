@@ -300,7 +300,7 @@ function costCalculator() {
     };
 
     const rows = ings.map((i) => {
-      const stock = findInventoryByName(i.name);
+      const stock = findInventoryMatch(i)?.item;
       const stockPrice = inventoryPrice(i);
       const pkg = h('div', { class: 'row gap', hidden: i.priceUnit !== 'opak.' });
 

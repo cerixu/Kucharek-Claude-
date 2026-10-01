@@ -209,3 +209,61 @@ test('Magazyn: dodanie produktu, próg minimum i trwałość danych', async ({ p
   await expect(page.getByText(/min\. 3 kg/)).toBeVisible();
   await expect(page.getByText(/EAN 5900000000001/)).toBeVisible();
 });
+
+
+test('Gotuję: zakończenie receptury odejmuje składniki z Magazynu', async ({ page }) => {
+  await page.goto('/');
+  await page.evaluate(async (name) => {
+    const db = await new Promise((resolve, reject) => {
+      const req = indexedDB.open(name);
+      req.onsuccess = () => resolve(req.result);
+      req.onerror = () => reject(req.error);
+    });
+    const tx = db.transaction('inventory', 'readwrite');
+    const now = Date.now();
+    [
+      ['Pomidory San Marzano (pelati)', 1000, 'g'],
+      ['Oliwa extra vergine', 100, 'ml'],
+      ['Czosnek (ząbki)', 5, 'szt'],
+      ['Sól', 20, 'g'],
+      ['Bazylia (świeże liście)', 20, 'szt'],
+    ].forEach(([name, quantity, unit], i) => tx.objectStore('inventory').put({
+      id: 'e2e-stock-' + i, name, quantity, unit, minQuantity: 0,
+      purchasePrice: null, priceUnit: 'kg', ean: '', category: '', createdAt: now, updatedAt: now,
+    }));
+    await new Promise((resolve, reject) => { tx.oncomplete = resolve; tx.onerror = () => reject(tx.error); });
+    db.close();
+  }, DB_NAME);
+
+  await page.goto('/#/cook/rcp_seed_sos');
+  await expect(page.getByText('Sos pomidorowy')).toBeVisible();
+  const boxes = page.getByRole('checkbox');
+  await expect(boxes).toHaveCount(9);
+  for (let i = 0; i < 9; i++) await boxes.nth(i).click();
+  await page.getByRole('button', { name: 'Zakończ' }).click();
+  await expect(page.getByText('Odjąć składniki z magazynu?')).toBeVisible();
+  await page.getByRole('button', { name: 'Odjąć' }).click();
+  await expect(page.getByText('Magazyn zaktualizowany')).toBeVisible();
+
+  const stock = await page.evaluate(async (name) => {
+    const db = await new Promise((resolve, reject) => {
+      const req = indexedDB.open(name);
+      req.onsuccess = () => resolve(req.result);
+      req.onerror = () => reject(req.error);
+    });
+    const read = (id) => new Promise((resolve, reject) => {
+      const req = db.transaction('inventory').objectStore('inventory').get(id);
+      req.onsuccess = () => resolve(req.result);
+      req.onerror = () => reject(req.error);
+    });
+    const out = await Promise.all(['e2e-stock-0', 'e2e-stock-1', 'e2e-stock-2', 'e2e-stock-3', 'e2e-stock-4'].map(read));
+    db.close();
+    return out;
+  }, DB_NAME);
+
+  expect(stock[0].quantity).toBe(200);
+  expect(stock[1].quantity).toBe(60);
+  expect(stock[2].quantity).toBe(3);
+  expect(stock[3].quantity).toBe(12);
+  expect(stock[4].quantity).toBe(10);
+});

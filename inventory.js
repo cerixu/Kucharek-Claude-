@@ -21,12 +21,15 @@ const toBase = (value, unit) => Number(value || 0) * (UNIT_TO_BASE[unit] || 1);
 
 export async function consumeRecipeIngredients(recipe, factor = 1) {
   await loadInventory();
-  const changes = [];
   const shortages = [];
+  const usedByItem = new Map();
+  const remainingByItem = new Map();
+
   for (const ing of (recipe?.sections || []).flatMap((s) => s.ingredients || [])) {
     if (!ing?.name || ing.amount == null || ing.unit === '%') continue;
     const required = Number(ing.amount) * Number(factor || 1);
     if (!(required > 0)) continue;
+
     const item = findInventoryByName(ing.name);
     const itemUnit = normalizeUnit(item?.unit);
     const ingredientUnit = normalizeUnit(ing.unit);
@@ -34,24 +37,44 @@ export async function consumeRecipeIngredients(recipe, factor = 1) {
       shortages.push({ name: ing.name, amount: required, unit: ing.unit, missing: required });
       continue;
     }
-    const reqBase = toBase(required, ing.unit);
-    const haveBase = toBase(item.quantity, item.unit);
-    const usedBase = Math.min(reqBase, haveBase);
-    const used = item.unit === ing.unit ? usedBase : usedBase / UNIT_TO_BASE[item.unit];
-    const missingBase = reqBase - usedBase;
-    if (missingBase > 0) shortages.push({ name: ing.name, amount: required, unit: ing.unit, missing: missingBase / UNIT_TO_BASE[ing.unit] });
-    if (used > 0) changes.push({ item, used });
+
+    if (!remainingByItem.has(item.id)) {
+      remainingByItem.set(item.id, toBase(item.quantity, itemUnit));
+    }
+    const remainingBase = remainingByItem.get(item.id);
+    const requiredBase = toBase(required, ingredientUnit);
+    const usedBase = Math.min(requiredBase, remainingBase);
+    const missingBase = requiredBase - usedBase;
+
+    remainingByItem.set(item.id, Math.max(0, remainingBase - usedBase));
+    usedByItem.set(item.id, (usedByItem.get(item.id) || 0) + usedBase);
+
+    if (missingBase > 0) {
+      shortages.push({
+        name: ing.name,
+        amount: required,
+        unit: ing.unit,
+        missing: missingBase / UNIT_TO_BASE[ingredientUnit],
+      });
+    }
   }
-  if (!changes.length) return { changes: [], shortages };
+
+  if (!usedByItem.size) return { changes: [], shortages };
+
   const now = Date.now();
-  const next = changes.map(({ item, used }) => ({
-    ...item,
-    quantity: Math.max(0, Number(item.quantity || 0) - used),
-    updatedAt: now,
-  }));
+  const next = [...usedByItem.entries()].map(([id, usedBase]) => {
+    const item = items.find((x) => x.id === id);
+    const itemUnit = normalizeUnit(item.unit);
+    return {
+      ...item,
+      quantity: Math.max(0, Number(item.quantity || 0) - usedBase / UNIT_TO_BASE[itemUnit]),
+      updatedAt: now,
+    };
+  });
+
   await db.tx(['inventory', 'inventoryLog'], (t) => {
-    next.forEach((item, i) => {
-      const before = Number(changes[i].item.quantity || 0);
+    next.forEach((item) => {
+      const before = Number(items.find((x) => x.id === item.id)?.quantity || 0);
       t.put('inventory', item);
       t.put('inventoryLog', {
         id: uid('stocklog_'),
@@ -66,6 +89,7 @@ export async function consumeRecipeIngredients(recipe, factor = 1) {
       });
     });
   });
+
   next.forEach((item) => {
     const i = items.findIndex((x) => x.id === item.id);
     if (i >= 0) items[i] = item;

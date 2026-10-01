@@ -2,32 +2,28 @@ import { test, expect } from '@playwright/test';
 
 const DB_NAME = 'kucharzyna-claude-db';
 
-async function openV1(page) {
+test.describe.configure({ mode: 'serial' });
+
+async function seedV1(page) {
+  await page.route('**/app.js*', route => route.abort());
+  await page.goto('/');
+
   await page.evaluate(async (name) => {
     await new Promise((resolve, reject) => {
       const req = indexedDB.open(name, 1);
       req.onupgradeneeded = () => {
         const db = req.result;
         for (const [store, keyPath] of [
-          ['recipes', 'id'],
-          ['ingredients', 'id'],
-          ['categories', 'id'],
-          ['shoppingItems', 'id'],
-          ['settings', 'key'],
-          ['history', 'id'],
+          ['recipes', 'id'], ['ingredients', 'id'], ['categories', 'id'],
+          ['shoppingItems', 'id'], ['settings', 'key'], ['history', 'id'],
         ]) db.createObjectStore(store, { keyPath });
-        db.transaction.objectStore('history').createIndex('recipeId', 'recipeId');
       };
       req.onsuccess = () => {
         const db = req.result;
         const tx = db.transaction(['recipes', 'settings'], 'readwrite');
         tx.objectStore('recipes').put({
-          id: 'migration-test-recipe',
-          name: 'Receptura migracyjna',
-          sections: [],
-          steps: [],
-          tags: [],
-          servings: 1,
+          id: 'migration-test-recipe', name: 'Receptura migracyjna',
+          sections: [], steps: [], tags: [], servings: 1,
         });
         tx.objectStore('settings').put({
           key: 'cook:migration-test-recipe',
@@ -46,6 +42,12 @@ async function openV1(page) {
       req.onerror = () => reject(req.error);
     });
   }, DB_NAME);
+
+  await page.evaluate(async () => {
+    const { openDB } = await import('/db.js?migration-test');
+    const db = await openDB();
+    db.close();
+  });
 }
 
 async function readDb(page) {
@@ -73,32 +75,19 @@ async function readDb(page) {
 }
 
 test('migracja IndexedDB v1 → v2 zachowuje dane i rozdziela stores', async ({ page }) => {
-  await openV1(page);
-  await page.goto('/');
-  await page.waitForTimeout(500);
-
+  await seedV1(page);
   const db = await readDb(page);
 
   expect(db.version).toBe(2);
   expect(db.stores).toEqual(expect.arrayContaining([
-    'recipes',
-    'ingredients',
-    'categories',
-    'shoppingItems',
-    'settings',
-    'history',
-    'cookSessions',
-    'drafts',
-    'inventory',
-    'inventoryLog',
+    'recipes', 'ingredients', 'categories', 'shoppingItems', 'settings',
+    'history', 'cookSessions', 'drafts', 'inventory', 'inventoryLog',
   ]));
-
   expect(db.recipe.name).toBe('Receptura migracyjna');
   expect(db.cook.recipeId).toBe('migration-test-recipe');
   expect(db.cook.factor).toBe(2);
   expect(db.draft.id).toBe('migration-test-recipe');
   expect(db.draft.recipe.name).toBe('Szkic migracyjny');
-
   expect(db.legacyCook).toBeTruthy();
   expect(db.legacyDraft).toBeTruthy();
 });
@@ -113,34 +102,10 @@ test('v2 stores są zapisywalne', async ({ page }) => {
     });
     await new Promise((resolve, reject) => {
       const tx = db.transaction(['inventory', 'inventoryLog', 'drafts', 'cookSessions'], 'readwrite');
-      tx.objectStore('inventory').put({
-        id: 'test-flour',
-        name: 'Mąka testowa',
-        quantity: 10,
-        unit: 'kg',
-        minimum: 2,
-        lowStock: true,
-        ean: '5901234567890',
-        updatedAt: Date.now(),
-      });
-      tx.objectStore('inventoryLog').put({
-        id: 'log-test',
-        ingredientId: 'test-flour',
-        type: 'correction',
-        delta: -1,
-        at: Date.now(),
-      });
-      tx.objectStore('drafts').put({
-        id: 'new',
-        recipeId: null,
-        savedAt: Date.now(),
-        recipe: { name: 'Nowy szkic testowy' },
-      });
-      tx.objectStore('cookSessions').put({
-        recipeId: 'cook-test',
-        factor: 1,
-        updatedAt: Date.now(),
-      });
+      tx.objectStore('inventory').put({ id: 'test-flour', name: 'Mąka testowa', quantity: 10, unit: 'kg', minimum: 2, lowStock: true, ean: '5901234567890', updatedAt: Date.now() });
+      tx.objectStore('inventoryLog').put({ id: 'log-test', ingredientId: 'test-flour', type: 'correction', delta: -1, at: Date.now() });
+      tx.objectStore('drafts').put({ id: 'new', recipeId: null, savedAt: Date.now(), recipe: { name: 'Nowy szkic testowy' } });
+      tx.objectStore('cookSessions').put({ recipeId: 'cook-test', factor: 1, updatedAt: Date.now() });
       tx.oncomplete = resolve;
       tx.onerror = () => reject(tx.error);
     });

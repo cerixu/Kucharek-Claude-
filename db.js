@@ -4,7 +4,7 @@
    Każdy rekord ma stabilne ID (settings: klucz tekstowy).
    ========================================================================== */
 
-const DB_NAME = 'kucharzyna-db';
+const DB_NAME = 'kucharzyna-claude-db';
 const DB_VERSION = 1;
 
 export const STORES = {

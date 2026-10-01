@@ -18,7 +18,7 @@ import { shoppingView, pendingCount } from './shopping.js';
 import { importView } from './views-import.js';
 import { settingsView } from './views-settings.js';
 import { inventoryView } from './views-inventory.js';
-import { proView } from './views-pro.js';
+import { proView } from './views-pro-fixed.js';
 
 const root = document.documentElement;
 

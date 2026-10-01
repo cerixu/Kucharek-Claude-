@@ -519,6 +519,5 @@ test('Food Cost UI: kalkulator pokazuje cenę z Magazynu', async ({ page }) => {
   await expect(page.getByRole('heading', { name: 'Koszt receptury', exact: true })).toBeVisible();
   await page.getByLabel('Receptura').selectOption('rcp_seed_pizza');
   await expect(page.getByText('Magazyn: 8,00 zł/kg')).toBeVisible();
-  await expect(page.getByText('Koszt receptury')).toBeVisible();
   await expect(page.getByText('33,38 zł')).toBeVisible();
 });

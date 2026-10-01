@@ -16,6 +16,7 @@ import {
 import { fmtAmount, fmtNum, fmtMoney, debounce } from './util.js';
 import { qtyParts } from './components.js';
 import { addItems, openAddToShopping } from './shopping.js';
+import { loadInventory, findInventoryByName } from './inventory.js';
 
 const CARDS = [
   ['pizza', 'Pizza i ciasto', 'Kulki, hydracja, sól, drożdże → mąka, woda, sól, drożdże', 'pizza'],
@@ -261,57 +262,128 @@ function costCalculator() {
   const s = calcScreen('Koszt receptury', holder);
   const cur$ = () => getSetting('currency') || 'zł';
 
+  function inventoryPrice(i) {
+    const item = findInventoryByName(i.name);
+    if (!item || !Number.isFinite(Number(item.purchasePrice)) || Number(item.purchasePrice) < 0) return null;
+    return { price: Number(item.purchasePrice), priceUnit: item.priceUnit || 'kg' };
+  }
+
   function build() {
-    if (!state.recipes.size) { holder.replaceChildren(emptyState('📒', 'Brak receptur', 'Dodaj recepturę, żeby policzyć jej koszt.', button('Nowa receptura', { kind: 'primary', onClick: () => navigate('/new') }))); return; }
+    if (!state.recipes.size) {
+      holder.replaceChildren(emptyState('📒', 'Brak receptur', 'Dodaj recepturę, żeby policzyć jej koszt.',
+        button('Nowa receptura', { kind: 'primary', onClick: () => navigate('/new') })));
+      return;
+    }
     const sel = recipeSelect(st, 'id', () => { save(); build(); });
     const base = getRecipe(st.id);
-    // Praca na kopii — zapis dopiero po kliknięciu „Zapisz w recepturze”.
     const r = JSON.parse(JSON.stringify(base));
     const ings = allIngredients(r).filter((i) => i.name);
     const sum = h('div', { class: 'results' });
+
     const paintSum = () => {
-      const c = recipeCost(r, 1);
+      const c = recipeCost(r, 1, { priceResolver: inventoryPrice });
       const sugg = c.perPortion > 0 ? priceForFoodCost(c.perPortion, st.target) : null;
-      sum.replaceChildren(h('div', { class: 'results-grid' },
-        result('Koszt receptury', fmtMoney(c.total, cur$()), '', 'big'),
-        result('Koszt porcji', fmtMoney(c.perPortion, cur$()), '', 'big'),
-        result('Cena sprzedaży', r.salePrice > 0 ? fmtMoney(r.salePrice, cur$()) : '—'),
-        result('Food cost', c.foodCostPct != null ? fmtNum(c.foodCostPct, 1) : '—', c.foodCostPct != null ? '%' : '', c.foodCostPct > 35 ? 'warn' : '')),
-        sugg ? h('p', { class: 'muted' }, `Cena porcji dla food cost ${fmtNum(st.target, 1)}%: `, h('strong', { class: 'num' }, fmtMoney(sugg, cur$()))) : null,
-        c.missing ? h('p', { class: 'muted small' }, `Składników bez ceny lub zgodnej jednostki: ${c.missing}`) : null);
+      sum.replaceChildren(
+        h('div', { class: 'results-grid' },
+          result('Koszt receptury', fmtMoney(c.total, cur$()), '', 'big'),
+          result('Koszt porcji', fmtMoney(c.perPortion, cur$()), '', 'big'),
+          result('Cena sprzedaży', r.salePrice > 0 ? fmtMoney(r.salePrice, cur$()) : '—'),
+          result('Food cost', c.foodCostPct != null ? fmtNum(c.foodCostPct, 1) : '—',
+            c.foodCostPct != null ? '%' : '', c.foodCostPct > 35 ? 'warn' : '')),
+        sugg ? h('p', { class: 'muted' }, `Cena porcji dla food cost ${fmtNum(st.target, 1)}%: `,
+          h('strong', { class: 'num' }, fmtMoney(sugg, cur$()))) : null,
+        c.missing ? h('p', { class: 'muted small' },
+          `Składników bez ceny lub zgodnej jednostki: ${c.missing}`) : null,
+        h('p', { class: 'muted small' },
+          'Jeśli składnik ma cenę zakupu w Magazynie, jest ona używana automatycznie.')
+      );
     };
+
     const rows = ings.map((i) => {
+      const stock = findInventoryByName(i.name);
+      const stockPrice = inventoryPrice(i);
       const pkg = h('div', { class: 'row gap', hidden: i.priceUnit !== 'opak.' });
+
       const buildPkg = () => {
         pkg.hidden = i.priceUnit !== 'opak.';
-        pkg.replaceChildren(col(field('Waga opakowania', numInput({ value: i.packageWeight, label: 'Waga opakowania', onInput: (v) => { i.packageWeight = v; paintSum(); } }))),
-          col(field('Jednostka', selectEl(['g', 'ml', 'szt.'], i.packageUnit || 'g', (v) => { i.packageUnit = v; paintSum(); }))));
+        pkg.replaceChildren(
+          col(field('Waga opakowania', numInput({
+            value: i.packageWeight, label: 'Waga opakowania',
+            onInput: (v) => { i.packageWeight = v; paintSum(); }
+          }))),
+          col(field('Jednostka', selectEl(['g', 'ml', 'szt.'], i.packageUnit || 'g',
+            (v) => { i.packageUnit = v; paintSum(); })))
+        );
       };
       buildPkg();
+
+      const priceControl = stockPrice
+        ? h('div', { class: 'stack' },
+            h('div', { class: 'muted small' },
+              `Magazyn: ${fmtMoney(stockPrice.price, cur$())}/${stockPrice.priceUnit}`),
+            stock?.quantity != null
+              ? h('div', { class: 'muted small' }, `Stan: ${fmtAmount(stock.quantity)} ${stock.unit}`)
+              : null,
+            button('Otwórz Magazyn', {
+              sm: true, icon: 'list', onClick: () => navigate('/inventory')
+            }))
+        : h('div', { class: 'row gap' },
+            col(numInput({
+              value: i.price, label: `Cena: ${i.name}`, placeholder: 'cena', dec: 2,
+              onInput: (v) => { i.price = v; paintSum(); }
+            })),
+            col(selectEl([
+              ['kg', `${cur$()}/kg`], ['l', `${cur$()}/l`], ['g', `${cur$()}/g`],
+              ['ml', `${cur$()}/ml`], ['szt.', `${cur$()}/szt.`], ['opak.', `${cur$()}/opak.`]
+            ], i.priceUnit || 'kg',
+              (v) => { i.priceUnit = v; buildPkg(); paintSum(); },
+              { label: 'Jednostka ceny' })));
+
       return h('div', { class: 'price-row' },
-        h('div', { class: 'price-name' }, i.name, h('small', { class: 'muted num' }, i.amount != null ? ` ${fmtAmount(i.amount)} ${i.unit}` : '')),
-        h('div', { class: 'row gap' },
-          col(numInput({ value: i.price, label: `Cena: ${i.name}`, placeholder: 'cena', dec: 2, onInput: (v) => { i.price = v; paintSum(); } })),
-          col(selectEl([['kg', `${cur$()}/kg`], ['l', `${cur$()}/l`], ['g', `${cur$()}/g`], ['ml', `${cur$()}/ml`], ['szt.', `${cur$()}/szt.`], ['opak.', `${cur$()}/opak.`]], i.priceUnit || 'kg', (v) => { i.priceUnit = v; buildPkg(); paintSum(); }, { label: 'Jednostka ceny' }))),
-        pkg);
+        h('div', { class: 'price-name' }, i.name,
+          h('small', { class: 'muted num' },
+            i.amount != null ? ` ${fmtAmount(i.amount)} ${i.unit}` : '')),
+        priceControl, pkg);
     });
+
     holder.replaceChildren(
-      h('section', { class: 'card stack' }, field('Receptura', sel),
+      h('section', { class: 'card stack' },
+        field('Receptura', sel),
         h('div', { class: 'row gap' },
-          col(field('Porcje', numInput({ value: r.servings, label: 'Liczba porcji', dec: 1, onInput: (v) => { r.servings = v || 0; paintSum(); } }))),
-          col(field(`Cena sprzedaży (${cur$()})`, numInput({ value: r.salePrice, label: 'Cena sprzedaży porcji', dec: 2, onInput: (v) => { r.salePrice = v; paintSum(); } })))),
-        field('Docelowy food cost (%)', numInput({ value: st.target, label: 'Docelowy food cost', dec: 1, onInput: (v) => { st.target = v || 30; save(); paintSum(); } }))),
+          col(field('Porcje', numInput({
+            value: r.servings, label: 'Liczba porcji', dec: 1,
+            onInput: (v) => { r.servings = v || 0; paintSum(); }
+          }))),
+          col(field(`Cena sprzedaży (${cur$()})`, numInput({
+            value: r.salePrice, label: 'Cena sprzedaży porcji', dec: 2,
+            onInput: (v) => { r.salePrice = v; paintSum(); }
+          })))
+        ),
+        field('Docelowy food cost (%)', numInput({
+          value: st.target, label: 'Docelowy food cost', dec: 1,
+          onInput: (v) => { st.target = v || 30; save(); paintSum(); }
+        }))
+      ),
       sum,
-      h('section', { class: 'card stack' }, h('h2', { class: 'card-title' }, icon('coins', 20), 'Ceny składników'), ...rows),
+      h('section', { class: 'card stack' },
+        h('h2', { class: 'card-title' }, icon('coins', 20), 'Ceny składników'), ...rows),
       h('div', { class: 'row wrap gap' },
-        button('Zapisz w recepturze', { icon: 'check', kind: 'primary', onClick: async () => {
-          await saveRecipe({ ...base, sections: r.sections, servings: r.servings, salePrice: r.salePrice }, { note: 'Zaktualizowano ceny (kalkulator kosztu)' });
-          toast('Zapisano ceny w recepturze');
-        } }),
-        button('Otwórz recepturę', { icon: 'book', kind: 'ghost', onClick: () => navigate('/recipe/' + base.id) })));
+        button('Zapisz w recepturze', {
+          icon: 'check', kind: 'primary',
+          onClick: async () => {
+            await saveRecipe({ ...base, sections: r.sections, servings: r.servings, salePrice: r.salePrice },
+              { note: 'Zaktualizowano ceny (kalkulator kosztu)' });
+            toast('Zapisano ceny w recepturze');
+          }
+        }),
+        button('Otwórz recepturę', {
+          icon: 'book', kind: 'ghost', onClick: () => navigate('/recipe/' + base.id)
+        }))
+    );
     paintSum();
   }
-  ready.then(build);
+
+  ready.then(async () => { await loadInventory(); build(); });
   build();
   return { el: s.el };
 }

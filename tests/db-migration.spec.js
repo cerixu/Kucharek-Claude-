@@ -211,8 +211,8 @@ test('Magazyn: dodanie produktu, próg minimum i trwałość danych', async ({ p
   await page.goto('/#/inventory');
   await expect(page.getByText('Mozzarella E2E')).toBeVisible();
   await expect(page.getByText('MAŁO')).toBeVisible();
-  await expect(page.getByText(/2 kg/)).toBeVisible();
-  await expect(page.getByText(/min\. 3 kg/)).toBeVisible();
+  await expect(page.getByText(/2 g/)).toBeVisible();
+  await expect(page.getByText(/min\. 3 g/)).toBeVisible();
   await expect(page.getByText(/EAN 5900000000001/)).toBeVisible();
 });
 

@@ -46,7 +46,7 @@ export function openDB() {
 
       // Stores istniejące od v1.
       for (const [name, keyPath] of Object.entries(STORES)) {
-        if (!d.objectStoreNames.contains(name) && oldVersion === 0) {
+        if (!d.objectStoreNames.contains(name)) {
           d.createObjectStore(name, { keyPath });
         }
       }

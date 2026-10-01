@@ -307,7 +307,7 @@ test('Magazyn: powtarzające się składniki są sumowane bez podwójnego odejmo
     const consumed = await mod.consumeRecipeIngredients(recipe, 1);
     return { quantity: mod.listInventory().find((x) => x.id === 'e2e-dup-flour').quantity, shortages: consumed.shortages };
   }, DB_NAME);
-  expect(result.quantity).toBe(0.3);
+  expect(result.quantity).toBeCloseTo(0.3, 10);
   expect(result.shortages).toHaveLength(0);
 });
 

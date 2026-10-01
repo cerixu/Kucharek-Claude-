@@ -200,7 +200,7 @@ test('Magazyn: dodanie produktu, próg minimum i trwałość danych', async ({ p
   await expect(page.getByText('Nowy produkt')).toBeVisible();
   await page.getByLabel('Nazwa produktu').fill('Mozzarella E2E');
   await page.getByLabel('Ilość').fill('2');
-  await page.getByLabel('Próg minimalny').fill('3');
+  await page.getByLabel('Alert poniżej tej ilości').fill('3');
   await page.getByLabel('Cena').fill('24');
   await page.getByLabel('Kod EAN').fill('5900000000001');
   await page.getByLabel('Kategoria').fill('Nabiał');

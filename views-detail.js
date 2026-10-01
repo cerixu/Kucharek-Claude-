@@ -16,7 +16,7 @@ import {
 } from './calculator.js';
 import { fmtAmount, fmtNum, fmtPct, fmtMoney, fmtMinutes, fmtDateTime, fmtDate, copyText, debounce, uid } from './util.js';
 import { heartBtn, tradMark, qtyParts, recipeToText, originOf } from './components.js';
-import { openAddToShopping } from './shopping.js';
+import { openAddToShopping, addMissingFromRecipe } from './shopping.js';
 import { hostOf } from './importer.js';
 
 const KIND_LABEL = { flour: 'mąka', water: 'woda', salt: 'sól', yeast: 'drożdże', fat: 'tłuszcz', other: '' };
@@ -371,7 +371,7 @@ export function detailView({ id }) {
       button('GOTUJĘ', { kind: 'primary', lg: true, block: true, icon: 'chef', onClick: () => navigate('/cook/' + id) })));
     kids.push(h('div', { class: 'actions-row' },
       button('Przelicz', { icon: 'swap', onClick: openScale }),
-      button('Do zakupów', { icon: 'cart', onClick: () => openAddToShopping(r, 1) }),
+      button('Do zakupów', { icon: 'cart', onClick: () => openAddToShopping(r, 1) }), button('Dodaj braki', { icon: 'cart', onClick: async () => { const res = await addMissingFromRecipe(r, 1); toast(res.count ? 'Dodano braki do zakupów: ' + res.count : 'Magazyn pokrywa całą recepturę'); } }),
       button('Edytuj', { icon: 'edit', onClick: () => navigate('/edit/' + id) })));
 
     if (scaled) {

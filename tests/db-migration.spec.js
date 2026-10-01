@@ -17,7 +17,6 @@ async function seedV1(page) {
           ['recipes', 'id'], ['ingredients', 'id'], ['categories', 'id'],
           ['shoppingItems', 'id'], ['settings', 'key'], ['history', 'id'],
         ]) db.createObjectStore(store, { keyPath });
-        req.transaction.objectStore('history').createIndex('recipeId', 'recipeId');
       };
       req.onsuccess = () => {
         const db = req.result;
@@ -51,7 +50,7 @@ async function seedV1(page) {
 async function readDb(page) {
   return page.evaluate(async (name) => {
     const db = await new Promise((resolve, reject) => {
-      const req = indexedDB.open(name);
+      const req = indexedDB.open(name, 2);
       req.onsuccess = () => resolve(req.result);
       req.onerror = () => reject(req.error);
     });

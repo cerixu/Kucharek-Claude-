@@ -243,9 +243,13 @@ test('Gotuję: zakończenie receptury odejmuje składniki z Magazynu', async ({ 
 
   await page.goto('/#/cook/rcp_seed_sos');
   await expect(page.getByText('Sos pomidorowy')).toBeVisible();
-  const boxes = page.getByRole('checkbox');
-  await expect(boxes).toHaveCount(9);
-  for (let i = 0; i < 9; i++) await boxes.nth(i).click();
+  const ingredientBoxes = page.getByRole('checkbox');
+  await expect(ingredientBoxes).toHaveCount(5);
+  for (let i = 0; i < 5; i++) await ingredientBoxes.nth(i).click();
+  await page.getByRole('button', { name: 'Kroki', exact: true }).click();
+  const stepBoxes = page.getByRole('checkbox');
+  await expect(stepBoxes).toHaveCount(4);
+  for (let i = 0; i < 4; i++) await stepBoxes.nth(i).click();
   await page.getByRole('button', { name: 'Zakończ' }).click();
   await expect(page.getByText('Odjąć składniki z magazynu?')).toBeVisible();
   await page.getByRole('button', { name: 'Odjąć' }).click();
@@ -272,4 +276,88 @@ test('Gotuję: zakończenie receptury odejmuje składniki z Magazynu', async ({ 
   expect(stock[2].quantity).toBe(3);
   expect(stock[3].quantity).toBe(12);
   expect(stock[4].quantity).toBe(10);
+});
+
+
+test('Magazyn: powtarzające się składniki są sumowane bez podwójnego odejmowania', async ({ page }) => {
+  await page.goto('/');
+  const result = await page.evaluate(async (name) => {
+    const db = await new Promise((resolve, reject) => {
+      const req = indexedDB.open(name);
+      req.onsuccess = () => resolve(req.result);
+      req.onerror = () => reject(req.error);
+    });
+    const tx = db.transaction('inventory', 'readwrite');
+    tx.objectStore('inventory').put({
+      id: 'e2e-dup-flour', name: 'Mąka duplikat E2E', quantity: 1, unit: 'kg',
+      minQuantity: 0, purchasePrice: null, priceUnit: 'kg', ean: '', category: '',
+      createdAt: Date.now(), updatedAt: Date.now(),
+    });
+    await new Promise((resolve, reject) => { tx.oncomplete = resolve; tx.onerror = () => reject(tx.error); });
+    db.close();
+    const mod = await import('/inventory.js');
+    const recipe = {
+      id: 'e2e-dup-recipe',
+      name: 'Test duplikatów',
+      sections: [{ name: '', ingredients: [
+        { id: 'a', name: 'Mąka duplikat E2E', amount: 400, unit: 'g' },
+        { id: 'b', name: 'Mąka duplikat E2E', amount: 300, unit: 'g' },
+      ] }],
+    };
+    const consumed = await mod.consumeRecipeIngredients(recipe, 1);
+    return { quantity: mod.listInventory().find((x) => x.id === 'e2e-dup-flour').quantity, shortages: consumed.shortages };
+  }, DB_NAME);
+  expect(result.quantity).toBe(0.3);
+  expect(result.shortages).toHaveLength(0);
+});
+
+test('Gotuję: brakujące składniki trafiają do Zakupów', async ({ page }) => {
+  await page.goto('/');
+  await page.evaluate(async (name) => {
+    const db = await new Promise((resolve, reject) => {
+      const req = indexedDB.open(name);
+      req.onsuccess = () => resolve(req.result);
+      req.onerror = () => reject(req.error);
+    });
+    await new Promise((resolve, reject) => {
+      const tx = db.transaction(['inventory', 'shoppingItems', 'cookSessions'], 'readwrite');
+      tx.objectStore('inventory').clear();
+      tx.objectStore('shoppingItems').clear();
+      tx.objectStore('cookSessions').delete('rcp_seed_sos');
+      tx.oncomplete = resolve;
+      tx.onerror = () => reject(tx.error);
+    });
+    db.close();
+  }, DB_NAME);
+
+  await page.goto('/#/cook/rcp_seed_sos');
+  const ingredientBoxes = page.getByRole('checkbox');
+  await expect(ingredientBoxes).toHaveCount(5);
+  for (let i = 0; i < 5; i++) await ingredientBoxes.nth(i).click();
+  await page.getByRole('button', { name: 'Kroki', exact: true }).click();
+  const stepBoxes = page.getByRole('checkbox');
+  await expect(stepBoxes).toHaveCount(4);
+  for (let i = 0; i < 4; i++) await stepBoxes.nth(i).click();
+  await page.getByRole('button', { name: 'Zakończ' }).click();
+  await page.getByRole('button', { name: 'Odjąć' }).click();
+  await expect(page.getByText('Braki w magazynie')).toBeVisible();
+  await page.getByRole('button', { name: 'Dodaj braki do zakupów' }).click();
+  await expect(page.getByText('Brakujące składniki dodano do zakupów')).toBeVisible();
+
+  const shopping = await page.evaluate(async (name) => {
+    const db = await new Promise((resolve, reject) => {
+      const req = indexedDB.open(name);
+      req.onsuccess = () => resolve(req.result);
+      req.onerror = () => reject(req.error);
+    });
+    const req = db.transaction('shoppingItems').objectStore('shoppingItems').getAll();
+    const rows = await new Promise((resolve, reject) => {
+      req.onsuccess = () => resolve(req.result);
+      req.onerror = () => reject(req.error);
+    });
+    db.close();
+    return rows;
+  }, DB_NAME);
+  expect(shopping).toHaveLength(5);
+  expect(shopping.every((x) => !x.done)).toBeTruthy();
 });

@@ -42,7 +42,8 @@ export function openDB() {
     const rq = indexedDB.open(DB_NAME, DB_VERSION);
 
     rq.onupgradeneeded = (event) => {
-      const d = rq.result;
+      try {
+        const d = rq.result;
       const oldVersion = event.oldVersion;
       const tx = rq.transaction;
 
@@ -62,6 +63,10 @@ export function openDB() {
 
 
         needsLegacyMigration = true;
+      }
+      } catch (error) {
+        console.error('[Kucharek migration]', error?.name, error?.message, error?.stack);
+        throw error;
       }
     };
 

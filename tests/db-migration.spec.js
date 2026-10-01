@@ -2,6 +2,8 @@ import { test, expect } from '@playwright/test';
 
 const DB_NAME = 'kucharzyna-claude-db';
 
+test.describe.configure({ mode: 'serial' });
+
 async function openV1(page) {
   await page.evaluate(async (name) => {
     await new Promise((resolve, reject) => {

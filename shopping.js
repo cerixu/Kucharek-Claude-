@@ -8,6 +8,7 @@ import {
   h, icon, screen, button, iconBtn, toast, openSheet, confirmDialog, emptyState, field, textInput, numInput, selectEl, segmented,
 } from './ui.js';
 import { navigate } from './router.js';
+import { loadInventory, findInventoryByName, unitCompatible, unitToBase, unitFromBase, receiveStock } from './inventory.js';
 
 /* ---------- Logika ---------- */
 
@@ -27,9 +28,9 @@ export async function addItems(items) {
     if (!name) return;
     const amount = it.amount != null && Number.isFinite(it.amount) ? it.amount : null;
     const unit = it.unit || '';
-    const same = state.shopping.find((x) => !x.done && norm(x.name) === norm(name) && (x.unit || '') === unit && (x.amount == null) === (amount == null));
+    const same = state.shopping.find((x) => !x.done && norm(x.name) === norm(name) && (x.amount == null) === (amount == null) && (!amount || unitCompatible(x.unit, unit)));
     if (same) {
-      if (amount != null) same.amount = (same.amount || 0) + amount;
+      if (amount != null) same.amount = unitFromBase(unitToBase(same.amount, same.unit || unit) + unitToBase(amount, unit), same.unit || unit);
       if (it.recipeName && !(same.recipeName || '').includes(it.recipeName)) same.recipeName = same.recipeName ? `${same.recipeName}, ${it.recipeName}` : it.recipeName;
       if (!changed.includes(same)) changed.push(same);
       merged++;
@@ -41,6 +42,31 @@ export async function addItems(items) {
   });
   if (changed.length) await persist(changed);
   return { count: changed.length, merged };
+}
+
+export async function markPurchased(item) {
+  if (!item || item.done) return { changed: false, reason: 'already-done' };
+  if (item.amount == null || !(Number(item.amount) > 0)) { item.done = true; await persist([item]); return { changed: true, received: false }; }
+  const stock = await receiveStock(item.name, item.amount, item.unit || 'szt', { reason: 'shopping' });
+  if (!stock.changed) return stock;
+  item.done = true; item.inventoryId = stock.item.id; item.inventoryDelta = stock.delta; item.inventoryReceivedAt = Date.now();
+  await persist([item]);
+  return { changed: true, received: true, stock };
+}
+
+export async function addMissingFromRecipe(recipe, factor = 1) {
+  await loadInventory();
+  const missing = [];
+  for (const ing of (recipe?.sections || []).flatMap((s) => s.ingredients || [])) {
+    if (!ing?.name || ing.amount == null || ing.unit === '%') continue;
+    const required = Number(ing.amount) * Number(factor || 1);
+    if (!(required > 0)) continue;
+    const stock = findInventoryByName(ing.name);
+    if (!stock || !unitCompatible(stock.unit, ing.unit)) { missing.push({ name: ing.name, amount: required, unit: ing.unit, recipeId: recipe.id, recipeName: recipe.name }); continue; }
+    const need = unitToBase(required, ing.unit), have = unitToBase(stock.quantity, stock.unit);
+    if (have < need) missing.push({ name: ing.name, amount: unitFromBase(need - have, ing.unit), unit: ing.unit, recipeId: recipe.id, recipeName: recipe.name });
+  }
+  return missing.length ? { ...(await addItems(missing)), items: missing } : { count: 0, merged: 0, items: [] };
 }
 
 export async function updateItem(item, patch) { Object.assign(item, patch); await persist([item]); }
@@ -186,11 +212,17 @@ export function shoppingView() {
   const s = screen({ title: 'Zakupy', right: more, sub: addRow, cls: 'shopping' });
 
   function itemRow(item) {
-    const cb = h('button', { type: 'button', class: 'shop-check' + (item.done ? ' on' : ''), role: 'checkbox', 'aria-checked': !!item.done, 'aria-label': `${item.name}: ${item.done ? 'kupione' : 'do kupienia'}`,
-      onClick: () => toggleItem(item) }, icon('check', 20));
+    const cb = h('button', { type: 'button', class: 'shop-check' + (item.done ? ' on' : ''), role: 'checkbox', 'aria-checked': !!item.done, 'aria-label': item.name + ': ' + (item.done ? 'kupione' : 'do kupienia'),
+      onClick: async () => {
+        if (item.done) { await toggleItem(item); paint(); return; }
+        const res = await markPurchased(item);
+        if (res.reason === 'unit-mismatch') { toast('Nie dodano do Magazynu: niezgodna jednostka.', { type: 'error' }); return; }
+        toast(res.received ? 'Kupione i dodane do Magazynu 📦' : 'Oznaczono jako kupione');
+        paint();
+      } }, icon('check', 20));
     return h('div', { class: 'shop-item' + (item.done ? ' done' : '') },
       cb,
-      h('button', { type: 'button', class: 'shop-main', onClick: () => toggleItem(item) },
+      h('button', { type: 'button', class: 'shop-main', onClick: async () => { if (item.done) { await toggleItem(item); paint(); return; } const res = await markPurchased(item); if (res.reason === 'unit-mismatch') { toast('Nie dodano do Magazynu: niezgodna jednostka.', { type: 'error' }); return; } toast(res.received ? 'Kupione i dodane do Magazynu 📦' : 'Oznaczono jako kupione'); paint(); } },
         h('span', { class: 'shop-name' }, item.name),
         item.recipeName && groupMode() !== 'recipe' ? h('span', { class: 'shop-from muted' }, item.recipeName) : null),
       h('span', { class: 'shop-qty num' }, qtyText(item)),

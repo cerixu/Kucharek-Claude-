@@ -207,6 +207,7 @@ export function editorView({ id }, query) {
       h('div', { class: 'grow' }, field('Waga opakowania', numInput({ value: ing.packageWeight, label: 'Waga opakowania', onInput: (v) => { ing.packageWeight = v; touch(); } }))),
       h('div', { class: 'grow' }, field('Jednostka', selectEl(['g', 'ml', 'szt.'], ing.packageUnit || 'g', (v) => { ing.packageUnit = v; touch(); }))));
     const cur$ = state.settings.currency || 'zł';
+    const eanIn = textInput({ value: ing.ean || '', label: 'EAN składnika', placeholder: 'np. 5901234567890', inputmode: 'numeric', onInput: (v) => { ing.ean = v.replace(/\D/g, ''); touch(); } });
     openSheet({
       title: ing.name || 'Składnik', variant: 'sheet',
       body: h('div', { class: 'stack' },
@@ -216,6 +217,7 @@ export function editorView({ id }, query) {
           h('div', { class: 'grow' }, field(`Cena (${cur$})`, numInput({ value: ing.price, label: 'Cena', dec: 2, onInput: (v) => { ing.price = v; touch(); } }))),
           h('div', { class: 'grow' }, field('Za', selectEl([['kg', 'kg'], ['l', 'l'], ['g', 'g'], ['ml', 'ml'], ['szt.', 'szt.'], ['opak.', 'opakowanie']], ing.priceUnit || 'kg', (v) => { ing.priceUnit = v; pkg.hidden = v !== 'opak.'; touch(); })))),
         pkg,
+        field('Powiązanie z Magazynem', eanIn, 'EAN ma pierwszeństwo przed nazwą przy dopasowaniu.'),
         work.sections.length > 1 ? field('Sekcja', selectEl(secOptions, secId, (v) => { secId = v; })) : null),
       actions: [{ label: 'Gotowe', kind: 'primary', onClick: () => {
         const from = work.sections.find((sec) => sec.ingredients.includes(ing));

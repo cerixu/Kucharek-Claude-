@@ -110,7 +110,7 @@ export function editorView({ id }, query) {
       });
     });
     if (choice === 'save') doSave();
-    else if (choice === 'discard') { saveDraft.cancel(); baseline = JSON.stringify(work); await kv.del(draftKey).catch(() => {}); back(); }
+    else if (choice === 'discard') { saveDraft.cancel(); baseline = JSON.stringify(work); await db.delete('drafts', isNew ? 'new' : id).catch(() => {}); back(); }
   }
   const back = () => (isNew ? goBack('/recipes') : goBack('/recipe/' + id));
 
@@ -129,7 +129,7 @@ export function editorView({ id }, query) {
     try {
       saveDraft.cancel();
       const saved = await saveRecipe(r);
-      await kv.del(draftKey).catch(() => {});
+      await db.delete('drafts', isNew ? 'new' : id).catch(() => {});
       baseline = JSON.stringify(work);
       toast('Zapisano');
       if (isNew) navigate('/recipe/' + saved.id, { replace: true });
@@ -424,7 +424,7 @@ export function editorView({ id }, query) {
       if (!meaningful) { await db.delete('drafts', isNew ? 'new' : id); return; }
       showBanner('info', [h('strong', null, 'Znaleziono niezapisany szkic'), h('span', { class: 'muted' }, `z ${fmtDateTime(d.savedAt)}`)], [
         button('Wznów', { sm: true, kind: 'primary', onClick: () => { work = normalizeRecipe(d.recipe); renderAll(); banner.replaceChildren(); touch(); } }),
-        button('Odrzuć', { sm: true, kind: 'ghost', onClick: async () => { await kv.del(draftKey); banner.replaceChildren(); toast('Szkic odrzucony'); } }),
+        button('Odrzuć', { sm: true, kind: 'ghost', onClick: async () => { await db.delete('drafts', isNew ? 'new' : id); banner.replaceChildren(); toast('Szkic odrzucony'); } }),
       ]);
     } catch (e) { console.error(e); }
   })();

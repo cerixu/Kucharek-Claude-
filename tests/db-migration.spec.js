@@ -186,71 +186,25 @@ test('v2 stores są zapisywalne', async ({ page }) => {
 });
 
 
-test('Magazyn: zapis, korekta stanu, próg minimum i trwałość danych', async ({ page }) => {
-  await page.goto('about:blank');
-  await resetDb(page);
-  await page.goto('/');
-  await page.waitForFunction(async (name) => {
-    const req = indexedDB.open(name);
-    const db = await new Promise((resolve, reject) => {
-      req.onsuccess = () => resolve(req.result);
-      req.onerror = () => reject(req.error);
-    });
-    const ready = db.version >= 2 && db.objectStoreNames.contains('inventory') && db.objectStoreNames.contains('inventoryLog');
-    db.close();
-    return ready;
-  }, DB_NAME);
-  await page.evaluate(async (name) => {
-    const db = await new Promise((resolve, reject) => {
-      const req = indexedDB.open(name);
-      req.onsuccess = () => resolve(req.result);
-      req.onerror = () => reject(req.error);
-    });
-    const tx = db.transaction('inventory', 'readwrite');
-    tx.objectStore('inventory').put({
-      id: 'e2e-mozzarella',
-      name: 'Mozzarella E2E',
-      quantity: 2,
-      unit: 'kg',
-      minQuantity: 3,
-      purchasePrice: 24,
-      priceUnit: 'kg',
-      ean: '5900000000001',
-      category: 'Nabiał',
-      createdAt: Date.now(),
-      updatedAt: Date.now(),
-    });
-    await new Promise((resolve, reject) => {
-      tx.oncomplete = resolve;
-      tx.onerror = () => reject(tx.error);
-    });
-    db.close();
-  });
-
+test('Magazyn: dodanie produktu, próg minimum i trwałość danych', async ({ page }) => {
+  await page.goto('/#/inventory');
+  await expect(page.getByText('Magazyn')).toBeVisible();
+  await page.getByRole('button', { name: 'Dodaj produkt' }).first().click();
+  await expect(page.getByText('Nowy produkt')).toBeVisible();
+  await page.getByLabel('Nazwa produktu').fill('Mozzarella E2E');
+  await page.getByLabel('Ilość').fill('2');
+  await page.getByLabel('Próg minimalny').fill('3');
+  await page.getByLabel('Cena').fill('24');
+  await page.getByLabel('Kod EAN').fill('5900000000001');
+  await page.getByLabel('Kategoria').fill('Nabiał');
+  await page.getByRole('button', { name: 'Zapisz' }).click();
+  await expect(page.getByText('Mozzarella E2E')).toBeVisible();
+  await expect(page.getByText('MAŁO')).toBeVisible();
   await page.reload();
-  await page.waitForTimeout(200);
-
-  const result = await page.evaluate(async (name) => {
-    const db = await new Promise((resolve, reject) => {
-      const req = indexedDB.open(name);
-      req.onsuccess = () => resolve(req.result);
-      req.onerror = () => reject(req.error);
-    });
-    const item = await new Promise((resolve, reject) => {
-      const req = db.transaction('inventory').objectStore('inventory').get('e2e-mozzarella');
-      req.onsuccess = () => resolve(req.result);
-      req.onerror = () => reject(req.error);
-    });
-    db.close();
-    return item;
-  }, DB_NAME);
-
-  expect(result.name).toBe('Mozzarella E2E');
-  expect(result.quantity).toBe(2);
-  expect(result.minQuantity).toBe(3);
-  expect(result.ean).toBe('5900000000001');
-
   await page.goto('/#/inventory');
   await expect(page.getByText('Mozzarella E2E')).toBeVisible();
   await expect(page.getByText('MAŁO')).toBeVisible();
+  await expect(page.getByText(/2 kg/)).toBeVisible();
+  await expect(page.getByText(/min\. 3 kg/)).toBeVisible();
+  await expect(page.getByText(/EAN 5900000000001/)).toBeVisible();
 });

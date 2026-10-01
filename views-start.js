@@ -7,6 +7,7 @@ import { state, subscribe, listRecipes, getSetting } from './recipes.js';
 import { recipeCard, sectionHead } from './components.js';
 import { pendingCount } from './shopping.js';
 import { backupDue, daysSinceBackup } from './backup.js';
+import { loadInventory, listInventory, stockState, subscribeInventory } from './inventory.js';
 
 const plural = (n) => `${n} ${n === 1 ? 'receptura' : n % 10 >= 2 && n % 10 <= 4 && (n % 100 < 10 || n % 100 >= 20) ? 'receptury' : 'receptur'}`;
 const HEADLINE = '„No Elo kurwa, Kucharzyno za pięć złotych👨‍🍳”';
@@ -15,6 +16,7 @@ export function startView() {
   const s = screen({ title: 'Kucharzyna', cls: 'start' });
   const c = s.content;
   let unsub;
+  let unsubInventory;
 
   const tile = (label, ico, path, { primary = false, badge = 0 } = {}) =>
     h('a', { class: 'tile' + (primary ? ' primary' : ''), href: '#' + path, onClick: (e) => { e.preventDefault(); navigate(path); } },
@@ -26,6 +28,7 @@ export function startView() {
     const recent = all.filter((r) => r.lastOpenedAt).sort((a, b) => b.lastOpenedAt - a.lastOpenedAt).slice(0, 5);
     const favs = all.filter((r) => r.favorite).sort((a, b) => (b.favoritedAt || 0) - (a.favoritedAt || 0)).slice(0, 6);
     const n = pendingCount();
+    const lowStock = listInventory().filter((item) => stockState(item) !== 'ok').length;
 
     const kids = [
       h('div', { class: 'hero' },
@@ -39,7 +42,7 @@ export function startView() {
         tile('Ulubione', 'heart', '/recipes?f=fav'),
         tile('Kalkulatory', 'calc', '/calc'),
         tile('Lista zakupów', 'cart', '/shopping', { badge: n }),
-        tile('Magazyn', 'list', '/inventory')),
+        tile('Magazyn', 'list', '/inventory', { badge: lowStock })),
     ];
 
     if (backupDue()) {
@@ -69,6 +72,8 @@ export function startView() {
   }
 
   paint();
+  loadInventory().then(() => paint()).catch(() => {});
   unsub = subscribe((t) => { if (t === 'recipes' || t === 'shopping' || t === 'settings') paint(); });
-  return { el: s.el, destroy: () => unsub && unsub() };
+  unsubInventory = subscribeInventory(paint);
+  return { el: s.el, destroy: () => { unsub && unsub(); unsubInventory && unsubInventory(); } };
 }

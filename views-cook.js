@@ -279,7 +279,7 @@ export function cookView({ id }) {
         confirmText: 'Odjąć',
       });
       if (useStock) {
-        const result = await consumeRecipeIngredients(base(), prog.factor || 1);
+        const result = await consumeRecipeIngredients(view(), prog.factor || 1);
         prog.inventoryConsumedAt = Date.now();
         if (result.shortages.length) {
           const addMissing = await confirmDialog({

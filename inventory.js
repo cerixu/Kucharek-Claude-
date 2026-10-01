@@ -12,6 +12,7 @@ export async function removeInventoryItem(id){await db.delete('inventory',id);it
 export function findInventoryByName(name){const n=norm(name);return items.find(x=>norm(x.name)===n)||null;}
 
 const UNIT_TO_BASE = { g: 1, kg: 1000, ml: 1, l: 1000, szt: 1, opak: 1 };
+const normalizeUnit = (unit) => String(unit || '').trim().toLowerCase().replace(/\.$/, '');
 const compatibleUnits = (a, b) => {
   if (a === b) return true;
   return (a in UNIT_TO_BASE) && (b in UNIT_TO_BASE) && ((a === 'g' || a === 'kg') && (b === 'g' || b === 'kg') || (a === 'ml' || a === 'l') && (b === 'ml' || b === 'l'));
@@ -27,7 +28,9 @@ export async function consumeRecipeIngredients(recipe, factor = 1) {
     const required = Number(ing.amount) * Number(factor || 1);
     if (!(required > 0)) continue;
     const item = findInventoryByName(ing.name);
-    if (!item || !compatibleUnits(item.unit, ing.unit)) {
+    const itemUnit = normalizeUnit(item?.unit);
+    const ingredientUnit = normalizeUnit(ing.unit);
+    if (!item || !compatibleUnits(itemUnit, ingredientUnit)) {
       shortages.push({ name: ing.name, amount: required, unit: ing.unit, missing: required });
       continue;
     }

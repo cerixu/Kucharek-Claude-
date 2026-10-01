@@ -18,7 +18,7 @@ async function openV1(page) {
           ['settings', 'key'],
           ['history', 'id'],
         ]) db.createObjectStore(store, { keyPath });
-        db.transaction.objectStore('history').createIndex('recipeId', 'recipeId');
+        req.transaction.objectStore('history').createIndex('recipeId', 'recipeId');
       };
       req.onsuccess = () => {
         const db = req.result;

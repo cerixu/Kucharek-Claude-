@@ -493,3 +493,32 @@ test('Food Cost: koszt porcji skaluje się razem z recepturą', async ({ page })
   expect(result.doubled.total).toBeCloseTo(16, 10);
   expect(result.doubled.perPortion).toBeCloseTo(2, 10);
 });
+
+
+test('Food Cost UI: kalkulator pokazuje cenę z Magazynu', async ({ page }) => {
+  await page.goto('/');
+  await page.evaluate(async (name) => {
+    const db = await new Promise((resolve, reject) => {
+      const req = indexedDB.open(name);
+      req.onsuccess = () => resolve(req.result);
+      req.onerror = () => reject(req.error);
+    });
+    const tx = db.transaction('inventory', 'readwrite');
+    tx.objectStore('inventory').clear();
+    tx.objectStore('inventory').put({
+      id: 'e2e-ui-cost-flour', name: 'Mąka pszenna typ 00 (W 260–280)',
+      quantity: 10, unit: 'kg', minQuantity: 0,
+      purchasePrice: 8, priceUnit: 'kg', ean: '', category: 'Mąka',
+      createdAt: Date.now(), updatedAt: Date.now(),
+    });
+    await new Promise((resolve, reject) => { tx.oncomplete = resolve; tx.onerror = () => reject(tx.error); });
+    db.close();
+  }, DB_NAME);
+
+  await page.goto('/#/calc/cost');
+  await expect(page.getByRole('heading', { name: 'Koszt receptury', exact: true })).toBeVisible();
+  await page.getByLabel('Receptura').selectOption('rcp_seed_pizza');
+  await expect(page.getByText('Magazyn: 8,00 zł/kg')).toBeVisible();
+  await expect(page.getByText('Koszt receptury')).toBeVisible();
+  await expect(page.getByText('33,38 zł')).toBeVisible();
+});

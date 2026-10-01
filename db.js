@@ -44,7 +44,7 @@ export function openDB() {
     rq.onupgradeneeded = (event) => {
       const d = rq.result;
       const oldVersion = event.oldVersion;
-      const tx = event.target.transaction;
+      const tx = rq.transaction;
 
       // Stores istniejące od v1.
       for (const [name, keyPath] of Object.entries(STORES)) {

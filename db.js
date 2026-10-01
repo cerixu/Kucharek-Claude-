@@ -5,7 +5,7 @@
    ========================================================================== */
 
 const DB_NAME = 'kucharzyna-claude-db';
-const DB_VERSION = 3;
+const DB_VERSION = 4;
 
 export const STORES = {
   recipes: 'id',
@@ -18,6 +18,15 @@ export const STORES = {
   drafts: 'id',
   inventory: 'id',
   inventoryLog: 'id',
+  deliveries: 'id',
+  lots: 'id',
+  stockMovements: 'id',
+  suppliers: 'id',
+  purchaseOrders: 'id',
+  productionBatches: 'id',
+  stocktakes: 'id',
+  waste: 'id',
+  priceHistory: 'id',
 };
 
 let dbPromise = null;
@@ -56,6 +65,29 @@ export function openDB() {
       // Indeksy wspólne.
       if (d.objectStoreNames.contains('history')) {
         addIndex(tx.objectStore('history'), 'recipeId', 'recipeId');
+      }
+
+      // v4: dane PRO magazynu, dostaw, zakupów, produkcji i inwentaryzacji.
+      if (oldVersion < 4) {
+        addIndex(tx.objectStore('deliveries'), 'supplierId', 'supplierId');
+        addIndex(tx.objectStore('deliveries'), 'at', 'at');
+        addIndex(tx.objectStore('lots'), 'inventoryId', 'inventoryId');
+        addIndex(tx.objectStore('lots'), 'expiryAt', 'expiryAt');
+        addIndex(tx.objectStore('stockMovements'), 'inventoryId', 'inventoryId');
+        addIndex(tx.objectStore('stockMovements'), 'at', 'at');
+        addIndex(tx.objectStore('stockMovements'), 'type', 'type');
+        addIndex(tx.objectStore('suppliers'), 'name', 'name');
+        addIndex(tx.objectStore('purchaseOrders'), 'supplierId', 'supplierId');
+        addIndex(tx.objectStore('purchaseOrders'), 'status', 'status');
+        addIndex(tx.objectStore('purchaseOrders'), 'createdAt', 'createdAt');
+        addIndex(tx.objectStore('productionBatches'), 'productName', 'productName');
+        addIndex(tx.objectStore('productionBatches'), 'at', 'at');
+        addIndex(tx.objectStore('stocktakes'), 'status', 'status');
+        addIndex(tx.objectStore('stocktakes'), 'createdAt', 'createdAt');
+        addIndex(tx.objectStore('waste'), 'inventoryId', 'inventoryId');
+        addIndex(tx.objectStore('waste'), 'at', 'at');
+        addIndex(tx.objectStore('priceHistory'), 'inventoryId', 'inventoryId');
+        addIndex(tx.objectStore('priceHistory'), 'at', 'at');
       }
 
       // v2: dedykowane stores.

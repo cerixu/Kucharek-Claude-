@@ -56,10 +56,10 @@ export function openDB() {
 
       // v2: dedykowane stores.
       if (oldVersion < 2) {
-        const cook = d.objectStore('cookSessions');
-        const drafts = d.objectStore('drafts');
-        const inventory = d.objectStore('inventory');
-        const log = d.objectStore('inventoryLog');
+        const cook = tx.objectStore('cookSessions');
+        const drafts = tx.objectStore('drafts');
+        const inventory = tx.objectStore('inventory');
+        const log = tx.objectStore('inventoryLog');
 
 
         needsLegacyMigration = true;

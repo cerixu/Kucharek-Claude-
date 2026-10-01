@@ -75,6 +75,7 @@ async function readDb(page) {
 }
 
 test('migracja IndexedDB v1 → v2 zachowuje dane i rozdziela stores', async ({ page }) => {
+  await page.goto('/');
   await openV1(page);
   await page.goto('/');
   await page.waitForTimeout(500);

@@ -10,6 +10,8 @@ import { db } from './db.js';
 import { scaleRecipe, factorFromServings } from './calculator.js';
 import { qtyParts } from './components.js';
 import { fmtNum, fmtClock, debounce, parseNum } from './util.js';
+import { consumeRecipeIngredients } from './inventory.js';
+import { addItems } from './shopping.js';
 
 /* ---------- Minutnik (poziom modułu — działa też po wyjściu z ekranu) ---------- */
 
@@ -88,7 +90,7 @@ export function cookView({ id }) {
     return { el: s.el };
   }
 
-  let prog = { ing: {}, steps: {}, factor: 1, tab: 'ing', ts: 1.15 };
+  let prog = { ing: {}, steps: {}, factor: 1, tab: 'ing', ts: 1.15, inventoryConsumedAt: 0 };
   let loaded = false;
   const base = () => getRecipe(id) || r0;
   const view = () => scaleRecipe(base(), prog.factor || 1);
@@ -270,6 +272,31 @@ export function cookView({ id }) {
       const ok = await confirmDialog({ title: 'Zakończyć gotowanie?', message: 'Nie wszystko jest odhaczone. Postęp zostanie zapamiętany, więc możesz wrócić do tego miejsca.', confirmText: 'Zakończ' });
       if (!ok) return;
     }
+    if (all && !prog.inventoryConsumedAt) {
+      const useStock = await confirmDialog({
+        title: 'Odjąć składniki z magazynu?',
+        message: 'Aplikacja odejmie od Magazynu ilości użyte w tej recepturze.',
+        confirmText: 'Odjąć',
+      });
+      if (useStock) {
+        const result = await consumeRecipeIngredients(view(), prog.factor || 1);
+        prog.inventoryConsumedAt = Date.now();
+        if (result.shortages.length) {
+          const addMissing = await confirmDialog({
+            title: 'Braki w magazynie',
+            message: result.shortages.map((x) => `${x.name}: brakuje ${fmtNum(x.missing, 3)} ${x.unit}`).join(' · '),
+            confirmText: 'Dodaj braki do zakupów',
+          });
+          if (addMissing) {
+            await addItems(result.shortages.map((x) => ({ name: x.name, amount: x.missing, unit: x.unit, recipeId: id, recipeName: r0.name })));
+            toast('Brakujące składniki dodano do zakupów');
+          }
+        } else {
+          toast('Magazyn zaktualizowany 📦');
+        }
+        saveProg.flush();
+      }
+    }
     if (all) { prog.ing = {}; prog.steps = {}; prog.tab = 'ing'; saveProg.flush(); toast('Smacznego! 👨‍🍳'); }
     goBack('/recipe/' + id);
   }
@@ -306,7 +333,7 @@ export function cookView({ id }) {
   paint(); paintTimer();
   db.get('cookSessions', id).then((p) => {
     if (p && typeof p === 'object') {
-      prog = { ing: {}, steps: {}, factor: 1, tab: 'ing', ts: 1.15, ...p };
+      prog = { ing: {}, steps: {}, factor: 1, tab: 'ing', ts: 1.15, inventoryConsumedAt: 0, ...p };
       s.el.style.setProperty('--cook-ts', String(prog.ts));
       const c = counts();
       if (p.tab === undefined && c.ni && c.di === c.ni) prog.tab = 'steps';

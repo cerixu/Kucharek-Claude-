@@ -2,14 +2,45 @@ import { db } from './db.js';
 import { uid, norm } from './util.js';
 let items = []; let loaded = false; const listeners = new Set();
 export const subscribeInventory = (fn) => { listeners.add(fn); return () => listeners.delete(fn); };
+export function normalizeEAN(value) {
+  const ean = String(value ?? '').replace(/\\D/g, '');
+  return ean || '';
+}
+export function validEAN(value) {
+  const ean = normalizeEAN(value);
+  if (![8, 12, 13, 14].includes(ean.length)) return false;
+  let sum = 0;
+  for (let i = ean.length - 2, p = 1; i >= 0; i--, p++) sum += Number(ean[i]) * (p % 2 ? 3 : 1);
+  return (10 - (sum % 10)) % 10 === Number(ean.at(-1));
+}
+export const ingredientKey = (value) => norm(value).replace(/[^a-z0-9]+/g, ' ').trim();
+
 const emit = () => listeners.forEach((fn) => { try { fn(); } catch (_) {} });
 export async function loadInventory() { if (!loaded) { items = (await db.getAll('inventory')).sort((a,b)=>String(a.name||'').localeCompare(String(b.name||''),'pl')); loaded=true; } return items; }
 export const listInventory = () => items.slice();
 export function stockState(item) { const qty=Number(item.quantity||0), min=Number(item.minQuantity||0); if(qty<=0)return 'empty'; if(min>0&&qty<=min)return 'low'; return 'ok'; }
-export async function saveInventoryItem(data) { const now=Date.now(); const item={id:data.id||uid('stock_'),name:String(data.name||'').trim(),quantity:Number(data.quantity||0),unit:data.unit||'g',minQuantity:Number(data.minQuantity||0),purchasePrice:data.purchasePrice==null||data.purchasePrice===''?null:Number(data.purchasePrice),priceUnit:data.priceUnit||'kg',ean:String(data.ean||'').trim(),category:String(data.category||'').trim(),updatedAt:now,createdAt:data.createdAt||now}; if(!item.name)throw new Error('Podaj nazwę produktu.'); await db.put('inventory',item); const i=items.findIndex(x=>x.id===item.id); if(i>=0)items[i]=item;else items.push(item);items.sort((a,b)=>a.name.localeCompare(b.name,'pl'));emit();return item; }
+export async function saveInventoryItem(data) { const now=Date.now(); const item={id:data.id||uid('stock_'),name:String(data.name||'').trim(),quantity:Number(data.quantity||0),unit:data.unit||'g',minQuantity:Number(data.minQuantity||0),purchasePrice:data.purchasePrice==null||data.purchasePrice===''?null:Number(data.purchasePrice),priceUnit:data.priceUnit||'kg',ean:normalizeEAN(data.ean),aliases:Array.isArray(data.aliases)?[...new Set(data.aliases.map(x=>String(x).trim()).filter(Boolean))]:[],category:String(data.category||'').trim(),updatedAt:now,createdAt:data.createdAt||now}; if(!item.name)throw new Error('Podaj nazwę produktu.'); await db.put('inventory',item); const i=items.findIndex(x=>x.id===item.id); if(i>=0)items[i]=item;else items.push(item);items.sort((a,b)=>a.name.localeCompare(b.name,'pl'));emit();return item; }
 export async function adjustInventory(id,delta,reason='manual'){const item=items.find(x=>x.id===id);if(!item)return null;const before=Number(item.quantity||0),after=Math.max(0,before+Number(delta||0)),now=Date.now(),next={...item,quantity:after,updatedAt:now};await db.tx(['inventory','inventoryLog'],t=>{t.put('inventory',next);t.put('inventoryLog',{id:uid('stocklog_'),ingredientId:id,type:reason,delta:after-before,before,after,at:now});});Object.assign(item,next);emit();return item;}
 export async function removeInventoryItem(id){await db.delete('inventory',id);items=items.filter(x=>x.id!==id);emit();}
-export function findInventoryByName(name){const n=norm(name);return items.find(x=>norm(x.name)===n)||null;}
+export function findInventoryByEAN(ean) {
+  const key = normalizeEAN(ean);
+  if (!key) return null;
+  return items.find(x => normalizeEAN(x.ean) === key) || null;
+}
+export function findInventoryByName(name) {
+  const n = ingredientKey(name);
+  return items.find(x => ingredientKey(x.name) === n || (x.aliases || []).some(a => ingredientKey(a) === n)) || null;
+}
+export function findInventoryMatch(ingredient) {
+  const ean = normalizeEAN(ingredient?.ean);
+  if (ean) {
+    const byEAN = findInventoryByEAN(ean);
+    if (byEAN) return { item: byEAN, source: 'ean' };
+  }
+  const byName = findInventoryByName(ingredient?.name);
+  if (byName) return { item: byName, source: 'name' };
+  return null;
+}
 
 const UNIT_TO_BASE = { g: 1, kg: 1000, ml: 1, l: 1000, szt: 1, opak: 1 };
 const normalizeUnit = (unit) => String(unit || '').trim().toLowerCase().replace(/\.$/, '');

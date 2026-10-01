@@ -44,6 +44,7 @@ export function settingsView() {
     switchEl(!!getSetting('pinTraditional'), set('pinTraditional'), 'Tradycyjne receptury na górze', 'Z gwiazdką i flagą kraju'),
     switchEl(!!getSetting('keepAwake'), set('keepAwake'), 'Nie gaś ekranu w trybie „Gotuję”', 'Działa, gdy przeglądarka obsługuje Wake Lock'),
     field('Waluta', selectEl(['zł', '€', '$', '£', 'Kč', 'Ft'], getSetting('currency'), set('currency'))),
+    switchEl(getSetting('inventoryAlerts') !== false, set('inventoryAlerts'), 'Alerty stanów magazynowych', 'Pokazuj liczbę produktów na minimum lub bez stanu na ekranie Start'),
     button('Przywróć przykładowe receptury', { icon: 'refresh', block: true, kind: 'ghost', onClick: async () => {
       const n = await restoreSeeds();
       toast(n ? `Przywrócono receptury: ${n}` : 'Przykładowe receptury już są (edytowanych nie nadpisuję)');

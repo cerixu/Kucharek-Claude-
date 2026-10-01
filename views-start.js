@@ -28,7 +28,8 @@ export function startView() {
     const recent = all.filter((r) => r.lastOpenedAt).sort((a, b) => b.lastOpenedAt - a.lastOpenedAt).slice(0, 5);
     const favs = all.filter((r) => r.favorite).sort((a, b) => (b.favoritedAt || 0) - (a.favoritedAt || 0)).slice(0, 6);
     const n = pendingCount();
-    const lowStock = listInventory().filter((item) => stockState(item) !== 'ok').length;
+    const alerts = getSetting('inventoryAlerts') !== false;
+    const lowStock = alerts ? listInventory().filter((item) => stockState(item) !== 'ok').length : 0;
 
     const kids = [
       h('div', { class: 'hero' },

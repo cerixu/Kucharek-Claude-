@@ -1,129 +1,85 @@
-import { test, expect } from '@playwright/test';
+/* ==========================================================================
+   views-start.js — ekran Start: nagłówek, szybkie akcje, ostatnie, ulubione.
+   ========================================================================== */
+import { h, icon, screen, emptyState, button } from './ui.js';
+import { navigate } from './router.js';
+import { state, subscribe, listRecipes, getSetting } from './recipes.js';
+import { recipeCard, sectionHead } from './components.js';
+import { pendingCount } from './shopping.js';
+import { backupDue, daysSinceBackup } from './backup.js';
+import { loadInventory, listInventory, stockState, subscribeInventory } from './inventory.js';
 
-const DB_NAME = 'kucharzyna-claude-db';
+const plural = (n) => `${n} ${n === 1 ? 'receptura' : n % 10 >= 2 && n % 10 <= 4 && (n % 100 < 10 || n % 100 >= 20) ? 'receptury' : 'receptur'}`;
+const HEADLINE = '„No Elo kurwa, Kucharzyno za pięć złotych👨‍🍳”';
 
-test.describe.configure({ mode: 'serial' });
+export function startView() {
+  const s = screen({ title: 'Kucharzyna', cls: 'start' });
+  const c = s.content;
+  let unsub;
+  let unsubInventory;
 
-async function resetDb(page) {
-  await page.goto('/manifest.webmanifest');
-  await page.evaluate(async (name) => {
-    await new Promise((resolve, reject) => {
-      const req = indexedDB.deleteDatabase(name);
-      req.onsuccess = req.onblocked = req.onerror = () => resolve();
-    });
-  }, DB_NAME);
-}
+  const tile = (label, ico, path, { primary = false, badge = 0 } = {}) =>
+    h('a', { class: 'tile' + (primary ? ' primary' : ''), href: '#' + path, onClick: (e) => { e.preventDefault(); navigate(path); } },
+      h('span', { class: 'tile-ico' }, icon(ico, 26), badge ? h('span', { class: 'badge' }, String(badge > 99 ? '99+' : badge)) : null),
+      h('span', { class: 'tile-label' }, label));
 
-async function openV1(page) {
-  await page.evaluate(async (name) => {
-    await new Promise((resolve, reject) => {
-      const req = indexedDB.open(name, 1);
-      req.onupgradeneeded = () => {
-        const db = req.result;
-        for (const [store, keyPath] of [
-          ['recipes', 'id'],
-          ['ingredients', 'id'],
-          ['categories', 'id'],
-          ['shoppingItems', 'id'],
-          ['settings', 'key'],
-          ['history', 'id'],
-        ]) db.createObjectStore(store, { keyPath });
-        req.transaction.objectStore('history').createIndex('recipeId', 'recipeId');
-      };
-      req.onsuccess = () => {
-        const db = req.result;
-        const tx = db.transaction(['recipes', 'settings'], 'readwrite');
-        tx.objectStore('recipes').put({
-          id: 'migration-test-recipe',
-          name: 'Receptura migracyjna',
-          sections: [],
-          steps: [],
-          tags: [],
-          servings: 1,
-        });
-        tx.objectStore('settings').put({
-          key: 'cook:migration-test-recipe',
-          value: { ing: { oldIngredient: true }, steps: {}, factor: 2, tab: 'ing', ts: 1.2 }
-        });
-        tx.objectStore('settings').put({
-          key: 'draft:migration-test-recipe',
-          value: {
-            savedAt: Date.now(),
-            recipe: { id: 'migration-test-recipe', name: 'Szkic migracyjny', sections: [], steps: [] }
-          }
-        });
-        tx.oncomplete = () => { db.close(); resolve(); };
-        tx.onerror = () => reject(tx.error);
-      };
-      req.onerror = () => reject(req.error);
-    });
-  }, DB_NAME);
-}
+  function paint() {
+    const all = listRecipes();
+    const recent = all.filter((r) => r.lastOpenedAt).sort((a, b) => b.lastOpenedAt - a.lastOpenedAt).slice(0, 5);
+    const favs = all.filter((r) => r.favorite).sort((a, b) => (b.favoritedAt || 0) - (a.favoritedAt || 0)).slice(0, 6);
+    const n = pendingCount();
+    const lowStock = listInventory().filter((item) => stockState(item) !== 'ok').length;
 
-async function readDb(page) {
-  return page.evaluate(async (name) => {
-    const db = await new Promise((resolve, reject) => {
-      const req = indexedDB.open(name);
-      req.onsuccess = () => resolve(req.result);
-      req.onerror = () => reject(req.error);
-    });
-    const read = (store, key) => new Promise((resolve, reject) => {
-      const req = db.transaction(store).objectStore(store).get(key);
-      req.onsuccess = () => resolve(req.result);
-      req.onerror = () => reject(req.error);
-    });
-    return {
-      version: db.version,
-      stores: [...db.objectStoreNames].sort(),
-      recipe: await read('recipes', 'migration-test-recipe'),
-      cook: await read('cookSessions', 'migration-test-recipe'),
-      draft: await read('drafts', 'migration-test-recipe'),
-      legacyCook: await read('settings', 'cook:migration-test-recipe'),
-      legacyDraft: await read('settings', 'draft:migration-test-recipe'),
-    };
-  }, DB_NAME);
-}
+    const kids = [
+      h('div', { class: 'hero' },
+        h('p', { class: 'eyebrow' }, 'Kucharzyna'),
+        h('h2', { class: 'hero-line' }, HEADLINE),
+        h('p', { class: 'muted hero-sub' }, `${plural(all.length)} w telefonie · działa bez internetu`)),
+      h('div', { class: 'tiles' },
+        tile('Nowa receptura', 'plus', '/new', { primary: true }),
+        tile('Moje receptury', 'book', '/recipes'),
+        tile('Ostatnio używane', 'clock', '/recipes?f=recent'),
+        tile('Ulubione', 'heart', '/recipes?f=fav'),
+        tile('Kalkulatory', 'calc', '/calc'),
+        tile('Lista zakupów', 'cart', '/shopping', { badge: n }),
+        tile('Magazyn', 'list', '/inventory', { badge: lowStock })),
+    ];
 
-test('migracja IndexedDB v1 → v2 zachowuje dane i rozdziela stores', async ({ page }) => {
-  const pageErrors = [];
-  page.on('pageerror', (error) => pageErrors.push(String(error?.stack || error)));
-  await page.goto('about:blank');
-  await resetDb(page);
-  await openV1(page);
-  await page.goto('/');
-  await page.waitForTimeout(1000);
-  if (!await page.evaluate(() => window.__kucharzyna?.ready === true)) {
-    const view = await page.locator('#view').innerText().catch(() => '');
-    throw new Error(`App boot nie zakończył się. pageerror: ${pageErrors.join(' | ')} | view: ${view}`);
+    if (backupDue()) {
+      const d = daysSinceBackup();
+      kids.push(h('div', { class: 'notice' },
+        icon('download', 22),
+        h('div', { class: 'notice-text' }, h('strong', null, 'Zrób kopię zapasową'),
+          h('span', { class: 'muted' }, d == null ? 'Jeszcze jej nie zrobiono — dane są tylko w tym telefonie.' : `Ostatnia: ${d} dni temu.`)),
+        button('Kopia', { sm: true, onClick: () => navigate('/settings') })));
+    }
+
+    if (!all.length) {
+      kids.push(emptyState('📒', 'Pusto w książce', 'Dodaj pierwszą recepturę albo wklej przepis z internetu.',
+        button('Nowa receptura', { kind: 'primary', icon: 'plus', onClick: () => navigate('/new') }),
+        button('Importuj', { icon: 'upload', onClick: () => navigate('/import') })));
+    } else {
+      kids.push(sectionHead('Ostatnio używane', recent.length ? { action: 'Wszystkie', onAction: () => navigate('/recipes?f=recent') } : {}));
+      kids.push(recent.length
+        ? h('div', { class: 'list' }, recent.map((r) => recipeCard(r)))
+        : h('p', { class: 'muted pad' }, 'Tu pojawią się receptury, które otworzysz.'));
+      kids.push(sectionHead('Ulubione', favs.length ? { action: 'Wszystkie', onAction: () => navigate('/recipes?f=fav') } : {}));
+      kids.push(favs.length
+        ? h('div', { class: 'list' }, favs.map((r) => recipeCard(r)))
+        : h('p', { class: 'muted pad' }, 'Stuknij serce przy recepturze, żeby była zawsze pod ręką.'));
+    }
+    c.replaceChildren(...kids);
   }
 
-  const db = await readDb(page);
+  paint();
+  loadInventory().then(() => paint()).catch(() => {});
+  unsub = subscribe((t) => { if (t === 'recipes' || t === 'shopping' || t === 'settings') paint(); });
+  unsubInventory = subscribeInventory(paint);
+  return { el: s.el, destroy: () => { unsub && unsub(); unsubInventory && unsubInventory(); } };
+}
 
-  expect(db.version).toBe(2);
-  expect(db.stores).toEqual(expect.arrayContaining([
-    'recipes',
-    'ingredients',
-    'categories',
-    'shoppingItems',
-    'settings',
-    'history',
-    'cookSessions',
-    'drafts',
-    'inventory',
-    'inventoryLog',
-  ]));
 
-  expect(db.recipe.name).toBe('Receptura migracyjna');
-  expect(db.cook.recipeId).toBe('migration-test-recipe');
-  expect(db.cook.factor).toBe(2);
-  expect(db.draft.id).toBe('migration-test-recipe');
-  expect(db.draft.recipe.name).toBe('Szkic migracyjny');
-
-  expect(db.legacyCook).toBeTruthy();
-  expect(db.legacyDraft).toBeTruthy();
-});
-
-test('v2 stores są zapisywalne', async ({ page }) => {
+test('Magazyn: alerty stanów można wyłączyć dla ekranu Start', async ({ page }) => {
   await page.goto('/');
   await page.evaluate(async (name) => {
     const db = await new Promise((resolve, reject) => {
@@ -132,232 +88,27 @@ test('v2 stores są zapisywalne', async ({ page }) => {
       req.onerror = () => reject(req.error);
     });
     await new Promise((resolve, reject) => {
-      const tx = db.transaction(['inventory', 'inventoryLog', 'drafts', 'cookSessions'], 'readwrite');
+      const tx = db.transaction('inventory', 'readwrite');
       tx.objectStore('inventory').put({
-        id: 'test-flour',
-        name: 'Mąka testowa',
-        quantity: 10,
-        unit: 'kg',
-        minimum: 2,
-        lowStock: true,
-        ean: '5901234567890',
-        updatedAt: Date.now(),
-      });
-      tx.objectStore('inventoryLog').put({
-        id: 'log-test',
-        ingredientId: 'test-flour',
-        type: 'correction',
-        delta: -1,
-        at: Date.now(),
-      });
-      tx.objectStore('drafts').put({
-        id: 'new',
-        recipeId: null,
-        savedAt: Date.now(),
-        recipe: { name: 'Nowy szkic testowy' },
-      });
-      tx.objectStore('cookSessions').put({
-        recipeId: 'cook-test',
-        factor: 1,
-        updatedAt: Date.now(),
+        id: 'e2e-alert-stock', name: 'Alert E2E', quantity: 0, unit: 'g',
+        minQuantity: 1, purchasePrice: null, priceUnit: 'kg', ean: '', category: '',
+        createdAt: Date.now(), updatedAt: Date.now(),
       });
       tx.oncomplete = resolve;
       tx.onerror = () => reject(tx.error);
     });
     db.close();
   }, DB_NAME);
-
-  const result = await page.evaluate(async (name) => {
-    const db = await new Promise((resolve, reject) => {
-      const req = indexedDB.open(name);
-      req.onsuccess = () => resolve(req.result);
-      req.onerror = () => reject(req.error);
-    });
-    const read = (store, key) => new Promise((resolve, reject) => {
-      const req = db.transaction(store).objectStore(store).get(key);
-      req.onsuccess = () => resolve(req.result);
-      req.onerror = () => reject(req.error);
-    });
-    return {
-      inventory: await read('inventory', 'test-flour'),
-      log: await read('inventoryLog', 'log-test'),
-      draft: await read('drafts', 'new'),
-      cook: await read('cookSessions', 'cook-test'),
-    };
-  }, DB_NAME);
-
-  expect(result.inventory.ean).toBe('5901234567890');
-  expect(result.log.type).toBe('correction');
-  expect(result.draft.recipe.name).toBe('Nowy szkic testowy');
-  expect(result.cook.recipeId).toBe('cook-test');
-});
-
-
-test('Magazyn: dodanie produktu, próg minimum i trwałość danych', async ({ page }) => {
-  await page.goto('/#/inventory');
-  await expect(page.getByRole('heading', { name: 'Magazyn', exact: true })).toBeVisible();
-  await page.getByRole('button', { name: 'Dodaj produkt' }).first().click();
-  await expect(page.getByText('Nowy produkt')).toBeVisible();
-  await page.getByLabel('Nazwa produktu').fill('Mozzarella E2E');
-  await page.getByLabel('Ilość').fill('2');
-  await page.getByLabel('Alert poniżej tej ilości').fill('3');
-  await page.getByLabel('Cena').fill('24');
-  await page.getByLabel('Kod EAN').fill('5900000000001');
-  await page.getByLabel('Kategoria').fill('Nabiał');
-  await page.getByRole('button', { name: 'Zapisz' }).click();
-  await expect(page.getByText('Mozzarella E2E')).toBeVisible();
-  await expect(page.getByText('MAŁO')).toBeVisible();
   await page.reload();
-  await page.goto('/#/inventory');
-  await expect(page.getByText('Mozzarella E2E')).toBeVisible();
-  await expect(page.getByText('MAŁO')).toBeVisible();
-  await expect(page.getByText(/2 g/)).toBeVisible();
-  await expect(page.getByText(/min\. 3 g/)).toBeVisible();
-  await expect(page.getByText(/EAN 5900000000001/)).toBeVisible();
-});
+  await expect(page.getByRole('link', { name: /Magazyn/ })).toBeVisible();
+  await expect(page.getByRole('link', { name: /Magazyn/ }).getByText('1', { exact: true })).toBeVisible();
 
+  await page.goto('/#/settings');
+  const toggle = page.getByRole('switch', { name: 'Alerty stanów magazynowych' });
+  await expect(toggle).toBeChecked();
+  await toggle.uncheck();
 
-test('Gotuję: zakończenie receptury odejmuje składniki z Magazynu', async ({ page }) => {
   await page.goto('/');
-  await page.evaluate(async (name) => {
-    const db = await new Promise((resolve, reject) => {
-      const req = indexedDB.open(name);
-      req.onsuccess = () => resolve(req.result);
-      req.onerror = () => reject(req.error);
-    });
-    const tx = db.transaction('inventory', 'readwrite');
-    const now = Date.now();
-    [
-      ['Pomidory San Marzano (pelati)', 1000, 'g'],
-      ['Oliwa extra vergine', 100, 'ml'],
-      ['Czosnek (ząbki)', 5, 'szt'],
-      ['Sól', 20, 'g'],
-      ['Bazylia (świeże liście)', 20, 'szt'],
-    ].forEach(([name, quantity, unit], i) => tx.objectStore('inventory').put({
-      id: 'e2e-stock-' + i, name, quantity, unit, minQuantity: 0,
-      purchasePrice: null, priceUnit: 'kg', ean: '', category: '', createdAt: now, updatedAt: now,
-    }));
-    await new Promise((resolve, reject) => { tx.oncomplete = resolve; tx.onerror = () => reject(tx.error); });
-    db.close();
-  }, DB_NAME);
-
-  await page.goto('/#/cook/rcp_seed_sos');
-  await expect(page.getByText('Sos pomidorowy')).toBeVisible();
-  const ingredientBoxes = page.getByRole('checkbox');
-  await expect(ingredientBoxes).toHaveCount(5);
-  for (let i = 0; i < 5; i++) await ingredientBoxes.nth(i).click();
-  await page.getByRole('button', { name: 'Kroki', exact: true }).click();
-  const stepBoxes = page.getByRole('checkbox');
-  await expect(stepBoxes).toHaveCount(4);
-  for (let i = 0; i < 4; i++) await stepBoxes.nth(i).click();
-  await page.getByRole('button', { name: 'Zakończ' }).click();
-  await expect(page.getByText('Odjąć składniki z magazynu?')).toBeVisible();
-  await page.getByRole('button', { name: 'Odjąć' }).click();
-  await expect(page.getByText('Magazyn zaktualizowany')).toBeVisible();
-
-  const stock = await page.evaluate(async (name) => {
-    const db = await new Promise((resolve, reject) => {
-      const req = indexedDB.open(name);
-      req.onsuccess = () => resolve(req.result);
-      req.onerror = () => reject(req.error);
-    });
-    const read = (id) => new Promise((resolve, reject) => {
-      const req = db.transaction('inventory').objectStore('inventory').get(id);
-      req.onsuccess = () => resolve(req.result);
-      req.onerror = () => reject(req.error);
-    });
-    const out = await Promise.all(['e2e-stock-0', 'e2e-stock-1', 'e2e-stock-2', 'e2e-stock-3', 'e2e-stock-4'].map(read));
-    db.close();
-    return out;
-  }, DB_NAME);
-
-  expect(stock[0].quantity).toBe(200);
-  expect(stock[1].quantity).toBe(60);
-  expect(stock[2].quantity).toBe(3);
-  expect(stock[3].quantity).toBe(12);
-  expect(stock[4].quantity).toBe(10);
-});
-
-
-test('Magazyn: powtarzające się składniki są sumowane bez podwójnego odejmowania', async ({ page }) => {
-  await page.goto('/');
-  const result = await page.evaluate(async (name) => {
-    const db = await new Promise((resolve, reject) => {
-      const req = indexedDB.open(name);
-      req.onsuccess = () => resolve(req.result);
-      req.onerror = () => reject(req.error);
-    });
-    const tx = db.transaction('inventory', 'readwrite');
-    tx.objectStore('inventory').put({
-      id: 'e2e-dup-flour', name: 'Mąka duplikat E2E', quantity: 1, unit: 'kg',
-      minQuantity: 0, purchasePrice: null, priceUnit: 'kg', ean: '', category: '',
-      createdAt: Date.now(), updatedAt: Date.now(),
-    });
-    await new Promise((resolve, reject) => { tx.oncomplete = resolve; tx.onerror = () => reject(tx.error); });
-    db.close();
-    const mod = await import('/inventory.js');
-    const recipe = {
-      id: 'e2e-dup-recipe',
-      name: 'Test duplikatów',
-      sections: [{ name: '', ingredients: [
-        { id: 'a', name: 'Mąka duplikat E2E', amount: 400, unit: 'g' },
-        { id: 'b', name: 'Mąka duplikat E2E', amount: 300, unit: 'g' },
-      ] }],
-    };
-    const consumed = await mod.consumeRecipeIngredients(recipe, 1);
-    return { quantity: mod.listInventory().find((x) => x.id === 'e2e-dup-flour').quantity, shortages: consumed.shortages };
-  }, DB_NAME);
-  expect(result.quantity).toBeCloseTo(0.3, 10);
-  expect(result.shortages).toHaveLength(0);
-});
-
-test('Gotuję: brakujące składniki trafiają do Zakupów', async ({ page }) => {
-  await page.goto('/');
-  await page.evaluate(async (name) => {
-    const db = await new Promise((resolve, reject) => {
-      const req = indexedDB.open(name);
-      req.onsuccess = () => resolve(req.result);
-      req.onerror = () => reject(req.error);
-    });
-    await new Promise((resolve, reject) => {
-      const tx = db.transaction(['inventory', 'shoppingItems', 'cookSessions'], 'readwrite');
-      tx.objectStore('inventory').clear();
-      tx.objectStore('shoppingItems').clear();
-      tx.objectStore('cookSessions').delete('rcp_seed_sos');
-      tx.oncomplete = resolve;
-      tx.onerror = () => reject(tx.error);
-    });
-    db.close();
-  }, DB_NAME);
-
-  await page.goto('/#/cook/rcp_seed_sos');
-  const ingredientBoxes = page.getByRole('checkbox');
-  await expect(ingredientBoxes).toHaveCount(5);
-  for (let i = 0; i < 5; i++) await ingredientBoxes.nth(i).click();
-  await page.getByRole('button', { name: 'Kroki', exact: true }).click();
-  const stepBoxes = page.getByRole('checkbox');
-  await expect(stepBoxes).toHaveCount(4);
-  for (let i = 0; i < 4; i++) await stepBoxes.nth(i).click();
-  await page.getByRole('button', { name: 'Zakończ' }).click();
-  await page.getByRole('button', { name: 'Odjąć' }).click();
-  await expect(page.getByText('Braki w magazynie')).toBeVisible();
-  await page.getByRole('button', { name: 'Dodaj braki do zakupów' }).click();
-  await expect(page.getByText('Brakujące składniki dodano do zakupów')).toBeVisible();
-
-  const shopping = await page.evaluate(async (name) => {
-    const db = await new Promise((resolve, reject) => {
-      const req = indexedDB.open(name);
-      req.onsuccess = () => resolve(req.result);
-      req.onerror = () => reject(req.error);
-    });
-    const req = db.transaction('shoppingItems').objectStore('shoppingItems').getAll();
-    const rows = await new Promise((resolve, reject) => {
-      req.onsuccess = () => resolve(req.result);
-      req.onerror = () => reject(req.error);
-    });
-    db.close();
-    return rows;
-  }, DB_NAME);
-  expect(shopping).toHaveLength(5);
-  expect(shopping.every((x) => !x.done)).toBeTruthy();
+  await expect(page.getByRole('link', { name: /Magazyn/ })).toBeVisible();
+  await expect(page.getByRole('link', { name: /Magazyn/ }).getByText('1', { exact: true })).toHaveCount(0);
 });

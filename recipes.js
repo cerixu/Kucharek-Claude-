@@ -39,6 +39,7 @@ export const DEFAULT_SETTINGS = {
   sort: 'name',
   seeded: false,
   lastBackupAt: 0,
+  inventoryAlerts: true,
 };
 
 /* ---------- Stan (lustro bazy) ---------- */

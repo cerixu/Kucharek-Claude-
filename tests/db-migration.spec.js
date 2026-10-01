@@ -397,3 +397,99 @@ test('Magazyn: alerty stanów można wyłączyć dla ekranu Start', async ({ pag
   await page.goto('/');
   await expect(mag.getByText('1', { exact: true })).toHaveCount(0);
 });
+
+
+test('Food Cost: cena zakupu z Magazynu zasila koszt receptury', async ({ page }) => {
+  await page.goto('/');
+  await page.evaluate(async (name) => {
+    const db = await new Promise((resolve, reject) => {
+      const req = indexedDB.open(name);
+      req.onsuccess = () => resolve(req.result);
+      req.onerror = () => reject(req.error);
+    });
+    const tx = db.transaction('inventory', 'readwrite');
+    tx.objectStore('inventory').clear();
+    tx.objectStore('inventory').put({
+      id: 'e2e-cost-flour', name: 'Mąka pszenna typ 00 (W 260–280)',
+      quantity: 10, unit: 'kg', minQuantity: 0,
+      purchasePrice: 8, priceUnit: 'kg', ean: '', category: 'Mąka',
+      createdAt: Date.now(), updatedAt: Date.now(),
+    });
+    await new Promise((resolve, reject) => { tx.oncomplete = resolve; tx.onerror = () => reject(tx.error); });
+    db.close();
+  }, DB_NAME);
+
+  const result = await page.evaluate(async (name) => {
+    const { getRecipe } = await import('/recipes.js');
+    const { recipeCost } = await import('/calculator.js');
+    const { loadInventory, findInventoryByName } = await import('/inventory.js');
+    await loadInventory();
+    const recipe = getRecipe('rcp_seed_pizza');
+    const priceResolver = (ing) => {
+      const item = findInventoryByName(ing.name);
+      return item?.purchasePrice != null ? { price: item.purchasePrice, priceUnit: item.priceUnit } : null;
+    };
+    const cost = recipeCost(recipe, 1, { priceResolver });
+    return {
+      flourCost: cost.lines.find((x) => x.ing.name === 'Mąka pszenna typ 00 (W 260–280)')?.cost,
+      total: cost.total,
+    };
+  }, DB_NAME);
+
+  expect(result.flourCost).toBeCloseTo(8, 10);
+  expect(result.total).toBeGreaterThan(8);
+});
+
+test('Food Cost: Magazyn poprawnie przelicza kg→g i l→ml', async ({ page }) => {
+  await page.goto('/');
+  const result = await page.evaluate(async (name) => {
+    const db = await new Promise((resolve, reject) => {
+      const req = indexedDB.open(name);
+      req.onsuccess = () => resolve(req.result);
+      req.onerror = () => reject(req.error);
+    });
+    const tx = db.transaction('inventory', 'readwrite');
+    tx.objectStore('inventory').clear();
+    tx.objectStore('inventory').put({
+      id: 'e2e-cost-oil', name: 'Oliwa extra vergine', quantity: 2, unit: 'l',
+      minQuantity: 0, purchasePrice: 40, priceUnit: 'l', ean: '', category: '',
+      createdAt: Date.now(), updatedAt: Date.now(),
+    });
+    await new Promise((resolve, reject) => { tx.oncomplete = resolve; tx.onerror = () => reject(tx.error); });
+    db.close();
+
+    const { recipeCost } = await import('/calculator.js');
+    const recipe = {
+      id: 'e2e-unit-cost', name: 'Test jednostek', servings: 1, salePrice: 0,
+      sections: [{ name: '', ingredients: [{ id: 'oil', name: 'Oliwa extra vergine', amount: 250, unit: 'ml' }] }]
+    };
+    const { loadInventory, findInventoryByName } = await import('/inventory.js');
+    await loadInventory();
+    const priceResolver = (ing) => {
+      const item = findInventoryByName(ing.name);
+      return item ? { price: item.purchasePrice, priceUnit: item.priceUnit } : null;
+    };
+    return recipeCost(recipe, 1, { priceResolver }).total;
+  }, DB_NAME);
+
+  expect(result).toBeCloseTo(10, 10);
+});
+
+test('Food Cost: koszt porcji skaluje się razem z recepturą', async ({ page }) => {
+  await page.goto('/');
+  const result = await page.evaluate(async () => {
+    const { recipeCost } = await import('/calculator.js');
+    const recipe = {
+      id: 'e2e-scale-cost', name: 'Skalowanie kosztu', servings: 4, salePrice: 20,
+      sections: [{ name: '', ingredients: [{ id: 'x', name: 'Ser', amount: 400, unit: 'g', price: 20, priceUnit: 'kg' }] }]
+    };
+    const base = recipeCost(recipe, 1);
+    const doubled = recipeCost(recipe, 2);
+    return { base, doubled };
+  });
+
+  expect(result.base.total).toBeCloseTo(8, 10);
+  expect(result.base.perPortion).toBeCloseTo(2, 10);
+  expect(result.doubled.total).toBeCloseTo(16, 10);
+  expect(result.doubled.perPortion).toBeCloseTo(2, 10);
+});

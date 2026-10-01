@@ -8,14 +8,6 @@ async function seedV1(page) {
   await page.route('**/app.js*', route => route.abort());
   await page.goto('/');
 
-  await page.evaluate(async (name) => {
-    await new Promise((resolve, reject) => {
-      const req = indexedDB.deleteDatabase(name);
-      req.onsuccess = () => resolve();
-      req.onerror = () => reject(req.error);
-      req.onblocked = () => resolve();
-    });
-
     await new Promise((resolve, reject) => {
       const req = indexedDB.open(name, 1);
       req.onupgradeneeded = () => {

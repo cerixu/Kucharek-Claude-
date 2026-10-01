@@ -43,8 +43,6 @@ async function seedV1(page) {
     });
   }, DB_NAME);
 
-  await page.unroute('**/app.js*');
-  await page.goto('/');
 }
 
 async function readDb(page) {
@@ -73,7 +71,6 @@ async function readDb(page) {
 
 test('migracja IndexedDB v1 → v2 zachowuje dane i rozdziela stores', async ({ page }) => {
   await seedV1(page);
-  await page.waitForTimeout(500);
   const db = await readDb(page);
 
   expect(db.version).toBe(2);

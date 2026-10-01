@@ -43,12 +43,17 @@ async function seedV1(page) {
     });
   }, DB_NAME);
 
+  await page.evaluate(async () => {
+    const { openDB } = await import('/db.js?migration-test');
+    const db = await openDB();
+    db.close();
+  });
 }
 
 async function readDb(page) {
   return page.evaluate(async (name) => {
     const db = await new Promise((resolve, reject) => {
-      const req = indexedDB.open(name, 2);
+      const req = indexedDB.open(name);
       req.onsuccess = () => resolve(req.result);
       req.onerror = () => reject(req.error);
     });

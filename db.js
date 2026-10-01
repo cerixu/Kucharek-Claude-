@@ -42,8 +42,7 @@ export function openDB() {
     const rq = indexedDB.open(DB_NAME, DB_VERSION);
 
     rq.onupgradeneeded = (event) => {
-      try {
-        const d = rq.result;
+      const d = rq.result;
       const oldVersion = event.oldVersion;
       const tx = rq.transaction;
 
@@ -54,6 +53,11 @@ export function openDB() {
         }
       }
 
+      // Indeksy wspólne.
+      if (d.objectStoreNames.contains('history')) {
+        addIndex(tx.objectStore('history'), 'recipeId', 'recipeId');
+      }
+
       // v2: dedykowane stores.
       if (oldVersion < 2) {
         const cook = tx.objectStore('cookSessions');
@@ -61,12 +65,17 @@ export function openDB() {
         const inventory = tx.objectStore('inventory');
         const log = tx.objectStore('inventoryLog');
 
+        addIndex(cook, 'updatedAt', 'updatedAt');
+        addIndex(drafts, 'recipeId', 'recipeId');
+        addIndex(drafts, 'savedAt', 'savedAt');
+        addIndex(inventory, 'ean', 'ean');
+        addIndex(inventory, 'name', 'name');
+        addIndex(inventory, 'updatedAt', 'updatedAt');
+        addIndex(log, 'ingredientId', 'ingredientId');
+        addIndex(log, 'type', 'type');
+        addIndex(log, 'at', 'at');
 
         needsLegacyMigration = true;
-      }
-      } catch (error) {
-        console.error('[Kucharek migration]', error?.name, error?.message, error?.stack);
-        throw error;
       }
     };
 

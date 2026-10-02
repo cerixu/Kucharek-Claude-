@@ -19,6 +19,9 @@ import { importView } from './views-import.js';
 import { settingsView } from './views-settings.js';
 import { inventoryView } from './views-inventory.js';
 
+let proModulePromise;
+const loadProModule = () => proModulePromise ||= import('./views-pro-fixed.js?v=20261002-20');
+
 const root = document.documentElement;
 
 /* ---------- Motyw, tryb, rozmiary ---------- */
@@ -142,7 +145,7 @@ route('/pro', () => {
   const el = document.createElement('div');
   el.className = 'screen';
   el.innerHTML = '<div class="scroll"><div class="content"><div class="empty"><div class="empty-emoji">👨‍🍳</div><h2>Ładuję Kucharek PRO…</h2><p class="muted">Magazyn PRO jest ładowany osobno, żeby błąd modułu PRO nigdy nie blokował startu aplikacji.</p></div></div></div>';
-  import('./views-pro-fixed.js?v=20261002-19').then(({ proView }) => {
+  loadProModule().then(({ proView }) => {
     try {
       const view = proView();
       el.replaceChildren(view.el);
@@ -190,6 +193,8 @@ async function boot() {
 
   requestPersist();
   registerSW();
+  // Preload PRO after the main app is ready. A failed PRO module must never block startup.
+  setTimeout(() => loadProModule().catch(() => {}), 0);
   window.__kucharzyna = { state, ready: true };
 }
 

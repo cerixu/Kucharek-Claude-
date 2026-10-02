@@ -22,7 +22,7 @@ const RREV = Object.fromEntries(Object.entries(R).map(([d,b]) => [b,d]));
 const PARITY = ['LLLLLL','LLGLGG','LLGGLG','LLGGGL','LGLLGG','LGGLLG','LGGGLL','LGLGLG','LGLGGL','LGGLGL'];
 
 function checksumEAN(code) {
-  if (!/^\\d+$/.test(code)) return false;
+  if (!Array.from(code).every((ch) => ch >= '0' && ch <= '9')) return false;
   const digits = code.split('').map(Number);
   const body = digits.slice(0, -1);
   const sum = body.reduce((acc, d, i) => acc + d * (i % 2 ? 3 : 1), 0);
@@ -146,7 +146,7 @@ export function decodeEANImageData(imageData) {
 }
 
 export function normalizeScannedEAN(value) {
-  const digits = String(value ?? '').replace(/\\D/g,'');
+  const digits = Array.from(String(value ?? '')).filter((ch) => ch >= '0' && ch <= '9').join('');
   if (digits.length === 12) return '0' + digits;
   if (digits.length === 13 || digits.length === 8) return digits;
   return '';

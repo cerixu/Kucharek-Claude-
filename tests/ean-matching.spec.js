@@ -119,10 +119,11 @@ test('Skaner EAN: otwiera kamerę i aktywną linię skanującą', async ({ page 
 });
 
 
-test('Recipe UX: domyślnie pokazuje jedną porcję', async ({ page }) => {
+test('Recipe UX: domyślnie pokazuje jedną porcję i skaluje ilości do 1 porcji', async ({ page }) => {
   await reset(page);
   await page.goto('/#/recipe/rcp_seed_pizza');
   await expect(page.getByText('1 porcja', { exact: true })).toBeVisible();
+  await expect(page.getByText('167 g', { exact: true }).first()).toBeVisible();
 });
 
 
@@ -134,13 +135,14 @@ test('Recipe UX: lista otwiera szczegóły', async ({ page }) => {
 });
 
 
-test('Recipe UX: skalowanie receptury na dwie porcje', async ({ page }) => {
+test('Recipe UX: skalowanie receptury na dwie porcje przelicza składniki', async ({ page }) => {
   await reset(page);
   await page.goto('/#/recipe/rcp_seed_pizza');
   await page.getByRole('button', { name: 'Przelicz', exact: true }).click();
   await page.getByLabel('Liczba porcji').fill('2');
   await page.getByRole('button', { name: 'Przelicz' }).last().click();
-  await expect(page.getByText('Przeliczone: 2 porcji')).toBeVisible();
+  await expect(page.getByText('Przeliczone: 2 porcje')).toBeVisible();
+  await expect(page.getByText('333 g', { exact: true }).first()).toBeVisible();
 });
 
 
@@ -151,6 +153,26 @@ test('Recipe UX: składniki, przygotowanie i uwagi są dostępne', async ({ page
   await expect(page.locator('.ingredient-icon').first()).toBeVisible();
   await expect(page.locator('ol.steps')).toBeVisible();
   await expect(page.getByLabel('Własne uwagi')).toBeVisible();
+});
+
+test('Recipe UX: hero i informacje o recepturze są widoczne', async ({ page }) => {
+  await reset(page);
+  await page.goto('/#/recipe/rcp_seed_pizza');
+  await expect(page.locator('.hero-photo.recipe-visual')).toBeVisible();
+  await expect(page.locator('.facts .fact').first()).toContainText('1 porcja');
+  await expect(page.getByText('Źródło:', { exact: false })).toBeVisible();
+  await expect(page.getByText('450–485 °C', { exact: true })).toBeVisible();
+});
+
+test('Recipe UX: własne uwagi zapisują się i wracają po odświeżeniu', async ({ page }) => {
+  await reset(page);
+  await page.goto('/#/recipe/rcp_seed_pizza');
+  const notes = page.getByLabel('Własne uwagi');
+  const value = 'Test Stage 15: +10 g wody przy następnym wyrabianiu';
+  await notes.fill(value);
+  await page.waitForTimeout(750);
+  await page.reload();
+  await expect(page.getByLabel('Własne uwagi')).toHaveValue(value);
 });
 
 

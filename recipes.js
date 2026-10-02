@@ -367,7 +367,7 @@ export function allTags() {
 
 
 /* ---------- Biblioteka zdjęć startowych ---------- */
-const SEED_MEDIA_VERSION = 2;
+const SEED_MEDIA_VERSION = 3;
 const PHOTO = Object.freeze({
   pizza:'https://images.unsplash.com/photo-1774806189017-f4c1f2760ad2?auto=format&fit=crop&w=1200&q=82',
   carbonara:'https://images.unsplash.com/photo-1663721605989-3bdd2c994190?auto=format&fit=crop&w=1200&q=82',
@@ -378,6 +378,7 @@ const PHOTO = Object.freeze({
   tiramisu:'https://images.unsplash.com/photo-1782503708390-4e5fff098d57?auto=format&fit=crop&w=1200&q=82',
   pesto:'https://images.unsplash.com/photo-1473093295043-cdd812d0e601?auto=format&fit=crop&w=1200&q=82',
   soup:'https://images.unsplash.com/photo-1510431198580-7727c9fa1e3a?auto=format&fit=crop&w=1200&q=82',
+  tomatoSauce:'https://images.unsplash.com/photo-1472476443507-c7a5948772fc?auto=format&fit=crop&w=1200&q=82',
   sushi:'https://images.unsplash.com/photo-1675870791718-a12568cfef43?auto=format&fit=crop&w=1200&q=82',
   cheesecake:'https://images.unsplash.com/photo-1774988867972-98caecc776d8?auto=format&fit=crop&w=1200&q=82',
   focaccia:'https://images.unsplash.com/photo-1765172526530-916823d3efc9?auto=format&fit=crop&w=1200&q=82',
@@ -435,7 +436,7 @@ export function seedRecipes() {
       ],
     }),
     blankRecipe({
-      ...base, id: 'rcp_seed_sos', name: 'Sos pomidorowy', category: 'cat-sosy-bazowe', photo: PHOTO.soup, thumb: PHOTO.soup,
+      ...base, id: 'rcp_seed_sos', name: 'Sos pomidorowy', category: 'cat-sosy-bazowe', photo: PHOTO.tomatoSauce, thumb: PHOTO.tomatoSauce,
       description: 'Prosty sos bazowy do pizzy i makaronu. Dane przykładowe — edytuj lub usuń.',
       servings: 4, yieldAmount: 650, yieldUnit: 'g', prepTime: 5, cookTime: 25, tags: ['baza', 'pomidory', 'wegańskie'],
       source: 'Klasyczna receptura włoska (przykład)',
@@ -471,7 +472,7 @@ function extraSeedRecipes(now) {
 export async function restoreSeeds({ forceMedia = false } = {}) {
   const seeds=seedRecipes();
   const missing=seeds.filter(r=>!state.recipes.has(r.id));
-  const mediaUpdates=seeds.filter(r=>state.recipes.has(r.id)&&r.photo&&(!state.recipes.get(r.id).photo||forceMedia))
+  const mediaUpdates=seeds.filter(r=>state.recipes.has(r.id)&&r.photo&&(!state.recipes.get(r.id).photo||(r.id==='rcp_seed_sos'&&state.recipes.get(r.id).photo===PHOTO.soup)||forceMedia))
     .map(r=>({...state.recipes.get(r.id),photo:r.photo,thumb:r.thumb,updatedAt:Date.now()}));
   const all=[...missing,...mediaUpdates];
   if(!all.length)return 0;

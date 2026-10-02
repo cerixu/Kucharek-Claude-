@@ -20,6 +20,7 @@ import { openAddToShopping, addMissingFromRecipe } from './shopping.js';
 import { hostOf } from './importer.js';
 
 const KIND_LABEL = { flour: 'mąka', water: 'woda', salt: 'sól', yeast: 'drożdże', fat: 'tłuszcz', other: '' };
+const servingsText = (n) => Number(n) === 1 ? '1 porcja' : `${fmtNum(n, 1)} porcji`;
 const ingGlyph = (i) => ingredientIcon(i);
 
 export function detailView({ id }) {
@@ -116,7 +117,7 @@ export function detailView({ id }) {
         { label: 'Przelicz', kind: 'primary', icon: 'swap', onClick: () => {
           const k = factor();
           if (!k) { toast('Uzupełnij wartość docelową', { type: 'error' }); return false; }
-          const lbl = mode === 'servings' ? `${fmtNum(servings, 1)} porcji` : mode === 'yield' ? `${fmtAmount(yAmt)} ${yUnit}` : `×${fmtNum(k, 3)}`;
+          const lbl = mode === 'servings' ? servingsText(servings) : mode === 'yield' ? `${fmtAmount(yAmt)} ${yUnit}` : `×${fmtNum(k, 3)}`;
           applyFactor(k, lbl);
         } },
       ],
@@ -356,7 +357,7 @@ export function detailView({ id }) {
     const y = effectiveYield(r);
     const facts = [];
     const fact = (ico, text) => text ? h('span', { class: 'fact' }, icon(ico, 18), text) : null;
-    facts.push(fact('users', r.servings ? `${fmtNum(r.servings, 1)} porcji` : ''));
+    facts.push(fact('users', r.servings ? servingsText(r.servings) : ''));
     if (r.yieldAmount) facts.push(fact('info', `${fmtAmount(r.yieldAmount)} ${r.yieldUnit}`));
     facts.push(fact('clock', [r.prepTime ? `przyg. ${fmtMinutes(r.prepTime)}` : '', r.cookTime ? `gotow. ${fmtMinutes(r.cookTime)}` : ''].filter(Boolean).join(' · ')));
     facts.push(fact('timer', r.fermentTime ? `ferm. ${fmtMinutes(r.fermentTime)}` : ''));

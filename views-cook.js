@@ -283,7 +283,7 @@ export function cookView({ id }) {
       if (useStock) {
         const sourceId = prog.inventoryConsumptionId || `cook:${id}:${Date.now()}`;
         prog.inventoryConsumptionId = sourceId;
-        const result = await consumeRecipeIngredients(view(), prog.factor || 1, { sourceId });
+        const result = await consumeRecipeIngredients(base(), prog.factor || 1, { sourceId });
         prog.inventoryConsumedAt = Date.now();
         const autoShopping = getSetting('inventoryAutoShopping') !== false;
         if (result.shortages.length) {
@@ -303,7 +303,7 @@ export function cookView({ id }) {
           }
         } else if (autoShopping) {
           const low = await addLowStockToShopping();
-          toast(low.count ? 'Magazyn zaktualizowany. Niskie stany dodane do zakupów 🛒' : (autoConsumption ? 'Zużycie zapisane w magazynie 📦' : 'Magazyn zaktualizowany 📦'));
+          toast(low.count ? 'Zużycie zapisane w magazynie 📦 · Niskie stany dodane do zakupów 🛒' : (autoConsumption ? 'Zużycie zapisane w magazynie 📦' : 'Magazyn zaktualizowany 📦'));
         } else {
           toast(autoConsumption ? 'Zużycie zapisane w magazynie 📦' : 'Magazyn zaktualizowany 📦');
         }

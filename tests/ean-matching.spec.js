@@ -169,5 +169,5 @@ test('Etap 14: karta i hero korzystają ze zdjęcia potrawy',async({page})=>{
   await reset(page);await page.goto('/#/recipes');
   await expect(page.locator('.rcard .recipe-visual').first()).toHaveAttribute('src',/photoshop-api\.adobe\.io\/v2\/short-url/);
   await page.getByRole('link',{name:'Pizza Napoletana'}).click();
-  await expect(page.locator('.hero-photo.recipe-visual')).toHaveAttribute('src',/images\.unsplash\.com/);
+  await expect(page.locator('.hero-photo.recipe-visual')).toHaveAttribute('src',/photoshop-api\.adobe\.io\/v2\/short-url/);
 });

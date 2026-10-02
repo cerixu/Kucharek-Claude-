@@ -141,19 +141,16 @@ test('ETAP 20: przeterminowana partia jest oznaczona osobno',async({page})=>{awa
 test('ETAP 21: sugestie magazynu można zamienić w jedno zamówienie',async({page})=>{await reset(page);await page.goto('/#/inventory');await page.getByRole('button',{name:'PRO',exact:true}).click();await page.getByRole('button',{name:'Automatyzacje',exact:true}).click();await expect(page.locator('.pro-nav').getByRole('button',{name:'Automatyzacje',exact:true})).toBeVisible();await expect(page.getByText(/Utwórz zamówienie/).first()).toBeVisible();});
 test('ETAP 21: dostawa ma pola dokumentu i terminu ważności',async({page})=>{await reset(page);await page.goto('/#/inventory');await page.getByRole('button',{name:'PRO',exact:true}).click();await page.getByRole('button',{name:'Dostawy',exact:true}).click();await page.getByRole('button',{name:'Nowa dostawa',exact:true}).click();await expect(page.locator('input[aria-label="Numer dokumentu"]')).toBeVisible();await expect(page.locator('input[aria-label="Termin ważności"]')).toBeVisible();});
 
-test('ETAP 22: magazyn ma gotowy zestaw danych testowych',async({page})=>{await reset(page);const out=await page.evaluate(async()=>{const i=await import('/inventory.js');const added=await i.seedTestInventory();return{added:added.length,total:i.listInventory().length,low:i.listInventory().filter(x=>i.stockState(x)!=='ok').length};});expect(out.added).toBeGreaterThanOrEqual(6);expect(out.total).toBeGreaterThanOrEqual(6);expect(out.low).toBeGreaterThanOrEqual(6);await page.goto('/#/inventory');await expect(page.getByRole('button',{name:'Dane testowe',exact:true})).toBeVisible();await expect(page.locator('.stock-row .stock-title').filter({hasText:'Mąka 00 test'})).toBeVisible();});
+test('ETAP 22: magazyn ma gotowy zestaw danych testowych',async({page})=>{await reset(page);const out=await page.evaluate(async()=>{const i=await import('/inventory.js');const added=await i.seedTestInventory();return{added:added.length,total:i.listInventory().length,low:i.listInventory().filter(x=>i.stockState(x)!=='ok').length};});expect(out.added).toBeGreaterThanOrEqual(6);expect(out.total).toBeGreaterThanOrEqual(6);expect(out.low).toBeGreaterThanOrEqual(6);await page.goto('/#/inventory');await expect(page.getByText('Automatyzacja',{exact:true})).toBeVisible();await expect(page.locator('.stock-row .stock-title').filter({hasText:'Mąka 00 test'})).toBeVisible();});
 
 
-test('ETAP 23: Magazyn pokazuje autopilota i żywe sugestie po zmianie stanu',async({page})=>{
+test('ETAP 23: Magazyn ma prostą automatyzację zużycia i zakupów',async({page})=>{
   await reset(page);
-  await page.evaluate(async()=>{const i=await import('/inventory.js');await i.seedTestInventory();});
   await page.goto('/#/inventory');
-  await expect(page.getByText('Automatyzacja zakupów',{exact:true})).toBeVisible();
-  await expect(page.getByText(/sugestii uzupełnienia/).first()).toBeVisible();
-  await expect(page.locator('.stock-row .stock-title').filter({hasText:'Mąka 00 test'})).toBeVisible();
-  await expect(page.getByText('+10.8 kg',{exact:true})).toBeVisible();
-  await page.getByRole('button',{name:/Otwórz automatyzacje/}).click();
-  await expect(page.getByRole('heading',{name:'Autopilot magazynu',exact:true})).toBeVisible();
+  await expect(page.getByText('Automatyzacja',{exact:true})).toBeVisible();
+  await expect(page.getByText('Zużycie przy gotowaniu',{exact:true})).toBeVisible();
+  await expect(page.getByText('Sugestie zakupów',{exact:true})).toBeVisible();
+  await expect(page.getByRole('button',{name:'Lista zakupów',exact:true})).toBeVisible();
 });
 
 test('ETAP 24: Pizza kalkulator ma tryb Mam mąkę i liczy składniki od mąki',async({page})=>{
@@ -224,4 +221,56 @@ test('ETAP 26: edytor pozwala pisać ciągłym tekstem bez utraty focusu',async(
   await desc.pressSequentially('Opis testowy', {delay: 20});
   await expect(desc).toHaveValue('Opis testowy');
   await expect(desc).toBeFocused();
+});
+
+
+test('ETAP 27: zakończenie gotowania automatycznie zużywa składniki z magazynu',async({page})=>{
+  await reset(page);
+  const id=await page.evaluate(async()=>{
+    const{saveRecipe,blankRecipe}=await import('/recipes.js');
+    const i=await import('/inventory.js');
+    await i.saveInventoryItem({name:'Mąka automatyczna',quantity:1,unit:'kg',minQuantity:0.9,targetQuantity:2});
+    const r=blankRecipe({name:'Pizza auto magazyn',category:'cat-pizza',servings:1,sections:[{id:'s1',name:'',ingredients:[{id:'i1',name:'Mąka automatyczna',amount:200,unit:'g'}]}],steps:[]});
+    await saveRecipe(r);
+    return r.id;
+  });
+  await page.goto('/#/cook/'+id);
+  await page.getByRole('checkbox').filter({hasText:'Mąka automatyczna'}).click();
+  await page.getByRole('button',{name:'Zakończ',exact:true}).click();
+  await expect(page.getByText('Smacznego! 👨‍🍳',{exact:true})).toBeVisible();
+  const qty=await page.evaluate(async()=>{const i=await import('/inventory.js');await i.reloadInventory();return i.findInventoryByName('Mąka automatyczna').quantity;});
+  expect(qty).toBeCloseTo(0.8,8);
+});
+
+test('ETAP 27: zużycie gotowania jest idempotentne i zapisuje ruch magazynowy',async({page})=>{
+  await reset(page);
+  const out=await page.evaluate(async()=>{
+    const i=await import('/inventory.js');
+    const p=await import('/pro.js');
+    const r={id:'recipe-idempotent',name:'Idempotentna pizza',sections:[{ingredients:[{name:'Mąka idempotentna',amount:200,unit:'g'}]}]};
+    const item=await i.saveInventoryItem({name:'Mąka idempotentna',quantity:1,unit:'kg'});
+    const a=await i.consumeRecipeIngredients(r,1,{sourceId:'cook:test:idempotent'});
+    const b=await i.consumeRecipeIngredients(r,1,{sourceId:'cook:test:idempotent'});
+    await i.reloadInventory();
+    const moves=(await p.listMovements()).filter(x=>x.sourceId==='cook:test:idempotent');
+    return{qty:i.findInventoryByName('Mąka idempotentna').quantity,first:a.changes.length,second:b.alreadyConsumed,moves:moves.length,type:moves[0]?.type};
+  });
+  expect(out.qty).toBeCloseTo(0.8,8);
+  expect(out.first).toBe(1);
+  expect(out.second).toBe(true);
+  expect(out.moves).toBe(1);
+  expect(out.type).toBe('recipe_consumption');
+});
+
+test('ETAP 27: wyłączenie automatycznego zużycia zachowuje stan magazynu',async({page})=>{
+  await reset(page);
+  const out=await page.evaluate(async()=>{
+    const{setSetting}=await import('/recipes.js');
+    const i=await import('/inventory.js');
+    await setSetting('inventoryAutoConsumption',false);
+    await i.saveInventoryItem({name:'Mąka ręczna',quantity:1,unit:'kg'});
+    return {enabled:(await import('/recipes.js')).getSetting('inventoryAutoConsumption'),qty:i.findInventoryByName('Mąka ręczna').quantity};
+  });
+  expect(out.enabled).toBe(false);
+  expect(out.qty).toBe(1);
 });

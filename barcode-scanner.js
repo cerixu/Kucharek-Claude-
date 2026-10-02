@@ -145,7 +145,7 @@ export function openBarcodeScanner({ onDetected }) {
       });
       video.srcObject=stream;
       videoTrack=stream.getVideoTracks?.()[0] || null;
-      torchSupported=!!videoTrack && supportsTorch(videoTrack);
+      torchSupported=!!videoTrack;
       flashButton.disabled=!torchSupported;
       flashButton.setAttribute('aria-label', torchSupported ? 'Włącz latarkę' : 'Latarka niedostępna w tej przeglądarce');
       flashButton.title=torchSupported ? 'Włącz latarkę' : 'Latarka niedostępna w tej przeglądarce';

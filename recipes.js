@@ -41,6 +41,7 @@ export const DEFAULT_SETTINGS = {
   lastBackupAt: 0,
   inventoryAlerts: true,
   inventoryAutoShopping: true,
+  inventoryAutoConsumption: true,
   seedLibraryVersion: 0,
 };
 

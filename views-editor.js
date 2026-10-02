@@ -10,7 +10,7 @@ import {
 import { navigate, goBack } from './router.js';
 import {
   state, getRecipe, blankRecipe, blankSection, blankIngredient, blankStep, normalizeRecipe, cloneRecipe, saveRecipe, ORIGINS,
-  ingredientNames, catalogLookup, kv,
+  ingredientNames, catalogLookup, kv, catIcon,
 } from './recipes.js';
 import { bakersTable } from './calculator.js';
 import { db } from './db.js';
@@ -142,6 +142,13 @@ export function editorView({ id }, query) {
 
   /* ----- Podstawowe pola ----- */
 
+  function generatedGraphic() {
+    const name = String(work.name || 'Moja receptura').slice(0, 30).replace(/[&<>]/g, '');
+    const emoji = catIcon(work.category);
+    const svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 800"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#202328"/><stop offset="1" stop-color="#0d0f11"/></linearGradient><filter id="b"><feGaussianBlur stdDeviation="42"/></filter></defs><rect width="1200" height="800" fill="#111316"/><circle cx="1000" cy="100" r="300" fill="#ffffff" opacity=".06" filter="url(%23b)"/><circle cx="180" cy="720" r="330" fill="#ffffff" opacity=".04" filter="url(%23b)"/><rect x="44" y="44" width="1112" height="712" rx="54" fill="url(%23g)"/><text x="600" y="380" text-anchor="middle" font-size="190">' + emoji + '</text><text x="600" y="520" text-anchor="middle" fill="#f5f5f2" font-family="system-ui,sans-serif" font-size="44" font-weight="750">' + name + '</text><text x="600" y="580" text-anchor="middle" fill="#aeb3ba" font-family="system-ui,sans-serif" font-size="24" letter-spacing="4">KUCHAREK · RECEPTURA</text></svg>';
+    return 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
+  }
+
   function photoBlock() {
     const fileIn = h('input', { type: 'file', accept: 'image/*', class: 'sr-file', 'aria-label': 'Wybierz zdjęcie' });
     const holder = h('div', { class: 'photo-block' });
@@ -150,6 +157,7 @@ export function editorView({ id }, query) {
         work.photo ? h('img', { class: 'photo-prev', src: work.photo, alt: 'Zdjęcie receptury' }) : h('div', { class: 'photo-empty' }, icon('image', 30), h('span', null, 'Brak zdjęcia')),
         h('div', { class: 'row gap wrap' },
           button(work.photo ? 'Zmień zdjęcie' : 'Dodaj zdjęcie', { icon: 'image', onClick: () => fileIn.click() }),
+          button('Utwórz grafikę', { icon: 'sparkles', kind: 'ghost', onClick: () => { work.photo = generatedGraphic(); work.thumb = work.photo; paintPhoto(); touch(); toast('Utworzono grafikę receptury'); } }),
           work.photo ? button('Usuń', { icon: 'trash', kind: 'ghost', onClick: () => { work.photo = ''; work.thumb = ''; paintPhoto(); touch(); } }) : null));
     };
     fileIn.addEventListener('change', async () => {

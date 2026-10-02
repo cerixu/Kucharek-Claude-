@@ -235,3 +235,26 @@ test('Etap 14: ingredientIcon renderuje ikonę inline', async ({ page }) => {
   const out=await page.evaluate(async()=>{const {ingredientIcon}=await import('/components.js');const el=ingredientIcon({name:'Mąka pszenna'});document.body.appendChild(el);const p=el.querySelector('svg path');return {svg:!!el.querySelector('svg'),path:!!p,d:p?.getAttribute('d')||''}});
   expect(out.svg).toBe(true); expect(out.path).toBe(true); expect(out.d).toContain('M10 36');
 });
+
+
+test('Gotuję: składniki mają ikony i sól ma osobną ikonę niż oliwa', async ({ page }) => {
+  await reset(page);
+  await page.goto('/#/recipe/rcp_seed_pizza');
+  await page.getByRole('button', { name: 'GOTUJĘ' }).click();
+  const icons = page.locator('.cook-list .ingredient-icon');
+  await expect(icons.first()).toBeVisible();
+  const out = await page.evaluate(() => [...document.querySelectorAll('.cook-list .ingredient-icon')].map(x => ({
+    cls:x.className.baseVal || x.className,
+    d:x.querySelector('path')?.getAttribute('d') || ''
+  })));
+  expect(out.length).toBeGreaterThan(0);
+  expect(out.every(x => x.d)).toBe(true);
+  const salt = await page.evaluate(async () => {
+    const { ingredientIcon } = await import('/components.js');
+    const a = ingredientIcon({name:'Sól'}), b = ingredientIcon({name:'Oliwa z oliwek'});
+    return { salt:a.className, oil:b.className, saltD:a.querySelector('path')?.getAttribute('d'), oilD:b.querySelector('path')?.getAttribute('d') };
+  });
+  expect(salt.salt).toContain('ingredient-icon-salt');
+  expect(salt.oil).toContain('ingredient-icon-oil');
+  expect(salt.saltD).not.toBe(salt.oilD);
+});

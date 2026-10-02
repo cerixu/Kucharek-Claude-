@@ -11,7 +11,7 @@ import {
   state, listRecipes, getRecipe, saveRecipe, blankRecipe, blankIngredient, blankSection, blankStep, kv, getSetting, allIngredients,
 } from './recipes.js';
 import {
-  pizzaCalc, yeastSuggestion, YEAST_TYPES, scaleRecipe, factorFromServings, factorFromYield, factorFromIngredient, effectiveYield, recipeCost, priceForFoodCost,
+  pizzaCalc, pizzaCalcFromFlour, yeastSuggestion, YEAST_TYPES, scaleRecipe, factorFromServings, factorFromYield, factorFromIngredient, effectiveYield, recipeCost, priceForFoodCost,
 } from './calculator.js';
 import { fmtAmount, fmtNum, fmtMoney, debounce } from './util.js';
 import { qtyParts } from './components.js';
@@ -61,20 +61,21 @@ const result = (label, value, unit = '', cls = '') =>
 /* ---------- Pizza ---------- */
 
 function pizzaCalculator() {
-  const { st, save, ready } = memo('pizza', { balls: 4, ballWeight: 250, hydration: 65, salt: 3, oil: 0, yeast: 0.2, yeastType: 'fresh', temp: 20, hours: 24 });
+  const { st, save, ready } = memo('pizza', { mode: 'balls', balls: 4, flour: 7500, ballWeight: 250, hydration: 65, salt: 3, oil: 0, yeast: 0.2, yeastType: 'fresh', temp: 20, hours: 24 });
   const out = h('div', { class: 'results' });
   const form = h('div', { class: 'stack' });
   const s = calcScreen('Pizza i ciasto', form, out);
 
   function compute() {
-    const r = pizzaCalc({ balls: st.balls || 0, ballWeight: st.ballWeight || 0, hydration: st.hydration || 0, salt: st.salt || 0, oil: st.oil || 0, yeast: st.yeast || 0 });
+    const calc = st.mode === 'flour' ? pizzaCalcFromFlour : pizzaCalc;
+    const r = calc(st.mode === 'flour' ? { flour: st.flour || 0, ballWeight: st.ballWeight || 0, hydration: st.hydration || 0, salt: st.salt || 0, oil: st.oil || 0, yeast: st.yeast || 0 } : { balls: st.balls || 0, ballWeight: st.ballWeight || 0, hydration: st.hydration || 0, salt: st.salt || 0, oil: st.oil || 0, yeast: st.yeast || 0 });
     return r;
   }
 
   function paintOut() {
     const r = compute();
     const ok = r.total > 0 && Number.isFinite(r.flour);
-    if (!ok) { out.replaceChildren(h('p', { class: 'muted pad' }, 'Wpisz liczbę kulek i wagę kulki.')); return; }
+    if (!ok) { out.replaceChildren(h('p', { class: 'muted pad' }, st.mode === 'flour' ? 'Wpisz ilość mąki i wagę kulki.' : 'Wpisz liczbę kulek i wagę kulki.')); return; }
     const yl = YEAST_TYPES[st.yeastType].label;
     out.replaceChildren(
       h('div', { class: 'results-grid' },
@@ -83,8 +84,9 @@ function pizzaCalculator() {
         result('Sól', fmtAmount(r.salt), 'g'),
         result('Drożdże ' + yl, fmtNum(r.yeast, 2), 'g'),
         st.oil > 0 ? result('Oliwa', fmtAmount(r.oil), 'g') : null,
-        result('Masa całkowita', fmtAmount(r.total), 'g', 'total')),
-      h('p', { class: 'muted small' }, `${st.balls} × ${fmtAmount(st.ballWeight)} g · suma procentów ${fmtNum(r.pctSum, 2)}% (mąka = 100%)`),
+        result('Masa całkowita', fmtAmount(r.total), 'g', 'total'),
+        st.mode === 'flour' && r.balls != null ? result('Kulki', fmtNum(r.balls, 1), `× ${fmtAmount(st.ballWeight)} g`) : null),
+      h('p', { class: 'muted small' }, st.mode === 'flour' ? `${fmtAmount(st.flour)} g mąki · ok. ${fmtNum(r.balls || 0, 1)} × ${fmtAmount(st.ballWeight)} g · suma procentów ${fmtNum(r.pctSum, 2)}%` : `${st.balls} × ${fmtAmount(st.ballWeight)} g · suma procentów ${fmtNum(r.pctSum, 2)}% (mąka = 100%)`),
       h('div', { class: 'row wrap gap' },
         button('Zapisz jako recepturę', { icon: 'plus', kind: 'primary', onClick: () => saveAsRecipe(r) }),
         button('Do zakupów', { icon: 'cart', onClick: async () => {
@@ -123,7 +125,15 @@ function pizzaCalculator() {
     const factor = YEAST_TYPES[st.yeastType].f;
     form.replaceChildren(
       h('section', { class: 'card stack' },
-        h('div', { class: 'row gap' }, col(field('Liczba kulek', numInput({ value: st.balls, label: 'Liczba kulek', dec: 0, onInput: upd('balls') }))), col(field('Waga kulki (g)', numInput({ value: st.ballWeight, label: 'Waga kulki', dec: 1, onInput: upd('ballWeight') })))),
+        segmented([['balls', 'Liczba kulek'], ['flour', 'Mam mąkę']], st.mode, (v) => { st.mode = v; save(); build(); paintOut(); }, { label: 'Sposób obliczenia' }),
+        st.mode === 'flour'
+          ? h('div', { class: 'stack' },
+              field('Mam mąkę (g)', numInput({ value: st.flour, label: 'Mam mąkę w gramach', dec: 1, placeholder: 'np. 7500', onInput: upd('flour') })),
+              chips('flour', [5000, 7500, 10000, 15000], ' g'))
+          : field('Liczba kulek', numInput({ value: st.balls, label: 'Liczba kulek', dec: 0, onInput: upd('balls') })),
+        h('div', { class: 'row gap' },
+          col(field('Waga kulki (g)', numInput({ value: st.ballWeight, label: 'Waga kulki', dec: 1, onInput: upd('ballWeight') }))),
+          st.mode === 'flour' ? h('div', { class: 'muted small', style: 'align-self:end;padding-bottom:10px' }, 'Liczba kulek zostanie policzona automatycznie.') : null),
         chips('ballWeight', [200, 250, 280, 320, 350], ' g')),
       h('section', { class: 'card stack' },
         h('div', { class: 'row gap' }, col(field('Hydracja %', numInput({ value: st.hydration, label: 'Hydracja', dec: 1, onInput: upd('hydration') }))), col(field('Sól %', numInput({ value: st.salt, label: 'Sól', dec: 2, onInput: upd('salt') })))),

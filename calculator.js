@@ -149,7 +149,8 @@ export function pizzaCalcFromFlour({ flour, ballWeight, hydration, salt, oil, ye
     yeast: part(yeast),
     total,
     pctSum,
-    balls: ballWeight > 0 ? total / ballWeight : null,
+    balls: ballWeight > 0 ? Math.floor(total / ballWeight) : null,
+    remainder: ballWeight > 0 ? total % ballWeight : null,
   };
 }
 

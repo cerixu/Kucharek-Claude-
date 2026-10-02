@@ -97,7 +97,7 @@ test('Skaner EAN: otwiera kamerę i aktywną linię skanującą', async ({ page 
   await page.getByRole('button', { name:'Skanuj kod kreskowy' }).click();
   await expect(page.getByRole('heading', { name:'Skanuj kod kreskowy' })).toBeVisible();
   await expect(page.locator('.barcode-scan-line')).toBeVisible();
-  await expect(page.getByText('Przesuń linię przez kod kreskowy')).toBeVisible();
+  await expect(page.getByText('Skieruj aparat na kod kreskowy')).toBeVisible();
   requested = await page.evaluate(() => !!window.__getUserMediaRequested);
   expect(requested).toBe(true);
 });

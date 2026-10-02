@@ -8,7 +8,7 @@ import { navigate, goBack } from './router.js';
 import { getRecipe, patchRecipe, getSetting } from './recipes.js';
 import { db } from './db.js';
 import { scaleRecipe, factorFromServings } from './calculator.js';
-import { qtyParts } from './components.js';
+import { qtyParts, ingredientIcon } from './components.js';
 import { fmtNum, fmtClock, debounce, parseNum } from './util.js';
 import { consumeRecipeIngredients } from './inventory.js';
 import { addItems } from './shopping.js';
@@ -173,6 +173,7 @@ export function cookView({ id }) {
       list.forEach((i) => {
         const q = qtyParts(i);
         kids.push(checkRow(i.id, prog.ing, h('span', { class: 'cook-text' },
+          ingredientIcon(i),
           h('span', { class: 'cook-name' }, i.name),
           h('span', { class: 'cook-qty' }, h('span', { class: 'amt num' }, q.num), h('span', { class: 'unit' }, q.unit)))));
       });

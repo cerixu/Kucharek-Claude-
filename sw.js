@@ -9,7 +9,7 @@
    ZMIANA WERSJI: podbij VERSION (i APP_VERSION w util.js) przy każdej
    aktualizacji plików, żeby urządzenia wykryły nową wersję.
    ========================================================================== */
-const VERSION = 'kucharek-claude-1.1.2';
+const VERSION = 'kucharek-claude-1.2.0';
 const NETWORK_TIMEOUT = 3500;
 
 const CORE = [
@@ -21,7 +21,7 @@ const CORE = [
   'components.js', 'shopping.js', 'inventory.js', 'barcode-decoder.js', 'barcode-scanner.js', 'pro.js', 'pro-calculators.js',
   'views-start.js', 'views-recipes.js', 'views-detail.js', 'views-editor.js', 'views-cook.js', 'views-calc.js', 'views-import.js', 'views-settings.js', 'views-inventory.js', 'views-pro-fixed.js',
   'assets/apple-touch-icon.png', 'assets/icon-192.png', 'assets/icon-512.png', 'assets/icon-maskable-512.png',
-  'assets/start/pizza.svg', 'assets/start/pasta.svg', 'assets/start/bakery.svg', 'assets/start/veg.svg',
+  'assets/start/pizza.svg', 'assets/start/pasta.svg', 'assets/start/bakery.svg', 'assets/start/veg.svg', 'assets/ingredient-icons.svg',
 ];
 
 const scopeUrl = (p) => new URL(p, self.registration.scope).href;
@@ -75,6 +75,20 @@ self.addEventListener('fetch', (event) => {
   const req = event.request;
   if (req.method !== 'GET') return;
   const url = new URL(req.url);
+  const isFoodImage=url.hostname==='images.unsplash.com' && /\.(jpe?g|png|webp)$/i.test(url.pathname);
+  if(isFoodImage){
+    event.respondWith((async()=>{
+      const cache=await caches.open(VERSION);
+      const hit=await cache.match(req);
+      if(hit)return hit;
+      try{
+        const res=await fetch(req);
+        if(res&&(res.ok||res.type==='opaque'))cache.put(req,res.clone()).catch(()=>{});
+        return res;
+      }catch(_){return (await cache.match(req))||Response.error();}
+    })());
+    return;
+  }
   if (url.origin !== self.location.origin) return;   // nic spoza własnej domeny
 
   if (req.mode === 'navigate') {

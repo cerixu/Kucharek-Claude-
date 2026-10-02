@@ -15,7 +15,7 @@ import {
   priceForFoodCost,
 } from './calculator.js';
 import { fmtAmount, fmtNum, fmtPct, fmtMoney, fmtMinutes, fmtDateTime, fmtDate, copyText, debounce, uid } from './util.js';
-import { heartBtn, tradMark, qtyParts, recipeToText, originOf, recipeVisual } from './components.js';
+import { heartBtn, tradMark, qtyParts, recipeToText, originOf, recipeVisual, ingredientIcon } from './components.js';
 import { openAddToShopping, addMissingFromRecipe } from './shopping.js';
 import { hostOf } from './importer.js';
 

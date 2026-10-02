@@ -1237,3 +1237,5 @@ body.kb-open .actionbar, body.kb-open .cookbar { padding-bottom: 10px; }
   :root[data-theme="auto"] .screen:has(.hero-photo) .actions-row .btn{background:rgba(250,248,242,.72);border-color:rgba(35,35,32,.12);color:var(--text);box-shadow:0 5px 14px rgba(30,28,23,.07)}
   :root[data-theme="auto"] .screen:has(.hero-photo) .ing{border-bottom-color:rgba(35,35,32,.10)}
 }
+
+.danger-text{color:#b42318;font-weight:700}

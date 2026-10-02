@@ -157,7 +157,7 @@ test('Recipe UX: składniki, przygotowanie i uwagi są dostępne', async ({ page
 
 test('Etap 14: biblioteka startowa ma prawdziwe zdjęcia',async({page})=>{
   await reset(page);
-  const r=await page.evaluate(async()=>{const {listRecipes}=await import('/recipes.js');const all=listRecipes();return {total:all.length,photos:all.filter(x=>/^https:\/\/images\.unsplash\.com\//.test(x.photo||'')).length,missing:all.filter(x=>!x.photo).map(x=>x.name)}});
+  const r=await page.evaluate(async()=>{const {listRecipes}=await import('/recipes.js');const all=listRecipes();return {total:all.length,photos:all.filter(x=>/^https:\/\/photoshop-api\.adobe\.io\/v2\/short-url\//.test(x.photo||'')).length,missing:all.filter(x=>!x.photo).map(x=>x.name)}});
   expect(r.total).toBeGreaterThanOrEqual(13);expect(r.photos).toBeGreaterThanOrEqual(13);expect(r.missing).toEqual([]);
 });
 test('Etap 14: składniki używają ilustracji SVG zamiast kolorowych kółek',async({page})=>{
@@ -167,7 +167,7 @@ test('Etap 14: składniki używają ilustracji SVG zamiast kolorowych kółek',a
 });
 test('Etap 14: karta i hero korzystają ze zdjęcia potrawy',async({page})=>{
   await reset(page);await page.goto('/#/recipes');
-  await expect(page.locator('.rcard .recipe-visual').first()).toHaveAttribute('src',/images\.unsplash\.com/);
+  await expect(page.locator('.rcard .recipe-visual').first()).toHaveAttribute('src',/photoshop-api\.adobe\.io\/v2\/short-url/);
   await page.getByRole('link',{name:'Pizza Napoletana'}).click();
   await expect(page.locator('.hero-photo.recipe-visual')).toHaveAttribute('src',/images\.unsplash\.com/);
 });

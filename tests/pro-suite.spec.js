@@ -2,7 +2,8 @@ import { test, expect } from '@playwright/test';
 const DB='kucharzyna-claude-db';
 async function reset(page){
   await page.goto('/');
-  await page.waitForFunction(()=>window.__kucharzyna?.ready===true);
+  await page.waitForFunction(()=>window.__kucharzyna?.ready===true || document.body.innerText.includes('Nie mogę otworzyć bazy danych'), {timeout:5000});
+  if(!(await page.evaluate(()=>window.__kucharzyna?.ready===true))) throw new Error('BOOT FAILED: '+await page.locator('body').innerText());
   await page.evaluate(async()=>{
     const {db,STORES}=await import('/db.js');
     for(const store of Object.keys(STORES)) await db.clear(store);

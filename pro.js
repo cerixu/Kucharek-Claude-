@@ -204,6 +204,90 @@ export async function completeProductionBatch(id) {
   return row;
 }
 
+
+export async function salesDeplete(lines=[]) {
+  await loadInventory();
+  const requirements=new Map(), recipes=[];
+  for(const line of lines){
+    const recipe=line.recipe || getRecipe(line.recipeId);
+    const qty=num(line.quantity,0);
+    if(!recipe || !(qty>0)) continue;
+    recipes.push({recipeId:recipe.id,recipeName:recipe.name,quantity:qty});
+    for(const ing of (recipe.sections||[]).flatMap(s=>s.ingredients||[])){
+      if(!ing?.name||ing.amount==null||ing.unit==='%') continue;
+      const required=num(ing.amount)*qty;
+      const match=findInventoryMatch(ing)?.item;
+      if(!match || !unitCompatible(match.unit,ing.unit)) {
+        const key='missing:'+String(ing.name).toLowerCase();
+        const row=requirements.get(key)||{inventoryId:null,name:ing.name,unit:ing.unit,required:0,used:0,missing:0};
+        row.required+=required; row.missing+=required; requirements.set(key,row); continue;
+      }
+      const delta=unitFromBase(unitToBase(required,ing.unit),match.unit);
+      const key=match.id;
+      const row=requirements.get(key)||{inventoryId:key,name:match.name,unit:match.unit,required:0,used:0,missing:0};
+      row.required+=delta; requirements.set(key,row);
+    }
+  }
+  const rows=[...requirements.values()];
+  for(const row of rows){
+    if(!row.inventoryId){row.missing=row.required;continue;}
+    const item=listInventory().find(x=>x.id===row.inventoryId);
+    row.available=num(item?.quantity);
+    row.missing=Math.max(0,row.required-row.available);
+  }
+  const shortages=rows.filter(x=>x.missing>0);
+  if(shortages.length) return {ok:false,shortages,recipes};
+  const at=now();
+  const next=rows.filter(x=>x.inventoryId&&x.required>0).map(row=>{
+    const item=listInventory().find(x=>x.id===row.inventoryId);
+    return {item,after:num(item.quantity)-row.required,row};
+  });
+  await db.tx(['inventory','inventoryLog','stockMovements'],tx=>{
+    for(const x of next){
+      tx.put('inventory',{...x.item,quantity:x.after,updatedAt:at});
+      tx.put('inventoryLog',{id:uid('stocklog_'),ingredientId:x.item.id,type:'sale',delta:-x.row.required,before:x.item.quantity,after:x.after,at});
+      tx.put('stockMovements',{id:uid('mov_'),at,type:'sale',inventoryId:x.item.id,inventoryName:x.item.name,delta:-x.row.required,unit:x.item.unit,before:x.item.quantity,after:x.after,sourceId:'sales-'+at,reason:'sprzedaż'});
+    }
+  });
+  await reloadInventory();
+  return {ok:true,shortages:[],recipes,changes:next.map(x=>({name:x.item.name,delta:-x.row.required,unit:x.item.unit}))};
+}
+
+export function parseSalesCsv(text=''){
+  const lines=String(text).split(/\r?\n/).map(x=>x.trim()).filter(Boolean);
+  if(!lines.length) return [];
+  const sep=(lines[0].includes(';')?'*':',');
+  const split=s=>s.split(sep==='*'?';':',').map(x=>x.trim().replace(/^"|"$/g,''));
+  const first=split(lines[0]).map(x=>x.toLowerCase());
+  const hasHeader=first.some(x=>/nazwa|produkt|recipe|recept|qty|ilo/.test(x));
+  const start=hasHeader?1:0;
+  const nameIndex=hasHeader?Math.max(0,first.findIndex(x=>/nazwa|produkt|recipe|recept/.test(x))):0;
+  const qtyIndex=hasHeader?Math.max(1,first.findIndex(x=>/qty|ilo|liczb|szt/.test(x))):1;
+  return lines.slice(start).map(line=>{const c=split(line);return{name:c[nameIndex]||'',quantity:num(String(c[qtyIndex]||'').replace(',','.'))};}).filter(x=>x.name&&x.quantity>0);
+}
+
+export async function importSalesCsv(text=''){
+  const rows=parseSalesCsv(text), recipes=await Promise.all(rows.map(r=>getRecipe(r.name)||Promise.resolve(null)));
+  const matched=rows.map((r,i)=>({...r,recipe:recipes[i]}));
+  const missing=matched.filter(x=>!x.recipe);
+  if(missing.length) return {ok:false,missing,rows:matched};
+  return {...await salesDeplete(matched),rows:matched};
+}
+
+export async function reorderSuggestions(){
+  await loadInventory();
+  return listInventory().filter(x=>num(x.minQuantity)>0&&num(x.quantity)<=num(x.minQuantity)).map(x=>{
+    const target=num(x.targetQuantity)>num(x.minQuantity)?num(x.targetQuantity):num(x.minQuantity)*2;
+    return {...x,orderQuantity:Math.max(0,unitFromBase(unitToBase(target-x.quantity,x.unit),x.unit)),targetQuantity:target};
+  }).filter(x=>x.orderQuantity>0);
+}
+
+export async function expiryAlerts(days=3){
+  const limit=now()+num(days,3)*86400000;
+  const lots=await listLots();
+  return lots.filter(x=>x.expiryAt&&x.expiryAt<=limit&&x.expiryAt>=now()).sort((a,b)=>a.expiryAt-b.expiryAt);
+}
+
 export async function planRecipe(recipe, factor=1) {
   await loadInventory();
   const lines=[];

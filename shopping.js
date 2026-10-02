@@ -62,9 +62,15 @@ export async function addLowStockToShopping() {
     const target = Number(item.targetQuantity || 0);
     const qty = Number(item.quantity || 0);
     if (!(min > 0) || qty > min || !(target > qty)) continue;
+    const needed = unitToBase(target - qty, item.unit);
+    const pending = state.shopping
+      .filter((x) => !x.done && norm(x.name) === norm(item.name) && x.amount != null && unitCompatible(x.unit, item.unit))
+      .reduce((sum, x) => sum + unitToBase(Number(x.amount || 0), x.unit), 0);
+    const remaining = Math.max(0, needed - pending);
+    if (!(remaining > 0)) continue;
     missing.push({
       name: item.name,
-      amount: unitFromBase(unitToBase(target - qty, item.unit), item.unit),
+      amount: unitFromBase(remaining, item.unit),
       unit: item.unit,
       recipeName: 'Magazyn · uzupełnienie stanu',
     });

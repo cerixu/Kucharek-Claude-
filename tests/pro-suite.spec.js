@@ -59,7 +59,7 @@ test('ETAP 13: receptura bez zdjęcia dostaje offline grafikę zastępczą',asyn
   const id=await page.evaluate(async()=>{const{listRecipes}=await import('/recipes.js');return listRecipes().find(r=>r.name==='Grafika test').id;});
   await page.goto('/#/recipe/'+id);
   await expect(page.locator('img.recipe-visual')).toBeVisible();
-  await expect(page.locator('img.recipe-visual')).toHaveAttribute('src',/^(data:image\/svg\+xml|assets\/start\/)/;
+  await expect(page.locator('img.recipe-visual')).toHaveAttribute('src',/^(data:image\/svg\+xml|assets\/start\/)/);
 });
 
 test('ETAP 13: edytor potrafi utworzyć grafikę receptury offline',async({page})=>{

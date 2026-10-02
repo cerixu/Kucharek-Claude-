@@ -65,8 +65,8 @@ export function ingredientIcon(ing) {
   const n = String(ing?.name || '').toLowerCase();
   let kind = 'generic';
   const category = String(ing?.category || ing?.type || ing?.group || '').toLowerCase();
-  const categoryKind = /warzy|vegetable|veg/.test(category) ? 'generic'
-    : /owoc|fruit/.test(category) ? 'generic'
+  const categoryKind = /warzy|vegetable|veg/.test(category) ? 'vegetable'
+    : /owoc|fruit/.test(category) ? 'fruit'
     : /nabiał|dairy/.test(category) ? 'milk'
     : /mięs|meat/.test(category) ? 'meat'
     : /ryb|seafood|fish/.test(category) ? 'fish'

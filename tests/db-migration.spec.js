@@ -207,7 +207,7 @@ test('Magazyn: dodanie produktu, próg minimum i trwałość danych', async ({ p
   await page.getByLabel('Kategoria').fill('Nabiał');
   await page.getByRole('button', { name: 'Zapisz' }).click();
   await expect(page.locator('.stock-row .stock-title').filter({hasText:'Mozzarella E2E'})).toBeVisible();
-  await expect(page.getByText('MAŁO')).toBeVisible();
+  await expect(page.getByText('MAŁO',{exact:true})).toBeVisible();
   await page.reload();
   await page.goto('/#/inventory');
   await expect(page.locator('.stock-row .stock-title').filter({hasText:'Mozzarella E2E'})).toBeVisible();

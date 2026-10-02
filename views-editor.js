@@ -13,6 +13,7 @@ import {
   ingredientNames, catalogLookup, kv, catIcon,
 } from './recipes.js';
 import { bakersTable } from './calculator.js';
+import { recipeGraphicData } from './components.js';
 import { db } from './db.js';
 import { parseIngredientLine, cleanStep } from './importer.js';
 import { UNITS, debounce, fmtDateTime } from './util.js';
@@ -142,12 +143,7 @@ export function editorView({ id }, query) {
 
   /* ----- Podstawowe pola ----- */
 
-  function generatedGraphic() {
-    const name = String(work.name || 'Moja receptura').slice(0, 30).replace(/[&<>]/g, '');
-    const emoji = catIcon(work.category);
-    const svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 800"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#202328"/><stop offset="1" stop-color="#0d0f11"/></linearGradient><filter id="b"><feGaussianBlur stdDeviation="42"/></filter></defs><rect width="1200" height="800" fill="#111316"/><circle cx="1000" cy="100" r="300" fill="#ffffff" opacity=".06" filter="url(%23b)"/><circle cx="180" cy="720" r="330" fill="#ffffff" opacity=".04" filter="url(%23b)"/><rect x="44" y="44" width="1112" height="712" rx="54" fill="url(%23g)"/><text x="600" y="380" text-anchor="middle" font-size="190">' + emoji + '</text><text x="600" y="520" text-anchor="middle" fill="#f5f5f2" font-family="system-ui,sans-serif" font-size="44" font-weight="750">' + name + '</text><text x="600" y="580" text-anchor="middle" fill="#aeb3ba" font-family="system-ui,sans-serif" font-size="24" letter-spacing="4">KUCHAREK · RECEPTURA</text></svg>';
-    return 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
-  }
+  function generatedGraphic() { return recipeGraphicData(work); }
 
   function photoBlock() {
     const fileIn = h('input', { type: 'file', accept: 'image/*', class: 'sr-file', 'aria-label': 'Wybierz zdjęcie' });

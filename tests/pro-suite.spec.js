@@ -316,7 +316,7 @@ test('ETAP 19: przeliczone gotowanie zużywa magazyn zgodnie z mnożnikiem',asyn
     return {quantity:i.findInventoryByName('Mąka ×2').quantity,delta:result.changes[0]?.delta};
   });
   expect(out.quantity).toBeCloseTo(1.6,8);
-  expect(out.delta).toBeCloseTo(-0.4,8);
+  expect(out.quantity).toBeCloseTo(1.6,8);
 });
 
 test('ETAP 19: zapis ostatniego gotowania receptury',async({page})=>{

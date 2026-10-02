@@ -19,8 +19,7 @@ const R = {
 const LREV = Object.fromEntries(Object.entries(L).map(([d,b]) => [b,d]));
 const GREV = Object.fromEntries(Object.entries(G).map(([d,b]) => [b,d]));
 const RREV = Object.fromEntries(Object.entries(R).map(([d,b]) => [b,d]));
-const PARITY = ['LLLLLL','LLGLGG','LLGGLG','LLGGGL','LGLLGG','LGGLLG','LGGGLL','LGLGLG','LGGLGL','LGGLGL'.replace('LL','LL')];
-PARITY[9] = 'LGGLGL';
+const PARITY = ['LLLLLL','LLGLGG','LLGGLG','LLGGGL','LGLLGG','LGGLLG','LGGGLL','LGLGLG','LGLGGL','LGGLGL'];
 
 function checksumEAN(code) {
   if (!/^\\d+$/.test(code)) return false;

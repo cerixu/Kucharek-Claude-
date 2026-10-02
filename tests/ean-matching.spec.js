@@ -88,7 +88,18 @@ test('Skaner EAN: otwiera kamerę i aktywną linię skanującą', async ({ page 
     if (!navigator.mediaDevices) Object.defineProperty(navigator, 'mediaDevices', { value: {}, configurable: true });
     navigator.mediaDevices.getUserMedia = async () => {
       window.__getUserMediaRequested = true;
-      return new MediaStream();
+      const track = {
+        kind:'video',
+        stop(){ window.__torchStopped = true; },
+        getCapabilities(){ return { torch:true }; },
+        async applyConstraints(constraints){
+          window.__torchState = constraints?.advanced?.[0]?.torch === true;
+        }
+      };
+      return {
+        getVideoTracks(){ return [track]; },
+        getTracks(){ return [track]; }
+      };
     };
   });
   await page.goto('/');
@@ -100,4 +111,9 @@ test('Skaner EAN: otwiera kamerę i aktywną linię skanującą', async ({ page 
   await expect(page.getByText('Skieruj aparat na kod kreskowy')).toBeVisible();
   requested = await page.evaluate(() => !!window.__getUserMediaRequested);
   expect(requested).toBe(true);
+  const flash = page.getByRole('button', { name:'Włącz latarkę' });
+  await expect(flash).toBeEnabled();
+  await flash.click();
+  await expect(page.getByRole('button', { name:'Wyłącz latarkę' })).toBeVisible();
+  expect(await page.evaluate(() => window.__torchState)).toBe(true);
 });

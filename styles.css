@@ -574,6 +574,8 @@ body.kb-open .actionbar, body.kb-open .cookbar { padding-bottom: 10px; }
 .photo-block { display: flex; flex-direction: column; gap: 10px; }
 .photo-prev { width: 100%; max-height: 240px; object-fit: cover; border-radius: var(--r); }
 .photo-empty { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; height: 112px; border: 2px dashed var(--line); border-radius: var(--r); color: var(--muted); }
+.photo-paste-zone { min-height: 44px; display: flex; align-items: center; justify-content: center; padding: 10px 12px; border: 1px dashed var(--line); border-radius: 12px; color: var(--muted); font-size: .88rem; text-align: center; outline: none; }
+.photo-paste-zone:focus { border-color: var(--accent); color: var(--text); box-shadow: 0 0 0 3px var(--accent-soft); }
 .sec-card { display: flex; flex-direction: column; gap: 12px; }
 .sec-head { align-items: center; }
 .sec-name { font-weight: 800; letter-spacing: .06em; }

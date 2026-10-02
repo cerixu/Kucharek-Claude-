@@ -6,7 +6,7 @@ const UNITS=[['g','g'],['kg','kg'],['ml','ml'],['l','l'],['szt','szt'],['opak','
 const fmt=n=>Number.isInteger(n)?String(n):String(Number(n.toFixed(3)));
 export function inventoryView(){
  const search=h('input',{class:'input search-input',type:'search',placeholder:'Szukaj produktu…','aria-label':'Szukaj produktu',autocomplete:'off'});
- const s=screen({title:'Magazyn',right:h('div',{class:'row'},button('PRO',{sm:true,onClick:()=>navigate('/pro')}),button('Skanuj',{sm:true,icon:'barcode',onClick:()=>scanProduct()}),iconBtn('plus','Dodaj produkt',()=>openEditor())),sub:h('div',{class:'searchbox'},icon('search',20),search),cls:'inventory'});
+ const s=screen({title:'Magazyn',right:h('div',{class:'row'},button('PRO',{sm:true,onClick:()=>navigate('/pro')}),iconBtn('barcode','Skanuj kod kreskowy',()=>scanProduct()),iconBtn('plus','Dodaj produkt',()=>openEditor())),sub:h('div',{class:'searchbox'},icon('search',20),search),cls:'inventory'});
  let lowOnly=false,q='';
  const matches=item=>{const text=(item.name+' '+(item.category||'')+' '+(item.ean||'')).toLocaleLowerCase();return(!q||text.includes(q.toLocaleLowerCase()))&&(!lowOnly||stockState(item)!=='ok');};
  const row=item=>{const st=stockState(item),label=st==='empty'?'BRAK':st==='low'?'MAŁO':'OK';return h('article',{class:'stock-row '+st},

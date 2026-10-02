@@ -301,7 +301,7 @@ export async function runInventoryAutopilot(){
 export async function expiryAlerts(days=3){
   const limit=now()+num(days,3)*86400000;
   const lots=await listLots();
-  return lots.filter(x=>x.expiryAt&&x.expiryAt<=limit&&x.expiryAt>=now()).sort((a,b)=>a.expiryAt-b.expiryAt);
+  return lots.filter(x=>x.expiryAt&&x.expiryAt<=limit).sort((a,b)=>a.expiryAt-b.expiryAt);
 }
 
 export async function planRecipe(recipe, factor=1) {

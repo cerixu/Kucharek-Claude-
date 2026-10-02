@@ -32,12 +32,11 @@ export function detailView({ id }) {
 
   let scaled = null;          // przeliczona kopia (niezapisana) albo null
   let scaleLabel = '';
-  // Receptura jest prezentowana domyślnie na 1 porcję, bez zmiany danych źródłowych.
-  let defaultOnePortion = (base0.servings > 0) ? scaleRecipe(base0, 1 / base0.servings) : base0;
+
   let skipPaint = false;
   const amateur = () => getSetting('mode') === 'amateur';
   const base = () => getRecipe(id);
-  const cur = () => scaled || defaultOnePortion;
+  const cur = () => scaled || (base().servings > 0 ? scaleRecipe(base(), 1 / base().servings) : base());
 
   const heartSlot = h('span', { class: 'heart-slot' });
   const s = screen({

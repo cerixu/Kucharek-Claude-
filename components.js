@@ -45,8 +45,16 @@ export function heartBtn(r, onToggle) {
   return b;
 }
 
+function fallbackVisual(r) {
+  const label = String(r.name || catName(r.category) || 'Kucharek').slice(0, 28).replace(/[&<>]/g, '');
+  const emoji = catIcon(r.category);
+  const svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 600"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#2b2e33"/><stop offset="1" stop-color="#0e1012"/></linearGradient></defs><rect width="900" height="600" fill="#121316"/><rect x="28" y="28" width="844" height="544" rx="42" fill="url(%23g)"/><text x="450" y="300" text-anchor="middle" font-size="150">' + emoji + '</text><text x="450" y="430" text-anchor="middle" fill="#f4f4f1" font-family="system-ui,sans-serif" font-size="34" font-weight="700">' + label + '</text><text x="450" y="480" text-anchor="middle" fill="#aeb3ba" font-family="system-ui,sans-serif" font-size="20">KUCHAREK</text></svg>';
+  return 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
+}
+
 export function recipeVisual(r, cls = '', { hero = false } = {}) {
-  if (r.photo) return h('img', { class: (hero ? 'hero-photo ' : '') + cls, src: r.photo, alt: hero ? ('Zdjęcie: ' + (r.name || 'receptura')) : '', loading: hero ? 'eager' : 'lazy', decoding: 'async' });
+  const src = hero ? (r.photo || r.thumb) : (r.thumb || r.photo);
+  if (src) return h('img', { class: (hero ? 'hero-photo ' : 'rthumb-img ') + cls + ' recipe-visual', src, alt: hero ? ('Zdjęcie: ' + (r.name || 'receptura')) : '', loading: hero ? 'eager' : 'lazy', decoding: 'async', onError: (e) => { e.currentTarget.onerror = null; e.currentTarget.src = fallbackVisual(r); } });
   const label = String(r.name || catName(r.category) || 'Kucharek').slice(0, 28);
   const emoji = catIcon(r.category);
   const bg = hero ? '121316' : '1b1d20';

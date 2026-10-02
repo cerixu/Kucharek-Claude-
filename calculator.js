@@ -135,6 +135,24 @@ export function pizzaCalc({ balls, ballWeight, hydration, salt, oil, yeast }) {
   return { flour, water: part(hydration), salt: part(salt), oil: part(oil), yeast: part(yeast), total, pctSum };
 }
 
+/** Kalkuluje ciasto od posiadanej ilości mąki. Mąka jest bazą = 100%. */
+export function pizzaCalcFromFlour({ flour, ballWeight, hydration, salt, oil, yeast }) {
+  const flourG = Number(flour);
+  const pctSum = 100 + hydration + salt + oil + yeast;
+  const part = (p) => (flourG * p) / 100;
+  const total = flourG * pctSum / 100;
+  return {
+    flour: flourG,
+    water: part(hydration),
+    salt: part(salt),
+    oil: part(oil),
+    yeast: part(yeast),
+    total,
+    pctSum,
+    balls: ballWeight > 0 ? total / ballWeight : null,
+  };
+}
+
 /**
  * Orientacyjna ilość drożdży świeżych (% mąki) dla temperatury i czasu fermentacji.
  * Model: ilość ~ 1 / (czas × 2^((T−20)/10)); 24 h w 20 °C ≈ 0,25%.

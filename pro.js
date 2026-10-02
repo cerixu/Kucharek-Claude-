@@ -1,7 +1,7 @@
 import { db } from './db.js';
 import { uid } from './util.js';
 import { loadInventory, reloadInventory, listInventory, saveInventoryItem, adjustInventory, findInventoryMatch, unitCompatible, unitToBase, unitFromBase, consumeRecipeIngredients } from './inventory.js';
-import { getRecipe, getSetting } from './recipes.js';
+import { getRecipe } from './recipes.js';
 
 const now = () => Date.now();
 const BASE_UNITS = { g:1, kg:1000, ml:1, l:1000, szt:1, opak:1 };
@@ -288,7 +288,8 @@ export async function reorderSuggestions(){
 
 export async function runInventoryAutopilot(){
   const suggestions=await reorderSuggestions();
-  if(!getSetting('inventoryAutoShopping')) return {enabled:false,added:0,suggestions};
+  const setting=await db.get('settings','inventoryAutoShopping');
+  if(setting && setting.value===false) return {enabled:false,added:0,suggestions};
   const pending=suggestions.filter(x=>x.orderQuantity>0);
   if(!pending.length) return {enabled:true,added:0,suggestions};
   const {addItems}=await import('./shopping.js');

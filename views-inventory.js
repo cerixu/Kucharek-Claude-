@@ -11,7 +11,7 @@ export function inventoryView(){
   const search=h('input',{class:'input search-input',type:'search',placeholder:'Szukaj składnika…','aria-label':'Szukaj składnika',autocomplete:'off'});
   const s=screen({
     title:'Magazyn',
-    right:h('div',{class:'row'},iconBtn('barcode','Skanuj kod kreskowy',()=>scanProduct()),iconBtn('plus','Dodaj składnik',()=>openEditor())),
+    right:h('div',{class:'row'},button('PRO',{sm:true,onClick:()=>navigate('/pro')}),iconBtn('barcode','Skanuj kod kreskowy',()=>scanProduct()),iconBtn('plus','Dodaj składnik',()=>openEditor())),
     sub:h('div',{class:'searchbox'},icon('search',20),search),
     cls:'inventory'
   });

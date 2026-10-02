@@ -367,21 +367,21 @@ export function allTags() {
 
 
 /* ---------- Biblioteka zdjęć startowych ---------- */
-const SEED_MEDIA_VERSION = 3;
+const SEED_MEDIA_VERSION = 4;
 const PHOTO = Object.freeze({
-  pizza:'https://images.unsplash.com/photo-1774806189017-f4c1f2760ad2?auto=format&fit=crop&w=1200&q=82',
-  carbonara:'https://images.unsplash.com/photo-1663721605989-3bdd2c994190?auto=format&fit=crop&w=1200&q=82',
-  lasagna:'https://images.unsplash.com/photo-1640063414338-af9faa0c2485?auto=format&fit=crop&w=1200&q=82',
-  risotto:'https://images.unsplash.com/photo-1777897462353-12d352064390?auto=format&fit=crop&w=1200&q=82',
-  caesar:'https://images.unsplash.com/photo-1751638582376-3071e1fddb4e?auto=format&fit=crop&w=1200&q=82',
-  ramen:'https://images.unsplash.com/photo-1780733479026-09e01ff70f00?auto=format&fit=crop&w=1200&q=82',
-  tiramisu:'https://images.unsplash.com/photo-1782503708390-4e5fff098d57?auto=format&fit=crop&w=1200&q=82',
-  pesto:'https://images.unsplash.com/photo-1473093295043-cdd812d0e601?auto=format&fit=crop&w=1200&q=82',
-  soup:'https://images.unsplash.com/photo-1510431198580-7727c9fa1e3a?auto=format&fit=crop&w=1200&q=82',
-  tomatoSauce:'https://images.unsplash.com/photo-1472476443507-c7a5948772fc?auto=format&fit=crop&w=1200&q=82',
-  sushi:'https://images.unsplash.com/photo-1675870791718-a12568cfef43?auto=format&fit=crop&w=1200&q=82',
-  cheesecake:'https://images.unsplash.com/photo-1774988867972-98caecc776d8?auto=format&fit=crop&w=1200&q=82',
-  focaccia:'https://images.unsplash.com/photo-1765172526530-916823d3efc9?auto=format&fit=crop&w=1200&q=82',
+  pizza:'https://photoshop-api.adobe.io/v2/short-url/urn:aaid:ps:US:19d098c7-f308-4416-951d-4d5bb6ed6cc4',
+  carbonara:'https://photoshop-api.adobe.io/v2/short-url/urn:aaid:ps:US:995b5785-cd24-4bff-b5c2-ba36d567a827',
+  lasagna:'https://photoshop-api.adobe.io/v2/short-url/urn:aaid:ps:US:2658c6f7-7192-453a-9b54-2b21dcedd143',
+  risotto:'https://photoshop-api.adobe.io/v2/short-url/urn:aaid:ps:US:ce7495e9-ffd9-4eb0-839d-2d3f0ea7c2cb',
+  caesar:'https://photoshop-api.adobe.io/v2/short-url/urn:aaid:ps:US:5472cbc9-c5fe-4931-aae3-7294344bc4f2',
+  ramen:'https://photoshop-api.adobe.io/v2/short-url/urn:aaid:ps:US:1e2c10cf-9142-48c0-8996-8a5b66cb9015',
+  tiramisu:'https://photoshop-api.adobe.io/v2/short-url/urn:aaid:ps:US:1adf5a93-c4f0-4427-93fd-fd5e11e2db63',
+  pesto:'https://photoshop-api.adobe.io/v2/short-url/urn:aaid:ps:US:453ca6a8-7b9e-4e7e-ae2c-7aab3b425a34',
+  soup:'https://photoshop-api.adobe.io/v2/short-url/urn:aaid:ps:US:ef0f08fd-ee15-4d66-b56b-d31ef64a64ba',
+  tomatoSauce:'https://photoshop-api.adobe.io/v2/short-url/urn:aaid:ps:US:4a0ea06e-609d-4c9f-ac74-c8b8b01f54f0',
+  sushi:'https://photoshop-api.adobe.io/v2/short-url/urn:aaid:ps:US:0d05b6dc-b2d8-4875-93d3-85443f23381d',
+  cheesecake:'https://photoshop-api.adobe.io/v2/short-url/urn:aaid:ps:US:67f0ca3a-3fd1-4491-b46d-8342a620a693',
+  focaccia:'https://photoshop-api.adobe.io/v2/short-url/urn:aaid:ps:US:f8b5dce7-934d-4fd2-8e7f-9ccac2c5fc3a',
 });
 
 const I = (name, amount, unit, x = {}) => blankIngredient({ name, amount, unit, ...x });

@@ -46,7 +46,7 @@ test('ETAP 13: receptura domyślnie pokazuje ilości na 1 porcję',async({page})
   });
   const id=await page.evaluate(async()=>{const{listRecipes}=await import('/recipes.js');return listRecipes().find(r=>r.name==='Test jedna porcja').id;});
   await page.goto('/#/recipe/'+id);
-  await expect(page.getByText('1 porcji',{exact:true})).toBeVisible();
+  await expect(page.getByText('1 porcja',{exact:true})).toBeVisible();
   await expect(page.locator('.ing-qty').filter({hasText:'100'})).toBeVisible();
 });
 

@@ -15,7 +15,7 @@ import {
   priceForFoodCost,
 } from './calculator.js';
 import { fmtAmount, fmtNum, fmtPct, fmtMoney, fmtMinutes, fmtDateTime, fmtDate, copyText, debounce, uid } from './util.js';
-import { heartBtn, tradMark, qtyParts, recipeToText, originOf } from './components.js';
+import { heartBtn, tradMark, qtyParts, recipeToText, originOf, recipeVisual } from './components.js';
 import { openAddToShopping, addMissingFromRecipe } from './shopping.js';
 import { hostOf } from './importer.js';
 
@@ -32,10 +32,12 @@ export function detailView({ id }) {
 
   let scaled = null;          // przeliczona kopia (niezapisana) albo null
   let scaleLabel = '';
+  // Receptura jest prezentowana domyślnie na 1 porcję, bez zmiany danych źródłowych.
+  let defaultOnePortion = (base0.servings > 0) ? scaleRecipe(base0, 1 / base0.servings) : base0;
   let skipPaint = false;
   const amateur = () => getSetting('mode') === 'amateur';
   const base = () => getRecipe(id);
-  const cur = () => scaled || base();
+  const cur = () => scaled || defaultOnePortion;
 
   const heartSlot = h('span', { class: 'heart-slot' });
   const s = screen({
@@ -63,7 +65,7 @@ export function detailView({ id }) {
     const r = base();
     let mode = 'servings';
     const y = effectiveYield(r);
-    let servings = cur().servings || r.servings, yAmt = y ? y.amount * (cur().servings && r.servings ? cur().servings / r.servings : 1) : null, yUnit = (y && y.unit) || 'g';
+    let servings = cur().servings || 1, yAmt = y ? y.amount * (cur().servings && r.servings ? cur().servings / r.servings : 1) : null, yUnit = (y && y.unit) || 'g';
     const ings = allIngredients(r).filter((i) => i.name && i.amount > 0 && i.unit !== '%');
     let ingId = ings[0] ? ings[0].id : '', ingAmt = null, ingUnit = ings[0] ? ings[0].unit : 'g';
     const out = h('div', { class: 'preview-line' });
@@ -360,7 +362,7 @@ export function detailView({ id }) {
     facts.push(fact('thermo', r.temperature));
 
     const kids = [];
-    if (base().photo) kids.push(h('img', { class: 'hero-photo', src: base().photo, alt: `Zdjęcie: ${r.name}` }));
+    kids.push(recipeVisual(r, '', { hero: true }));
     kids.push(h('div', { class: 'detail-head' },
       h('div', { class: 'row wrap gap' }, tradMark(base()) ? h('span', { class: 'trad-big' }, tradMark(base()), originOf(base().origin) ? originOf(base().origin).name : 'Tradycyjna') : null,
         h('span', { class: 'pill' }, catName(r.category)), ...(r.tags || []).map((t) => h('span', { class: 'pill soft' }, '#' + t))),

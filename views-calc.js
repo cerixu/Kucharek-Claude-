@@ -85,8 +85,9 @@ function pizzaCalculator() {
         result('Drożdże ' + yl, fmtNum(r.yeast, 2), 'g'),
         st.oil > 0 ? result('Oliwa', fmtAmount(r.oil), 'g') : null,
         result('Masa całkowita', fmtAmount(r.total), 'g', 'total'),
-        st.mode === 'flour' && r.balls != null ? result('Kulki', fmtNum(r.balls, 1), `× ${fmtAmount(st.ballWeight)} g`) : null),
-      h('p', { class: 'muted small' }, st.mode === 'flour' ? `${fmtAmount(st.flour)} g mąki · ok. ${fmtNum(r.balls || 0, 1)} × ${fmtAmount(st.ballWeight)} g · suma procentów ${fmtNum(r.pctSum, 2)}%` : `${st.balls} × ${fmtAmount(st.ballWeight)} g · suma procentów ${fmtNum(r.pctSum, 2)}% (mąka = 100%)`),
+        st.mode === 'flour' && r.balls != null ? result('Kulki', fmtNum(r.balls, 0), `× ${fmtAmount(st.ballWeight)} g`) : null,
+        st.mode === 'flour' && r.remainder > 0.1 ? result('Pozostałe ciasto', fmtAmount(r.remainder), 'g') : null),
+      h('p', { class: 'muted small' }, st.mode === 'flour' ? `${fmtAmount(st.flour)} g mąki · ${fmtNum(r.balls || 0, 0)} × ${fmtAmount(st.ballWeight)} g${r.remainder > 0.1 ? ` + ${fmtAmount(r.remainder)} g reszty` : ''} · suma procentów ${fmtNum(r.pctSum, 2)}%` : `${st.balls} × ${fmtAmount(st.ballWeight)} g · suma procentów ${fmtNum(r.pctSum, 2)}% (mąka = 100%)`),
       h('div', { class: 'row wrap gap' },
         button('Zapisz jako recepturę', { icon: 'plus', kind: 'primary', onClick: () => saveAsRecipe(r) }),
         button('Do zakupów', { icon: 'cart', onClick: async () => {
@@ -107,11 +108,13 @@ function pizzaCalculator() {
     ings.push(I(`Drożdże ${YEAST_TYPES[st.yeastType].label}`, Math.round(r.yeast * 100) / 100, 'g', { percent: st.yeast }));
     const sec = blankSection('CIASTO'); sec.ingredients = ings;
     const rec = blankRecipe({
-      name: `Ciasto na pizzę (${st.balls} × ${fmtAmount(st.ballWeight)} g)`, category: 'cat-pizza', servings: st.balls, yieldAmount: Math.round(r.total), yieldUnit: 'g',
+      const balls = st.mode === 'flour' ? (r.balls || 0) : st.balls;
+    const ballLabel = `${balls} × ${fmtAmount(st.ballWeight)} g`;
+    name: `Ciasto na pizzę (${ballLabel})`, category: 'cat-pizza', servings: balls, yieldAmount: Math.round(r.total), yieldUnit: 'g',
       fermentTime: Math.round((st.hours || 0) * 60), temperature: `fermentacja w ${st.temp} °C`, bakers: true, sections: [sec],
       description: `Hydracja ${st.hydration}%, sól ${st.salt}%${st.oil ? `, oliwa ${st.oil}%` : ''}, drożdże ${st.yeast}%.`, tags: ['ciasto', 'kalkulator'],
       steps: [blankStep('Rozpuść sól w wodzie, dodaj drożdże.'), blankStep('Dodaj mąkę i wyrabiaj do gładkiego, elastycznego ciasta.'),
-        blankStep(`Podziel na ${st.balls} kulek po ${fmtAmount(st.ballWeight)} g.`), blankStep(`Fermentuj ok. ${fmtNum(st.hours, 1)} h w ${st.temp} °C.`)],
+        blankStep(`Podziel na ${balls} kulek po ${fmtAmount(st.ballWeight)} g.${st.mode === 'flour' && r.remainder > 0.1 ? ` Pozostałe ${fmtAmount(r.remainder)} g odłóż osobno.` : ''}`), blankStep(`Fermentuj ok. ${fmtNum(st.hours, 1)} h w ${st.temp} °C.`)],
     });
     const saved = await saveRecipe(rec);
     toast('Zapisano recepturę', { action: { label: 'Otwórz', fn: () => navigate('/recipe/' + saved.id) } });

@@ -210,7 +210,7 @@ test('Magazyn: dodanie produktu, próg minimum i trwałość danych', async ({ p
   await expect(page.getByText('MAŁO')).toBeVisible();
   await page.reload();
   await page.goto('/#/inventory');
-  await expect(page.getByText('Mozzarella E2E')).toBeVisible();
+  await expect(page.locator('.stock-row .stock-title').filter({hasText:'Mozzarella E2E'})).toBeVisible();
   await expect(page.getByText('MAŁO')).toBeVisible();
   await expect(page.getByText(/2 g/)).toBeVisible();
   await expect(page.getByText(/min\. 3 g/)).toBeVisible();

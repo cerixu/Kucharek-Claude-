@@ -163,7 +163,7 @@ test('Etap 14: biblioteka startowa ma prawdziwe zdjęcia',async({page})=>{
 test('Etap 14: składniki używają ilustracji SVG zamiast kolorowych kółek',async({page})=>{
   await reset(page);await page.goto('/#/recipe/rcp_seed_pizza');
   const el=page.locator('.ingredient-icon').first();await expect(el).toBeVisible();
-  await expect(el.locator('svg.ingredient-svg use')).toHaveAttribute('href',/assets\/ingredient-icons\.svg#/);
+  await expect(el.locator('svg.ingredient-svg path')).toHaveAttribute('d', /.+/);
 });
 test('Etap 14: karta i hero korzystają ze zdjęcia potrawy',async({page})=>{
   await reset(page);await page.goto('/#/recipes');

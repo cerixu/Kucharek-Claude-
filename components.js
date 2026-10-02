@@ -22,6 +22,7 @@ export function metaLine(r) {
   if (r.servings) parts.push(`${r.servings} porc.`);
   const t = timeText(r);
   if (t) parts.push(t);
+  if (Number(r.cookCount || 0) > 0) parts.push(`gotowano ${Number(r.cookCount)}×`);
   return parts.join(' · ');
 }
 

@@ -1,7 +1,7 @@
 /* ==========================================================================
    db.js — warstwa nad IndexedDB + wersjonowanie schematu.
-   v2 rozdziela ustawienia od danych funkcjonalnych (GOTUJĘ, szkice, magazyn).
-   Migracja v1 → v2 jest automatyczna i nie usuwa danych.
+   Schemat obejmuje receptury, GOTUJĘ, szkice oraz pełny moduł Magazyn PRO (dostawy, partie, ruchy, dostawcy, zamówienia, produkcja, inwentaryzacje, straty i historię cen).
+   Migracje v1 → v4 są automatyczne i nie usuwają danych.
    ========================================================================== */
 
 const DB_NAME = 'kucharzyna-claude-db';

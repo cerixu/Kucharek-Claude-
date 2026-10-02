@@ -93,6 +93,15 @@ test('ETAP 14: miniaturka i hero wybierają źródło obrazu',async({page})=>{
   expect(out.card).toMatch(/^data:image\\/svg\\+xml/);
 });
 
+test('ETAP 14: brak zdjęcia korzysta z lokalnej grafiki kategorii',async({page})=>{
+  await reset(page);
+  const out=await page.evaluate(async()=>{
+    const{recipeVisual}=await import('/components.js');
+    return recipeVisual({name:'Pizza visual',category:'cat-pizza'}).getAttribute('src');
+  });
+  expect(out).toBe('assets/start/pizza.svg');
+});
+
 test('ETAP 14: uszkodzone zdjęcie ma bezpieczny fallback graficzny',async({page})=>{
   await reset(page);
   const out=await page.evaluate(async()=>{

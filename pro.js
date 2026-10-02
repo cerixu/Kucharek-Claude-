@@ -93,12 +93,13 @@ export async function recordWaste(inventoryId, amount, reason='inne', note='') {
 
 export async function startStocktake(note='') {
   await loadInventory();
-  const items=listInventory().map(x=>({inventoryId:x.id,name:x.name,systemQuantity:num(x.quantity),countedQuantity:num(x.quantity),unit:x.unit,difference:0}));
+  const items=listInventory().map(x=>({inventoryId:x.id,name:x.name,systemQuantity:num(x.quantity),countedQuantity:null,unit:x.unit,difference:null}));
   return put('stocktakes',{id:uid('take_'),status:'open',note,createdAt:now(),updatedAt:now(),items});
 }
 export async function updateStocktake(id, inventoryId, countedQuantity) {
   const take=await db.get('stocktakes',id); if(!take) throw new Error('Inwentaryzacja nie istnieje.');
   const row=take.items.find(x=>x.inventoryId===inventoryId); if(!row) throw new Error('Produkt nie należy do spisu.');
+  if (countedQuantity === '' || countedQuantity == null || !Number.isFinite(Number(countedQuantity)) || Number(countedQuantity) < 0) throw new Error('Podaj rzeczywiście policzoną ilość.');
   row.countedQuantity=num(countedQuantity); row.difference=row.countedQuantity-row.systemQuantity; take.updatedAt=now();
   return put('stocktakes',take);
 }
@@ -106,6 +107,7 @@ export async function finalizeStocktake(id) {
   await loadInventory();
   const take=await db.get('stocktakes',id); if(!take) throw new Error('Inwentaryzacja nie istnieje.');
   if(take.status==='closed') return take;
+  if(take.items.some(x=>x.countedQuantity==null)) throw new Error('Uzupełnij policzone ilości wszystkich pozycji.');
   const at=now();
   await db.tx(['stocktakes','inventory','inventoryLog','stockMovements'],t=>{
     for(const row of take.items){

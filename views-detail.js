@@ -20,6 +20,7 @@ import { openAddToShopping, addMissingFromRecipe } from './shopping.js';
 import { hostOf } from './importer.js';
 
 const KIND_LABEL = { flour: 'mąka', water: 'woda', salt: 'sól', yeast: 'drożdże', fat: 'tłuszcz', other: '' };
+const ingGlyph = (i) => ingredientIcon(i);
 
 export function detailView({ id }) {
   const base0 = getRecipe(id);
@@ -330,6 +331,7 @@ export function detailView({ id }) {
           const q = qtyParts(i);
           const p = pct.get(i.id);
           return h('li', { class: 'ing' },
+            ingGlyph(i),
             h('span', { class: 'ing-name' }, i.name || '—', showPct && p && KIND_LABEL[p.kind] ? h('span', { class: 'kind' }, KIND_LABEL[p.kind]) : null),
             showPct && p && p.pct != null ? h('span', { class: 'ing-pct num' }, fmtPct(p.pct)) : null,
             h('span', { class: 'ing-qty' }, h('span', { class: 'amt num' }, q.num), h('span', { class: 'unit' }, q.unit)));

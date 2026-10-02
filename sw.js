@@ -92,7 +92,7 @@ self.addEventListener('fetch', (event) => {
   const req = event.request;
   if (req.method !== 'GET') return;
   const url = new URL(req.url);
-  const isFoodImage=url.hostname==='images.unsplash.com' && /\.(jpe?g|png|webp)$/i.test(url.pathname);
+  const isFoodImage=url.hostname==='images.unsplash.com' || url.hostname==='photoshop-api.adobe.io';
   if(isFoodImage){
     event.respondWith((async()=>{
       const cache=await caches.open(VERSION);

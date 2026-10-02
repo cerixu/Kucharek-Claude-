@@ -45,10 +45,18 @@ export function heartBtn(r, onToggle) {
   return b;
 }
 
-export function thumbEl(r, cls = '') {
-  return r.thumb
-    ? h('div', { class: 'rthumb ' + cls }, h('img', { src: r.thumb, alt: '', loading: 'lazy', decoding: 'async' }))
-    : h('div', { class: 'rthumb emoji ' + cls, 'aria-hidden': 'true' }, catIcon(r.category));
+export export function recipeVisual(r, cls = '', { hero = false } = {}) {
+  if (r.photo) return h('img', { class: (hero ? 'hero-photo ' : '') + cls, src: r.photo, alt: hero ? ('Zdjęcie: ' + (r.name || 'receptura')) : '', loading: hero ? 'eager' : 'lazy', decoding: 'async' });
+  const label = String(r.name || catName(r.category) || 'Kucharek').slice(0, 28);
+  const emoji = catIcon(r.category);
+  const bg = hero ? '121316' : '1b1d20';
+  const svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 600"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#2b2e33"/><stop offset="1" stop-color="#0e1012"/></linearGradient><filter id="b"><feGaussianBlur stdDeviation="28"/></filter></defs><rect width="900" height="600" fill="#' + bg + '"/><circle cx="760" cy="90" r="180" fill="#ffffff" opacity=".05" filter="url(%23b)"/><circle cx="130" cy="520" r="230" fill="#ffffff" opacity=".04" filter="url(%23b)"/><rect x="28" y="28" width="844" height="544" rx="42" fill="url(%23g)" opacity=".72"/><text x="450" y="300" text-anchor="middle" font-size="150">' + emoji + '</text><text x="450" y="430" text-anchor="middle" fill="#f4f4f1" font-family="system-ui,sans-serif" font-size="34" font-weight="700">' + label.replace(/[&<>]/g, '') + '</text><text x="450" y="480" text-anchor="middle" fill="#aeb3ba" font-family="system-ui,sans-serif" font-size="20">KUCHAREK</text></svg>';
+  const src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
+  return h('img', { class: (hero ? 'hero-photo ' : 'rthumb-img ') + cls + ' recipe-visual', src, alt: hero ? ('Grafika: ' + label) : '', loading: hero ? 'eager' : 'lazy', decoding: 'async' });
+}
+
+function thumbEl(r, cls = '') {
+  return recipeVisual(r, cls);
 }
 
 /** Karta receptury (lista, ekran startowy). */

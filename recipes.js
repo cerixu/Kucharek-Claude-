@@ -40,6 +40,7 @@ export const DEFAULT_SETTINGS = {
   seeded: false,
   lastBackupAt: 0,
   inventoryAlerts: true,
+  seedLibraryVersion: 0,
 };
 
 /* ---------- Stan (lustro bazy) ---------- */
@@ -133,6 +134,10 @@ export async function loadAll() {
   if (!getSetting('seeded')) {
     if (!state.recipes.size) await restoreSeeds();
     await setSetting('seeded', true);
+  }
+  if (getSetting('seedLibraryVersion') !== SEED_MEDIA_VERSION) {
+    await restoreSeeds();
+    await setSetting('seedLibraryVersion', SEED_MEDIA_VERSION);
   }
   state.ready = true;
 }
@@ -360,6 +365,24 @@ export function allTags() {
 
 /* ---------- Dane startowe ---------- */
 
+
+/* ---------- Biblioteka zdjęć startowych ---------- */
+const SEED_MEDIA_VERSION = 2;
+const PHOTO = Object.freeze({
+  pizza:'https://images.unsplash.com/photo-1774806189017-f4c1f2760ad2?auto=format&fit=crop&w=1200&q=82',
+  carbonara:'https://images.unsplash.com/photo-1663721605989-3bdd2c994190?auto=format&fit=crop&w=1200&q=82',
+  lasagna:'https://images.unsplash.com/photo-1640063414338-af9faa0c2485?auto=format&fit=crop&w=1200&q=82',
+  risotto:'https://images.unsplash.com/photo-1777897462353-12d352064390?auto=format&fit=crop&w=1200&q=82',
+  caesar:'https://images.unsplash.com/photo-1751638582376-3071e1fddb4e?auto=format&fit=crop&w=1200&q=82',
+  ramen:'https://images.unsplash.com/photo-1780733479026-09e01ff70f00?auto=format&fit=crop&w=1200&q=82',
+  tiramisu:'https://images.unsplash.com/photo-1782503708390-4e5fff098d57?auto=format&fit=crop&w=1200&q=82',
+  pesto:'https://images.unsplash.com/photo-1473093295043-cdd812d0e601?auto=format&fit=crop&w=1200&q=82',
+  soup:'https://images.unsplash.com/photo-1510431198580-7727c9fa1e3a?auto=format&fit=crop&w=1200&q=82',
+  sushi:'https://images.unsplash.com/photo-1675870791718-a12568cfef43?auto=format&fit=crop&w=1200&q=82',
+  cheesecake:'https://images.unsplash.com/photo-1774988867972-98caecc776d8?auto=format&fit=crop&w=1200&q=82',
+  focaccia:'https://images.unsplash.com/photo-1765172526530-916823d3efc9?auto=format&fit=crop&w=1200&q=82',
+});
+
 const I = (name, amount, unit, x = {}) => blankIngredient({ name, amount, unit, ...x });
 const S = (name, ...ingredients) => ({ id: uid('sec_'), name, ingredients });
 const T = (text) => blankStep(text);
@@ -369,7 +392,7 @@ export function seedRecipes() {
   const base = { createdAt: now, updatedAt: now };
   return [
     blankRecipe({
-      ...base, id: 'rcp_seed_pizza', name: 'Pizza Napoletana', category: 'cat-pizza', traditional: true, origin: 'IT',
+      ...base, id: 'rcp_seed_pizza', name: 'Pizza Napoletana', category: 'cat-pizza', photo: PHOTO.pizza, thumb: PHOTO.pizza, traditional: true, origin: 'IT',
       description: 'Klasyczne neapolitańskie ciasto na 6 pizz (ok. 280 g na kulkę), długo dojrzewające. Dane przykładowe — edytuj lub usuń.',
       servings: 6, yieldAmount: 1682, yieldUnit: 'g', prepTime: 30, cookTime: 2, fermentTime: 1440, temperature: '450–485 °C', bakers: true,
       salePrice: 32, tags: ['ciasto', 'fermentacja', 'włoskie'],
@@ -394,7 +417,7 @@ export function seedRecipes() {
       ],
     }),
     blankRecipe({
-      ...base, id: 'rcp_seed_carbonara', name: 'Carbonara', category: 'cat-pasta', traditional: true, origin: 'IT',
+      ...base, id: 'rcp_seed_carbonara', name: 'Carbonara', category: 'cat-pasta', photo: PHOTO.carbonara, thumb: PHOTO.carbonara, traditional: true, origin: 'IT',
       description: 'Rzymska carbonara — bez śmietany. Dane przykładowe — edytuj lub usuń.',
       servings: 4, prepTime: 10, cookTime: 20, temperature: 'sos poza ogniem, ok. 70 °C', tags: ['makaron', 'rzymskie', 'klasyk'],
       source: 'Tradycyjna receptura rzymska (guanciale, pecorino, żółtka, pieprz)',
@@ -412,7 +435,7 @@ export function seedRecipes() {
       ],
     }),
     blankRecipe({
-      ...base, id: 'rcp_seed_sos', name: 'Sos pomidorowy', category: 'cat-sosy-bazowe',
+      ...base, id: 'rcp_seed_sos', name: 'Sos pomidorowy', category: 'cat-sosy-bazowe', photo: PHOTO.soup, thumb: PHOTO.soup,
       description: 'Prosty sos bazowy do pizzy i makaronu. Dane przykładowe — edytuj lub usuń.',
       servings: 4, yieldAmount: 650, yieldUnit: 'g', prepTime: 5, cookTime: 25, tags: ['baza', 'pomidory', 'wegańskie'],
       source: 'Klasyczna receptura włoska (przykład)',
@@ -425,16 +448,37 @@ export function seedRecipes() {
       ],
     }),
   ];
+  ...extraSeedRecipes(now),
+}
+
+function extraSeedRecipes(now) {
+  const base={createdAt:now,updatedAt:now};
+  return [
+    blankRecipe({...base,id:'rcp_seed_lasagne',name:'Lasagne al forno',category:'cat-pasta',traditional:true,origin:'IT',photo:PHOTO.lasagna,thumb:PHOTO.lasagna,description:'Warstwowa lasagne z ragù, beszamelem i Parmigiano Reggiano.',servings:6,prepTime:35,cookTime:45,temperature:'190 °C',tags:['lasagne','ragù','włoskie'],sections:[S('RAGÙ',I('Wołowina mielona',500,'g'),I('Pancetta',100,'g'),I('Passata pomidorowa',700,'g'),I('Cebula',120,'g'),I('Marchew',100,'g'),I('Seler naciowy',80,'g'),I('Oliwa extra vergine',30,'ml')),S('BESZAMEL',I('Mleko',700,'ml'),I('Masło',60,'g'),I('Mąka pszenna',60,'g'),I('Gałka muszkatołowa',1,'g')),S('MONTAŻ',I('Płaty lasagne',250,'g'),I('Parmigiano Reggiano',100,'g'))],steps:[T('Zeszklij warzywa na oliwie, dodaj pancettę i mięso. Mocno zrumień.'),T('Dodaj pomidory i gotuj ragù minimum 30 minut.'),T('Z masła, mąki i mleka przygotuj gładki beszamel. Dopraw gałką.'),T('Układaj warstwami: ragù, płaty, beszamel i ser. Powtórz.'),T('Piecz około 45 minut w 190 °C. Odstaw na 10 minut przed krojeniem.')]}),
+    blankRecipe({...base,id:'rcp_seed_risotto',name:'Risotto alla Milanese',category:'cat-pasta',traditional:true,origin:'IT',photo:PHOTO.risotto,thumb:PHOTO.risotto,description:'Kremowe risotto z szafranem, wykończone masłem i Parmigiano.',servings:4,prepTime:10,cookTime:25,tags:['risotto','szafran','włoskie'],sections:[S('',I('Ryż Carnaroli',320,'g'),I('Wywar warzywny lub drobiowy',1000,'ml'),I('Cebula',80,'g'),I('Białe wytrawne wino',100,'ml'),I('Szafran',0.2,'g'),I('Masło',60,'g'),I('Parmigiano Reggiano',80,'g'))],steps:[T('Podgrzewaj wywar. Szafran zalej niewielką ilością gorącego wywaru.'),T('Zeszklij cebulę na części masła, dodaj ryż i praż 2 minuty.'),T('Wlej wino i odparuj.'),T('Dolewaj wywar partiami, mieszając, gdy poprzednia porcja zostanie wchłonięta.'),T('Dodaj szafran. Ryż ma być al dente i płynny.'),T('Zdejmij z ognia, wmieszaj zimne masło i Parmigiano.')]}),
+    blankRecipe({...base,id:'rcp_seed_caesar',name:'Sałatka Caesar',category:'cat-salatki',origin:'US',photo:PHOTO.caesar,thumb:PHOTO.caesar,description:'Chrupiąca sałata rzymska, kurczak, grzanki i intensywny sos anchois.',servings:2,prepTime:15,cookTime:10,tags:['sałatka','kurczak','sos'],sections:[S('SAŁATKA',I('Sałata rzymska',250,'g'),I('Pierś z kurczaka',250,'g'),I('Grzanki',100,'g'),I('Parmigiano Reggiano',40,'g')),S('SOS',I('Żółtko',1,'szt.'),I('Anchois',20,'g'),I('Czosnek',1,'szt.'),I('Sok z cytryny',20,'ml'),I('Oliwa extra vergine',80,'ml'))],steps:[T('Kurczaka dopraw, zgrilluj i pokrój w plastry.'),T('Rozetrzyj anchois i czosnek, dodaj żółtko, cytrynę i stopniowo oliwę.'),T('Sałatę wymieszaj z sosem tuż przed podaniem.'),T('Dodaj kurczaka, grzanki i płatki Parmigiano.')]}),
+    blankRecipe({...base,id:'rcp_seed_ramen',name:'Ramen shoyu',category:'cat-zupy',traditional:true,origin:'JP',photo:PHOTO.ramen,thumb:PHOTO.ramen,description:'Aromatyczny ramen z bulionem, tare shoyu, makaronem, jajkiem i chashu.',servings:2,prepTime:25,cookTime:20,tags:['japonia','ramen','makaron'],sections:[S('BULION',I('Bulion drobiowy',900,'ml'),I('Sos sojowy',60,'ml'),I('Mirin',30,'ml'),I('Imbir',20,'g'),I('Czosnek',2,'szt.')),S('DODATKI',I('Makaron ramen',240,'g'),I('Jajka',2,'szt.'),I('Boczek chashu',180,'g'),I('Dymka',30,'g'),I('Nori',2,'szt.'))],steps:[T('Podgrzej bulion z imbirem i czosnkiem. Dodaj sos sojowy i mirin.'),T('Jajka ugotuj 6,5 minuty, zahartuj i obierz.'),T('Makaron ugotuj osobno zgodnie z instrukcją.'),T('Do misek wlej bulion, dodaj makaron, chashu, jajko, nori i dymkę.')]}),
+    blankRecipe({...base,id:'rcp_seed_tiramisu',name:'Tiramisù',category:'cat-desery',traditional:true,origin:'IT',photo:PHOTO.tiramisu,thumb:PHOTO.tiramisu,description:'Klasyczne tiramisù z mascarpone, kawą i kakao.',servings:6,prepTime:30,tags:['deser','kawa','włoskie'],sections:[S('KREM',I('Mascarpone',500,'g'),I('Żółtka',4,'szt.'),I('Cukier',100,'g')),S('MONTAŻ',I('Biszkopty savoiardi',250,'g'),I('Espresso',250,'ml'),I('Kakao',20,'g'))],steps:[T('Utrzyj żółtka z cukrem do jasnej, puszystej masy.'),T('Dodaj mascarpone i wymieszaj do gładkości.'),T('Savoiardi krótko nasączaj espresso.'),T('Układaj warstwami biszkopty i krem.'),T('Schłodź minimum 6 godzin. Przed podaniem oprósz kakao.')]}),
+    blankRecipe({...base,id:'rcp_seed_pesto',name:'Pasta al pesto',category:'cat-pasta',traditional:true,origin:'IT',photo:PHOTO.pesto,thumb:PHOTO.pesto,description:'Liguryjska pasta z bazyliowym pesto, Parmigiano i orzeszkami.',servings:2,prepTime:10,cookTime:12,tags:['pesto','bazylia','włoskie'],sections:[S('PESTO',I('Bazylia',50,'g'),I('Parmigiano Reggiano',45,'g'),I('Pecorino Romano',20,'g'),I('Orzeszki piniowe',30,'g'),I('Oliwa extra vergine',100,'ml'),I('Czosnek',1,'szt.')),S('PASTA',I('Trofie lub linguine',200,'g'),I('Sól',20,'g'))],steps:[T('Utrzyj bazylię, czosnek i orzeszki. Dodaj sery i oliwę.'),T('Ugotuj makaron al dente, zachowaj trochę wody z gotowania.'),T('Wymieszaj pesto z makaronem poza ogniem, rozluźniając wodą z gotowania.'),T('Podawaj od razu z dodatkowym Parmigiano.')]}),
+    blankRecipe({...base,id:'rcp_seed_pumpkin',name:'Krem z pieczonej dyni',category:'cat-zupy',origin:'PL',photo:PHOTO.soup,thumb:PHOTO.soup,description:'Gładki krem z pieczonej dyni z imbirem, czosnkiem i oliwą.',servings:4,prepTime:15,cookTime:40,temperature:'200 °C',tags:['zupa','dynia','jesień'],sections:[S('',I('Dynia',1000,'g'),I('Cebula',150,'g'),I('Czosnek',3,'szt.'),I('Imbir',15,'g'),I('Bulion warzywny',700,'ml'),I('Oliwa extra vergine',40,'ml'),I('Śmietanka 30%',100,'ml'))],steps:[T('Dynię pokrój, skrop oliwą i piecz z cebulą oraz czosnkiem w 200 °C przez około 30 minut.'),T('Przełóż do garnka, dodaj imbir i bulion.'),T('Gotuj 10 minut, następnie zmiksuj na gładki krem.'),T('Dodaj śmietankę, dopraw solą i pieprzem.')]}),
+    blankRecipe({...base,id:'rcp_seed_sushi',name:'Nigiri z łososiem',category:'cat-ryby',traditional:true,origin:'JP',photo:PHOTO.sushi,thumb:PHOTO.sushi,description:'Nigiri z łososiem na zaprawianym ryżu sushi.',servings:2,prepTime:30,cookTime:20,tags:['sushi','łosoś','japonia'],sections:[S('RYŻ',I('Ryż do sushi',200,'g'),I('Woda',240,'ml'),I('Ocet ryżowy',35,'ml'),I('Cukier',12,'g'),I('Sól',4,'g')),S('NIGIRI',I('Łosoś sushi grade',180,'g'),I('Wasabi',10,'g'),I('Sos sojowy',60,'ml'))],steps:[T('Ryż wypłucz do czystej wody i ugotuj.'),T('Wymieszaj ocet, cukier i sól. Zapraw gorący ryż i ostudź.'),T('Łososia pokrój w równe plastry.'),T('Uformuj porcje ryżu, posmaruj odrobiną wasabi i ułóż łososia.')]}),
+    blankRecipe({...base,id:'rcp_seed_cheesecake',name:'Sernik nowojorski',category:'cat-desery',origin:'US',photo:PHOTO.cheesecake,thumb:PHOTO.cheesecake,description:'Kremowy pieczony sernik na kruchym spodzie.',servings:10,prepTime:25,cookTime:70,temperature:'160 °C',tags:['sernik','deser','wypiek'],sections:[S('SPÓD',I('Herbatniki',220,'g'),I('Masło',90,'g')),S('MASA',I('Serek śmietankowy',900,'g'),I('Cukier',180,'g'),I('Jajka',4,'szt.'),I('Śmietana 18%',180,'g'),I('Wanilia',5,'ml'),I('Sok z cytryny',15,'ml'))],steps:[T('Herbatniki zmiel, wymieszaj z masłem i dociśnij do formy.'),T('Serek krótko zmiksuj z cukrem. Dodawaj jajka pojedynczo.'),T('Dodaj śmietanę, wanilię i cytrynę. Nie napowietrzaj masy.'),T('Piecz w 160 °C około 65–70 minut.'),T('Wystudź i schłodź minimum 6 godzin.')]}),
+    blankRecipe({...base,id:'rcp_seed_focaccia',name:'Focaccia genovese',category:'cat-pieczywo',traditional:true,origin:'IT',photo:PHOTO.focaccia,thumb:PHOTO.focaccia,description:'Wysoka, oliwna focaccia z chrupiącą powierzchnią i miękkim wnętrzem.',servings:8,yieldAmount:900,yieldUnit:'g',prepTime:25,cookTime:22,fermentTime:1440,temperature:'230 °C',bakers:true,tags:['focaccia','pieczywo','fermentacja'],sections:[S('CIASTO',I('Mąka pszenna typ 00',600,'g',{percent:100,flour:true}),I('Woda',420,'g',{percent:70}),I('Sól',15,'g',{percent:2.5}),I('Drożdże świeże',3,'g',{percent:0.5}),I('Oliwa extra vergine',35,'ml')),S('WYKOŃCZENIE',I('Oliwa extra vergine',40,'ml'),I('Rozmaryn',5,'g'),I('Sól morska',5,'g'))],steps:[T('Wymieszaj mąkę, wodę i drożdże. Po kilku minutach dodaj sól i oliwę.'),T('Zostaw do fermentacji w lodówce około 18–24 godzin.'),T('Przenieś na mocno oliwioną blachę i delikatnie rozciągnij.'),T('Po wyrośnięciu zrób palcami wgłębienia. Dodaj oliwę, rozmaryn i sól.'),T('Piecz około 22 minut w 230 °C, aż powierzchnia będzie mocno złota.')]}),
+  ];
 }
 
 /** Dodaje przykładowe receptury, jeśli ich brakuje (nie nadpisuje edytowanych). */
-export async function restoreSeeds() {
-  const seeds = seedRecipes().filter((r) => !state.recipes.has(r.id));
-  if (!seeds.length) return 0;
-  await db.putMany('recipes', seeds);
-  seeds.forEach((r) => state.recipes.set(r.id, r));
+export async function restoreSeeds({ forceMedia = false } = {}) {
+  const seeds=seedRecipes();
+  const missing=seeds.filter(r=>!state.recipes.has(r.id));
+  const mediaUpdates=seeds.filter(r=>state.recipes.has(r.id)&&r.photo&&(!state.recipes.get(r.id).photo||forceMedia))
+    .map(r=>({...state.recipes.get(r.id),photo:r.photo,thumb:r.thumb,updatedAt:Date.now()}));
+  const all=[...missing,...mediaUpdates];
+  if(!all.length)return 0;
+  await db.putMany('recipes',all);
+  all.forEach(r=>state.recipes.set(r.id,r));
   emit('recipes');
-  return seeds.length;
+  return all.length;
 }
 
 export { kv };

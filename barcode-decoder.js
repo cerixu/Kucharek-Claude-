@@ -119,7 +119,7 @@ function decodeDirection(gray, width, height, reverse = false) {
       if (lo < 1 || hi / lo > 2.8) continue;
       const moduleWidth = (a.width + b.width + c.width) / 3;
       if (moduleWidth < 1.1 || moduleWidth > width / 12) continue;
-      const start = a.start;
+      const start = reverse ? (width - a.end) : a.start;
       for (const drift of [-.65,-.35,0,.35,.65]) {
         const w = moduleWidth * (1 + drift / 10);
         const bits95 = sampleModules(gray,width,y,start,w,95,reverse);

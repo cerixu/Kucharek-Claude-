@@ -3,7 +3,7 @@ import { test, expect } from '@playwright/test';
 const DB_NAME = 'kucharzyna-claude-db';
 
 async function reset(page) {
-  await page.goto('/');
+  await page.goto('about:blank');
   await page.evaluate(async (name) => {
     await new Promise((resolve) => { const r = indexedDB.deleteDatabase(name); r.onsuccess = r.onerror = r.onblocked = resolve; });
   }, DB_NAME);

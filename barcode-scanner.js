@@ -143,7 +143,7 @@ export function openBarcodeScanner({ onDetected }) {
           frameRate:{ideal:30,max:30}
         }
       });
-      video.srcObject=stream;
+      try { video.srcObject=stream; } catch (_) {}
       videoTrack=stream.getVideoTracks?.()[0] || null;
       torchSupported=!!videoTrack;
       flashButton.disabled=!torchSupported;

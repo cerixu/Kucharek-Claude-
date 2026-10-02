@@ -107,10 +107,10 @@ function pizzaCalculator() {
     if (st.oil > 0) ings.push(I('Oliwa', r1(r.oil), 'g', { percent: st.oil }));
     ings.push(I(`Drożdże ${YEAST_TYPES[st.yeastType].label}`, Math.round(r.yeast * 100) / 100, 'g', { percent: st.yeast }));
     const sec = blankSection('CIASTO'); sec.ingredients = ings;
-    const rec = blankRecipe({
-      const balls = st.mode === 'flour' ? (r.balls || 0) : st.balls;
+    const balls = st.mode === 'flour' ? (r.balls || 0) : st.balls;
     const ballLabel = `${balls} × ${fmtAmount(st.ballWeight)} g`;
-    name: `Ciasto na pizzę (${ballLabel})`, category: 'cat-pizza', servings: balls, yieldAmount: Math.round(r.total), yieldUnit: 'g',
+    const rec = blankRecipe({
+      name: `Ciasto na pizzę (${ballLabel})`, category: 'cat-pizza', servings: balls, yieldAmount: Math.round(r.total), yieldUnit: 'g',
       fermentTime: Math.round((st.hours || 0) * 60), temperature: `fermentacja w ${st.temp} °C`, bakers: true, sections: [sec],
       description: `Hydracja ${st.hydration}%, sól ${st.salt}%${st.oil ? `, oliwa ${st.oil}%` : ''}, drożdże ${st.yeast}%.`, tags: ['ciasto', 'kalkulator'],
       steps: [blankStep('Rozpuść sól w wodzie, dodaj drożdże.'), blankStep('Dodaj mąkę i wyrabiaj do gładkiego, elastycznego ciasta.'),

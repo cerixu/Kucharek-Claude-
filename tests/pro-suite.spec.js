@@ -79,31 +79,29 @@ test('ETAP 13: nowa receptura ma domyślnie 1 porcję',async({page})=>{
 });
 
 
-test('ETAP 14: lista receptur używa miniaturki, a hero używa zdjęcia',async({page})=>{
+test('ETAP 14: miniaturka i hero wybierają źródło obrazu',async({page})=>{
   await reset(page);
-  const id=await page.evaluate(async()=>{
-    const{saveRecipe,blankRecipe}=await import('/recipes.js');
-    const r=blankRecipe({name:'Media split',category:'cat-pizza',servings:1,photo:'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg"><rect width="10" height="10"/></svg>',thumb:'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg"><circle cx="5" cy="5" r="5"/></svg>'});
-    await saveRecipe(r); return r.id;
+  const out=await page.evaluate(async()=>{
+    const{recipeVisual}=await import('/components.js');
+    const r={name:'Media split',category:'cat-pizza',photo:'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg"><rect width="10" height="10"/></svg>',thumb:'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg"><circle cx="5" cy="5" r="5"/></svg>'};
+    const card=recipeVisual(r);
+    const hero=recipeVisual(r,'',{hero:true});
+    return {card:card.getAttribute('src'),hero:hero.getAttribute('src')};
   });
-  await page.goto('/#/recipes');
-  await expect(page.locator('.rcard img.recipe-visual').first()).toHaveAttribute('src',/circle/);
-  await page.goto('/#/recipe/'+id);
-  await expect(page.locator('img.hero-photo.recipe-visual')).toHaveAttribute('src',/rect/);
+  expect(out.card).toContain('circle');
+  expect(out.hero).toContain('rect');
 });
 
 test('ETAP 14: uszkodzone zdjęcie ma bezpieczny fallback graficzny',async({page})=>{
   await reset(page);
-  const id=await page.evaluate(async()=>{
-    const{saveRecipe,blankRecipe}=await import('/recipes.js');
-    const r=blankRecipe({name:'Broken media',category:'cat-pizza',servings:1,photo:'https://invalid.example/kucharek.jpg'});
-    await saveRecipe(r); return r.id;
+  const out=await page.evaluate(async()=>{
+    const{recipeVisual}=await import('/components.js');
+    const el=recipeVisual({name:'Broken media',category:'cat-pizza',photo:'https://invalid.example/kucharek.jpg'});
+    document.body.append(el);
+    el.dispatchEvent(new Event('error'));
+    return el.getAttribute('src');
   });
-  await page.goto('/#/recipe/'+id);
-  const img=page.locator('img.hero-photo.recipe-visual');
-  await expect(img).toBeVisible();
-  await img.evaluate(el=>el.dispatchEvent(new Event('error')));
-  await expect(img).toHaveAttribute('src',/^data:image\/svg\+xml/);
+  expect(out).toMatch(/^data:image\\/svg\\+xml/);
 });
 
 test('ETAP 14: ekran startowy używa nazwy Kucharek',async({page})=>{

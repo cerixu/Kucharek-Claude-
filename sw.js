@@ -9,7 +9,7 @@
    ZMIANA WERSJI: podbij VERSION (i APP_VERSION w util.js) przy każdej
    aktualizacji plików, żeby urządzenia wykryły nową wersję.
    ========================================================================== */
-const VERSION = 'kucharzyna-claude-1.0.1';
+const VERSION = 'kucharek-claude-1.1.0';
 const NETWORK_TIMEOUT = 3500;
 
 const CORE = [
@@ -18,8 +18,8 @@ const CORE = [
   'styles.css',
   'manifest.webmanifest',
   'app.js', 'router.js', 'pwa.js', 'ui.js', 'util.js', 'db.js', 'recipes.js', 'calculator.js', 'importer.js', 'backup.js',
-  'components.js', 'shopping.js',
-  'views-start.js', 'views-recipes.js', 'views-detail.js', 'views-editor.js', 'views-cook.js', 'views-calc.js', 'views-import.js', 'views-settings.js',
+  'components.js', 'shopping.js', 'inventory.js', 'pro.js', 'pro-calculators.js',
+  'views-start.js', 'views-recipes.js', 'views-detail.js', 'views-editor.js', 'views-cook.js', 'views-calc.js', 'views-import.js', 'views-settings.js', 'views-inventory.js', 'views-pro-fixed.js',
   'assets/apple-touch-icon.png', 'assets/icon-192.png', 'assets/icon-512.png', 'assets/icon-maskable-512.png',
 ];
 

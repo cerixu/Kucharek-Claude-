@@ -367,7 +367,7 @@ export function allTags() {
 
 
 /* ---------- Biblioteka zdjęć startowych ---------- */
-const SEED_MEDIA_VERSION = 4;
+const SEED_MEDIA_VERSION = 5;
 const PHOTO = Object.freeze({
   pizza:'https://photoshop-api.adobe.io/v2/short-url/urn:aaid:ps:US:19d098c7-f308-4416-951d-4d5bb6ed6cc4',
   carbonara:'https://photoshop-api.adobe.io/v2/short-url/urn:aaid:ps:US:995b5785-cd24-4bff-b5c2-ba36d567a827',
@@ -472,8 +472,13 @@ function extraSeedRecipes(now) {
 export async function restoreSeeds({ forceMedia = false } = {}) {
   const seeds=seedRecipes();
   const missing=seeds.filter(r=>!state.recipes.has(r.id));
-  const mediaUpdates=seeds.filter(r=>state.recipes.has(r.id)&&r.photo&&(!state.recipes.get(r.id).photo||(r.id==='rcp_seed_sos'&&state.recipes.get(r.id).photo===PHOTO.soup)||forceMedia))
-    .map(r=>({...state.recipes.get(r.id),photo:r.photo,thumb:r.thumb,updatedAt:Date.now()}));
+  const mediaUpdates=seeds.filter(r=>{
+    if(!state.recipes.has(r.id)||!r.photo)return false;
+    const cur=state.recipes.get(r.id);
+    const legacyMedia=/^https:\/\/images\\.unsplash\\.com\//.test(cur.photo||'');
+    const legacyThumb=/^https:\/\/images\\.unsplash\\.com\//.test(cur.thumb||'');
+    return !cur.photo || legacyMedia || legacyThumb || (r.id==='rcp_seed_sos'&&cur.photo===PHOTO.soup) || forceMedia;
+  }).map(r=>({...state.recipes.get(r.id),photo:r.photo,thumb:r.thumb,updatedAt:Date.now()}));
   const all=[...missing,...mediaUpdates];
   if(!all.length)return 0;
   await db.putMany('recipes',all);

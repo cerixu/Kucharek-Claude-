@@ -337,10 +337,7 @@ test('Gotuję: brakujące składniki trafiają do Zakupów', async ({ page }) =>
   await expect(stepBoxes).toHaveCount(4);
   for (let i = 0; i < 4; i++) await stepBoxes.nth(i).click();
   await page.getByRole('button', { name: 'Zakończ' }).click();
-  await page.getByRole('button', { name: 'Odjąć' }).click();
-  await expect(page.getByText('Braki w magazynie')).toBeVisible();
-  await page.getByRole('button', { name: 'Dodaj braki do zakupów' }).click();
-  await expect(page.getByText('Brakujące składniki dodano do zakupów')).toBeVisible();
+  await expect(page.getByText('Magazyn zaktualizowany. Braki dodane do zakupów 📦')).toBeVisible();
 
   const shopping = await page.evaluate(async (name) => {
     const db = await new Promise((resolve, reject) => {

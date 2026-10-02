@@ -8,17 +8,18 @@ import { loadAll, state, setSetting, getSetting, normalizeRecipe, DEFAULT_SETTIN
 import { APP_VERSION } from './util.js';
 
 const FORMAT = 'Kucharzyna';
+const PRO_STORES = ['inventory','inventoryLog','deliveries','lots','stockMovements','suppliers','purchaseOrders','productionBatches','stocktakes','waste','priceHistory'];
 const BACKUP_DUE_DAYS = 14;
 
 /** Zbiera całą zawartość bazy. */
 export async function collectData() {
-  const [recipes, ingredients, categories, shoppingItems, settingsRaw, history] = await Promise.all([
+  const [recipes, ingredients, categories, shoppingItems, settingsRaw, history, ...pro] = await Promise.all([
     db.getAll('recipes'), db.getAll('ingredients'), db.getAll('categories'), db.getAll('shoppingItems'),
-    db.getAll('settings'), db.getAll('history'),
+    db.getAll('settings'), db.getAll('history'), ...PRO_STORES.map((s) => db.getAll(s)),
   ]);
   // Do kopii trafiają ustawienia i postęp gotowania/kalkulatory; szkice pomijamy.
   const settings = settingsRaw.filter((s) => !String(s.key).startsWith('draft:'));
-  return { recipes, ingredients, categories, shoppingItems, settings, history };
+  return { recipes, ingredients, categories, shoppingItems, settings, history, ...Object.fromEntries(PRO_STORES.map((s,i)=>[s,pro[i]])) };
 }
 
 export async function buildBackup() {
@@ -91,7 +92,7 @@ export function parseBackup(text) {
   const data = {
     recipes: arr(d.recipes).filter((r) => r && r.id), ingredients: arr(d.ingredients).filter((r) => r && r.id),
     categories: arr(d.categories).filter((r) => r && r.id), shoppingItems: arr(d.shoppingItems).filter((r) => r && r.id),
-    settings: arr(d.settings).filter((r) => r && r.key && !String(r.key).startsWith('draft:')), history: arr(d.history).filter((r) => r && r.id),
+    settings: arr(d.settings).filter((r) => r && r.key && !String(r.key).startsWith('draft:')), history: arr(d.history).filter((r) => r && r.id), ...Object.fromEntries(PRO_STORES.map((s)=>[s,arr(d[s]).filter((r)=>r&&r.id)])),
   };
   return {
     backup: { ...obj, data },
@@ -112,14 +113,15 @@ export async function importBackup(backup, mode) {
   const recipes = d.recipes.map((r) => normalizeRecipe(r));
 
   if (mode === 'replace') {
-    await db.tx(['recipes', 'ingredients', 'categories', 'shoppingItems', 'settings', 'history'], (t) => {
-      ['recipes', 'ingredients', 'categories', 'shoppingItems', 'settings', 'history'].forEach((s) => t.clear(s));
+    await db.tx(['recipes', 'ingredients', 'categories', 'shoppingItems', 'settings', 'history', ...PRO_STORES], (t) => {
+      ['recipes', 'ingredients', 'categories', 'shoppingItems', 'settings', 'history', ...PRO_STORES].forEach((s) => t.clear(s));
       recipes.forEach((r) => t.put('recipes', r));
       d.ingredients.forEach((r) => t.put('ingredients', r));
       d.categories.forEach((r) => t.put('categories', r));
       d.shoppingItems.forEach((r) => t.put('shoppingItems', r));
       d.settings.forEach((r) => t.put('settings', r));
       d.history.forEach((r) => t.put('history', r));
+      PRO_STORES.forEach((s) => d[s].forEach((r) => t.put(s, r)));
       t.put('settings', { key: 'seeded', value: true });
     });
   } else {

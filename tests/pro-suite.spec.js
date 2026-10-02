@@ -119,3 +119,8 @@ test('ETAP 14: ekran startowy używa nazwy Kucharek',async({page})=>{
   await expect(page.getByText('Kucharek',{exact:true}).first()).toBeVisible();
   await expect(page.getByText('Kucharzyno',{exact:false})).toHaveCount(0);
 });
+
+
+test('ETAP 18: strata zapisuje koszt historyczny i tygodniowy raport grupuje produkty',async({page})=>{await reset(page);const out=await page.evaluate(async()=>{const i=await import('/inventory.js');const p=await import('/pro.js');const item=await i.saveInventoryItem({name:'Rukola raport',quantity:10,unit:'kg',purchasePrice:20,priceUnit:'kg'});const row=await p.recordWaste(item.id,1,'zepsucie');await i.saveInventoryItem({...item,purchasePrice:30});const report=await p.wasteReport(Date.now()-86400000*3,Date.now()+1000);return{cost:row.costValue,price:row.price,reportCost:report.totalCost,top:report.topProduct?.name,amount:report.topProduct?.amount};});expect(out.cost).toBe(20);expect(out.price).toBe(20);expect(out.reportCost).toBe(20);expect(out.top).toBe('Rukola raport');expect(out.amount).toBe(1);});
+
+test('ETAP 18: ekran Straty pokazuje tygodniowy raport',async({page})=>{await reset(page);await page.goto('/#/inventory');await page.getByRole('button',{name:'PRO',exact:true}).click();await page.getByRole('button',{name:'Straty',exact:true}).click();await expect(page.getByRole('heading',{name:'Raport strat',exact:true})).toBeVisible();await expect(page.getByText('Koszt liczony według ceny z chwili wyrzucenia.',{exact:true})).toBeVisible();});

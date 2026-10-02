@@ -35,7 +35,7 @@ export async function seedTestInventory() {
   await loadInventory();
   const created = [];
   for (const row of demo) {
-    if (await db.get('inventory', row.id)) continue;
+    await db.delete('inventory', row.id);
     created.push(await saveInventoryItem(row));
   }
   return created;

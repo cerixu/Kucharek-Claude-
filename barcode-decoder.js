@@ -107,7 +107,7 @@ function sampleModules(gray, width, y, start, moduleWidth, count, reverse = fals
 }
 
 function decodeDirection(gray, width, height, reverse = false) {
-  const ys = [Math.floor(height * .5), Math.floor(height * .42), Math.floor(height * .58), Math.floor(height * .34), Math.floor(height * .66)];
+  const ys = [0.12,0.22,0.32,0.42,0.50,0.58,0.68,0.78,0.88].map(v => Math.floor(height * v));
   for (const y of ys) {
     const runs = runsFromRow(gray, width, y);
     if (!runs) continue;

@@ -9,17 +9,18 @@ import { APP_VERSION } from './util.js';
 
 const FORMAT = 'Kucharzyna';
 const PRO_STORES = ['inventory','inventoryLog','deliveries','lots','stockMovements','suppliers','purchaseOrders','productionBatches','stocktakes','waste','priceHistory'];
+const CORE_STORES = ['recipes','ingredients','categories','shoppingItems','settings','history','cookSessions'];
 const BACKUP_DUE_DAYS = 14;
 
 /** Zbiera całą zawartość bazy. */
 export async function collectData() {
-  const [recipes, ingredients, categories, shoppingItems, settingsRaw, history, ...pro] = await Promise.all([
+  const [recipes, ingredients, categories, shoppingItems, settingsRaw, history, cookSessions, ...pro] = await Promise.all([
     db.getAll('recipes'), db.getAll('ingredients'), db.getAll('categories'), db.getAll('shoppingItems'),
-    db.getAll('settings'), db.getAll('history'), ...PRO_STORES.map((s) => db.getAll(s)),
+    db.getAll('settings'), db.getAll('history'), db.getAll('cookSessions'), ...PRO_STORES.map((s) => db.getAll(s)),
   ]);
   // Do kopii trafiają ustawienia i postęp gotowania/kalkulatory; szkice pomijamy.
   const settings = settingsRaw.filter((s) => !String(s.key).startsWith('draft:'));
-  return { recipes, ingredients, categories, shoppingItems, settings, history, ...Object.fromEntries(PRO_STORES.map((s,i)=>[s,pro[i]])) };
+  return { recipes, ingredients, categories, shoppingItems, settings, history, cookSessions, ...Object.fromEntries(PRO_STORES.map((s,i)=>[s,pro[i]])) };
 }
 
 export async function buildBackup() {
@@ -113,14 +114,15 @@ export async function importBackup(backup, mode) {
   const recipes = d.recipes.map((r) => normalizeRecipe(r));
 
   if (mode === 'replace') {
-    await db.tx(['recipes', 'ingredients', 'categories', 'shoppingItems', 'settings', 'history', ...PRO_STORES], (t) => {
-      ['recipes', 'ingredients', 'categories', 'shoppingItems', 'settings', 'history', ...PRO_STORES].forEach((s) => t.clear(s));
+    await db.tx([...CORE_STORES, ...PRO_STORES], (t) => {
+      [...CORE_STORES, ...PRO_STORES].forEach((s) => t.clear(s));
       recipes.forEach((r) => t.put('recipes', r));
       d.ingredients.forEach((r) => t.put('ingredients', r));
       d.categories.forEach((r) => t.put('categories', r));
       d.shoppingItems.forEach((r) => t.put('shoppingItems', r));
       d.settings.forEach((r) => t.put('settings', r));
       d.history.forEach((r) => t.put('history', r));
+      (d.cookSessions || []).forEach((r) => r?.recipeId && t.put('cookSessions', r));
       PRO_STORES.forEach((s) => d[s].forEach((r) => t.put(s, r)));
       t.put('settings', { key: 'seeded', value: true });
     });
@@ -131,7 +133,7 @@ export async function importBackup(backup, mode) {
     const shopIds = new Set(state.shopping.map((x) => x.id));
     const catalog = new Map(state.catalog);
     const proExisting = Object.fromEntries(await Promise.all(PRO_STORES.map(async (s) => [s, new Map((await db.getAll(s)).map(x => [x.id, x]))])));
-    await db.tx(['recipes', 'ingredients', 'categories', 'shoppingItems', 'history', ...PRO_STORES], (t) => {
+    await db.tx(['recipes', 'ingredients', 'categories', 'shoppingItems', 'history', 'cookSessions', ...PRO_STORES], (t) => {
       recipes.forEach((r) => {
         const cur = existing.get(r.id);
         if (!cur || (r.updatedAt || 0) > (cur.updatedAt || 0)) t.put('recipes', r);
@@ -140,6 +142,8 @@ export async function importBackup(backup, mode) {
       d.ingredients.forEach((i) => { const cur = catalog.get(i.id); if (!cur || (i.updatedAt || 0) > (cur.updatedAt || 0)) t.put('ingredients', i); });
       d.shoppingItems.forEach((s) => { if (!shopIds.has(s.id)) t.put('shoppingItems', s); });
       d.history.forEach((x) => { if (!hasHist.has(x.id)) t.put('history', x); });
+      const cookIds = new Set((await db.getAll('cookSessions')).map((x) => x.recipeId));
+      (d.cookSessions || []).forEach((x) => { if (x?.recipeId && !cookIds.has(x.recipeId)) t.put('cookSessions', x); });
       PRO_STORES.forEach((s) => d[s].forEach((x) => {
         const cur = proExisting[s].get(x.id);
         const incomingAt = Number(x.updatedAt || x.at || x.createdAt || 0);

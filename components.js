@@ -64,34 +64,63 @@ export function recipeGraphicData(r) {
 export function ingredientIcon(ing) {
   const n = String(ing?.name || '').toLowerCase();
   let kind = 'generic';
-  if (/mąk|flour|semolin|farin/.test(n)) kind = 'flour';
+  if (/sól|salt|sel/.test(n)) kind = 'salt';
+  else if (/mąk|flour|semolin|farin/.test(n)) kind = 'flour';
+  else if (/skrobi|mączka ziemniacz|cornstarch|starch/.test(n)) kind = 'starch';
   else if (/wod|water/.test(n)) kind = 'water';
-  else if (/pomidor|tomato/.test(n)) kind = 'tomato';
-  else if (/jaj|egg|żółtk/.test(n)) kind = 'egg';
-  else if (/ser|cheese|pecorino|parmezan|parmigiano|mozzarella/.test(n)) kind = 'cheese';
-  else if (/mięs|wołow|wieprz|kurcz|guancial|boczek|szynk|chashu|meat|beef|pork|chicken/.test(n)) kind = 'meat';
-  else if (/ryb|łosoś|tuńczy|sushi|fish|salmon|tuna/.test(n)) kind = 'fish';
+  else if (/bulion|wywar|stock|broth/.test(n)) kind = 'broth';
+  else if (/pomidor|tomato|pelat|passat/.test(n)) kind = 'tomato';
+  else if (/jaj|egg|żółtk|białk/.test(n)) kind = 'egg';
+  else if (/ser|cheese|pecorino|parmezan|parmigiano|mozzarella|ricotta|mascarpone/.test(n)) kind = 'cheese';
+  else if (/mięs|wołow|wieprz|kurcz|gęś|kacz|guancial|boczek|szynk|salami|prosciutto|chashu|meat|beef|pork|chicken/.test(n)) kind = 'meat';
+  else if (/ryb|łosoś|tuńczy|sushi|ancho|sardyn|fish|salmon|tuna/.test(n)) kind = 'fish';
   else if (/oliw|olej|oil/.test(n)) kind = 'oil';
-  else if (/cebula|onion/.test(n)) kind = 'onion';
+  else if (/ocet|vinegar/.test(n)) kind = 'vinegar';
+  else if (/wino|wine/.test(n)) kind = 'wine';
+  else if (/cebula|onion|szalot/.test(n)) kind = 'onion';
   else if (/czosn|garlic/.test(n)) kind = 'garlic';
+  else if (/imbir|ginger/.test(n)) kind = 'ginger';
+  else if (/chili|chilli|papryczk|cayenne/.test(n)) kind = 'chili';
+  else if (/papryk|paprika/.test(n)) kind = 'paprika';
   else if (/pieprz|pepper/.test(n)) kind = 'pepper';
-  else if (/bazyl|pietrusz|oregano|tymian|rozmaryn|herb|zioł/.test(n)) kind = 'herb';
+  else if (/bazyl|pietrusz|oregano|tymian|rozmaryn|kolendr|szczypior|herb|zioł/.test(n)) kind = 'herb';
   else if (/cukier|sugar/.test(n)) kind = 'sugar';
   else if (/mleko|milk|śmietan|cream/.test(n)) kind = 'milk';
   else if (/masło|butter/.test(n)) kind = 'butter';
-  else if (/cytr|lemon/.test(n)) kind = 'lemon';
+  else if (/cytr|lemon|lime|limonka/.test(n)) kind = 'lemon';
   else if (/pieczark|grzyb|mushroom/.test(n)) kind = 'mushroom';
+  else if (/ryż|rice/.test(n)) kind = 'rice';
+  else if (/makaron|pasta|spaghetti|tagliatelle|noodle/.test(n)) kind = 'pasta';
+  else if (/ziemniak|potato/.test(n)) kind = 'potato';
+  else if (/marchew|carrot/.test(n)) kind = 'carrot';
+  else if (/seler|celery/.test(n)) kind = 'celery';
+  else if (/orzech|walnut|almond|hazelnut|nut/.test(n)) kind = 'nut';
+  else if (/sezam|sesame/.test(n)) kind = 'sesame';
+  else if (/soja|soy|sos sojowy/.test(n)) kind = 'soy';
+  else if (/mis[oó]|miso/.test(n)) kind = 'miso';
+  else if (/kakao|cocoa/.test(n)) kind = 'cocoa';
+  else if (/wanili|vanilla/.test(n)) kind = 'vanilla';
+  else if (/drożdż|yeast/.test(n)) kind = 'yeast';
+
   const paths = {
     flour:'M10 36h28M13 36l4-22h14l4 22M17 14l7-6 7 6M20 22h8M18 29h12',
+    starch:'M12 18h24l-2 20H14l-2-20ZM16 18l3-7h10l3 7M17 25h14M18 31h12',
     water:'M24 7C18 15 13 20 13 27a11 11 0 0 0 22 0c0-7-5-12-11-20Z',
+    broth:'M11 30c2-9 8-14 13-14s11 5 13 14M10 30h28M14 36h20M18 23c2-2 4-2 6 0s4 2 6 0',
+    salt:'M13 25h22l-2 13H15l-2-13ZM17 25v-5h14v5M19 16c2-2 4-2 6 0s4 2 6 0M18 31h.1M24 31h.1M30 31h.1',
     tomato:'M24 14c-9 0-14 6-14 13 0 9 6 14 14 14s14-5 14-14c0-7-5-13-14-13Z M24 14l-1-6M24 11c4-4 8-2 9 1-4 1-6 2-9 2',
     egg:'M24 7c-7 7-11 13-11 21a11 11 0 0 0 22 0c0-8-4-14-11-21Z',
     cheese:'M9 33V18l25-6 5 18-30 3Z M9 18l25 12M29 24a2 2 0 1 0 0 .1M20 31a2 2 0 1 0 0 .1',
     meat:'M12 30c2-8 9-16 17-16 5 0 8 3 8 7 0 9-7 17-15 17-7 0-11-3-10-8Z M25 22c3-3 7-1 6 2-1 3-5 3-6 0',
     fish:'M8 24c8-10 20-12 31-4l4 4-4 4c-11 8-23 6-31-4Z M8 24l-5-5M8 24l-5 5M31 23h.1',
     oil:'M18 10h12v6l4 7v12H14V23l4-7v-6ZM18 10h12M19 29h10',
+    vinegar:'M18 9h12v5l4 6v18H14V20l4-6V9ZM18 14h12M17 25h14M20 30h8',
+    wine:'M14 8h20l-3 13c-1 4-3 6-7 7v7h7v3H17v-3h7v-7c-4-1-6-3-7-7L14 8ZM17 13h14',
     onion:'M24 10c-7 5-12 11-12 18a12 12 0 0 0 24 0c0-7-5-13-12-18ZM24 10v28M16 28c3 3 5 4 8 4s5-1 8-4',
     garlic:'M24 9c-5 5-9 8-9 15 0 8 4 14 9 14s9-6 9-14c0-7-4-10-9-15ZM24 9v29M19 15c2 2 3 3 5 3s3-1 5-3',
+    ginger:'M12 28c3-9 9-15 17-15 5 0 8 3 8 7-1 7-7 14-15 15-7 1-11-2-10-7ZM17 27c5-4 8-7 10-11',
+    chili:'M15 30c8 3 15-1 18-9 1-3 0-6-2-8-2 7-7 10-13 10-7 0-9 4-3 7ZM31 13l4-5',
+    paprika:'M14 29c3-10 10-16 20-15 0 9-5 18-15 21-5 1-7-2-5-6ZM20 28c4-3 8-7 10-11',
     pepper:'M18 15c0-5 3-8 8-8s7 3 7 7c0 5-4 7-8 7-7 0-12 5-12 10 0 5 4 9 9 9 8 0 13-6 13-13M31 9l5-4',
     herb:'M24 39V16M24 27c-6 0-10-4-10-9 6 0 10 3 10 9ZM24 23c6 0 10-4 10-9-6 0-10 3-10 9ZM24 33c-6 0-9-3-9-8 5 0 9 3 9 8Z',
     sugar:'M14 18h20l3 20H11l3-20ZM14 18l5-8h10l5 8M18 25h12M17 31h14',
@@ -99,6 +128,18 @@ export function ingredientIcon(ing) {
     butter:'M11 28h26v10H11zM15 28l5-13h12l5 13M20 15h12',
     lemon:'M10 31c5-12 15-17 28-14-2 13-9 21-22 20-5 0-8-2-6-6Z M20 22c5 3 9 7 11 12',
     mushroom:'M10 25c0-8 6-14 14-14s14 6 14 14H10ZM21 25v13h6V25M15 21h.1M24 17h.1M32 21h.1',
+    rice:'M11 27c4-8 9-12 13-12s9 4 13 12H11ZM15 27v9h18v-9M18 32h12',
+    pasta:'M12 16c4 0 4 16 8 16s4-16 8-16 4 16 8 16M12 12h24',
+    potato:'M13 29c-2-8 4-17 12-18 8-1 13 5 12 13-1 9-8 15-17 13-4-1-6-4-7-8ZM19 21h.1M28 27h.1',
+    carrot:'M13 18c4-4 12-4 20 0-2 8-5 16-9 21-4-5-7-13-11-21ZM24 18V8M20 11l-5-3M28 11l5-3',
+    celery:'M24 39V14M24 27c-5-2-9-6-9-12M24 30c5-2 9-6 9-12M24 19c-3-3-5-6-5-9',
+    nut:'M13 30c-1-8 4-15 11-17 7 2 12 9 11 17-1 7-7 11-14 9-5-1-8-5-8-9Z M24 15v24',
+    sesame:'M17 13c4-3 8 0 7 5-1 4-5 5-8 2-3-2-3-5 1-7ZM31 28c4-3 8 0 7 5-1 4-5 5-8 2-3-2-3-5 1-7Z',
+    soy:'M13 20h22l-2 18H15l-2-18ZM17 20v-6h14v6M18 27h12M19 32h10',
+    miso:'M10 23h28v15H10zM14 23c1-8 5-12 10-12s9 4 10 12M16 29h16',
+    cocoa:'M24 10c-8 4-13 10-13 18 0 7 5 11 13 11s13-4 13-11c0-8-5-14-13-18ZM24 10v29M17 23c4 3 10 3 14 0',
+    vanilla:'M16 38c-4-6-3-16 2-24l5-7 5 3-3 8c-2 8-2 15 1 20M21 16l6 3',
+    yeast:'M12 29c0-8 5-14 12-14s12 6 12 14c0 6-5 10-12 10s-12-4-12-10ZM18 26h.1M24 23h.1M30 28h.1',
     generic:'M10 24h28M14 18h20l4 18H10l4-18ZM18 18v-5h12v5'
   };
   const NS = 'http://www.w3.org/2000/svg';
@@ -106,19 +147,12 @@ export function ingredientIcon(ing) {
   const svg = document.createElementNS(NS, 'svg');
   svg.setAttribute('class', 'ingredient-svg');
   svg.setAttribute('viewBox', '0 0 48 48');
-  svg.setAttribute('width', '30');
-  svg.setAttribute('height', '30');
-  svg.setAttribute('focusable', 'false');
+  svg.setAttribute('width', '30'); svg.setAttribute('height', '30'); svg.setAttribute('focusable', 'false');
   const path = document.createElementNS(NS, 'path');
   path.setAttribute('d', paths[kind] || paths.generic);
-  path.setAttribute('fill', 'none');
-  path.setAttribute('stroke', 'currentColor');
-  path.setAttribute('stroke-width', '2.4');
-  path.setAttribute('stroke-linecap', 'round');
-  path.setAttribute('stroke-linejoin', 'round');
-  svg.appendChild(path);
-  span.appendChild(svg);
-  return span;
+  path.setAttribute('fill', 'none'); path.setAttribute('stroke', 'currentColor');
+  path.setAttribute('stroke-width', '2.4'); path.setAttribute('stroke-linecap', 'round'); path.setAttribute('stroke-linejoin', 'round');
+  svg.appendChild(path); span.appendChild(svg); return span;
 }
 function fallbackVisual(r) { return recipeGraphicData(r); }
 

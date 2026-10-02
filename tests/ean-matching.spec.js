@@ -289,3 +289,16 @@ test('Biblioteka ikon: pieprz nie jest hakiem i nowe składniki mają osobne gli
   expect(result.find(x=>x.name==='Pieprz').d).toContain('M16 18c0-5');
   expect(new Set(result.map(x=>x.d)).size).toBe(result.length);
 });
+
+test('Ikony składników: seler naciowy i szeroka biblioteka mają własne glify, a kategoria daje sensowny fallback', async ({ page }) => {
+  await reset(page);
+  const result = await page.evaluate(async () => {
+    const { ingredientIcon } = await import('/components.js');
+    const names=['Seler naciowy','Szpinak','Sałata','Kapusta','Brokuł','Kalafior','Kukurydza','Groszek','Burak','Rzodkiewka','Por','Fenkuł','Szparagi','Karczoch','Dynia','Gruszka','Banan','Winogrona','Brzoskwinia','Śliwka','Kokos','Ananas','Czekolada','Żelatyna','Chleb','Tofu','Tempeh','Krewetki','Kalmary','Małże'];
+    return {items:names.map(name=>{const x=ingredientIcon({name});return [name,x.className,x.querySelector('path')?.getAttribute('d')||''];}),
+      fallback: ingredientIcon({name:'Nowy liść X',category:'warzywa'}).className};
+  });
+  expect(result.items.every(x=>x[2])).toBe(true);
+  expect(result.items.find(x=>x[0]==='Seler naciowy')[1]).toContain('ingredient-icon-celery_stalk');
+  expect(result.fallback).toContain('ingredient-icon-generic');
+});

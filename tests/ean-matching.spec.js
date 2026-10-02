@@ -117,3 +117,10 @@ test('Skaner EAN: otwiera kamerę i aktywną linię skanującą', async ({ page 
   await expect(page.getByRole('button', { name:'Wyłącz latarkę' })).toBeVisible();
   expect(await page.evaluate(() => window.__torchState)).toBe(true);
 });
+
+
+test('Recipe UX: domyślnie pokazuje jedną porcję', async ({ page }) => {
+  await reset(page);
+  await page.goto('/#/recipe/rcp_seed_pizza');
+  await expect(page.getByText('1 porcja', { exact: true })).toBeVisible();
+});

@@ -71,8 +71,13 @@ const compatibleUnits = (a, b) => {
 };
 const toBase = (value, unit) => Number(value || 0) * (UNIT_TO_BASE[unit] || 1);
 
-export async function consumeRecipeIngredients(recipe, factor = 1) {
+export async function consumeRecipeIngredients(recipe, factor = 1, options = {}) {
   await loadInventory();
+  const sourceId = String(options.sourceId || '').trim();
+  if (sourceId) {
+    const existingLog = (await db.getAll('inventoryLog')).find((x) => x?.sourceId === sourceId && x?.type === 'recipe');
+    if (existingLog) return { changes: [], shortages: [], alreadyConsumed: true };
+  }
   const shortages = [];
   const usedByItem = new Map();
   const remainingByItem = new Map();

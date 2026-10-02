@@ -11,7 +11,7 @@ function supportedNativeFormats() {
 }
 
 export function openBarcodeScanner({ onDetected }) {
-  let stream = null, raf = 0, stopped = false, busy = false, detector = null;
+  let stream = null, timer = 0, stopped = false, busy = false, detector = null;
   let lastCode = '', stable = 0, lastAt = 0;
   const video = h('video', {
     class:'barcode-video',
@@ -122,7 +122,7 @@ export function openBarcodeScanner({ onDetected }) {
       acceptCandidate(code);
       busy=false;
     }
-    raf=requestAnimationFrame(tick);
+    timer=setTimeout(tick,120);
   }
 
   async function start() {
@@ -160,7 +160,7 @@ export function openBarcodeScanner({ onDetected }) {
   function stop() {
     if (stopped && !stream) return;
     stopped=true;
-    cancelAnimationFrame(raf);
+    clearTimeout(timer);
     if (stream) stream.getTracks().forEach(t=>t.stop());
     stream=null;
     video.srcObject=null;

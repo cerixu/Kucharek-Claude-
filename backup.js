@@ -130,7 +130,8 @@ export async function importBackup(backup, mode) {
     const hasHist = new Set((await db.getAll('history')).map((x) => x.id));
     const shopIds = new Set(state.shopping.map((x) => x.id));
     const catalog = new Map(state.catalog);
-    await db.tx(['recipes', 'ingredients', 'categories', 'shoppingItems', 'history'], (t) => {
+    const proExisting = Object.fromEntries(await Promise.all(PRO_STORES.map(async (s) => [s, new Map((await db.getAll(s)).map(x => [x.id, x]))])));
+    await db.tx(['recipes', 'ingredients', 'categories', 'shoppingItems', 'history', ...PRO_STORES], (t) => {
       recipes.forEach((r) => {
         const cur = existing.get(r.id);
         if (!cur || (r.updatedAt || 0) > (cur.updatedAt || 0)) t.put('recipes', r);
@@ -139,6 +140,12 @@ export async function importBackup(backup, mode) {
       d.ingredients.forEach((i) => { const cur = catalog.get(i.id); if (!cur || (i.updatedAt || 0) > (cur.updatedAt || 0)) t.put('ingredients', i); });
       d.shoppingItems.forEach((s) => { if (!shopIds.has(s.id)) t.put('shoppingItems', s); });
       d.history.forEach((x) => { if (!hasHist.has(x.id)) t.put('history', x); });
+      PRO_STORES.forEach((s) => d[s].forEach((x) => {
+        const cur = proExisting[s].get(x.id);
+        const incomingAt = Number(x.updatedAt || x.at || x.createdAt || 0);
+        const currentAt = Number(cur?.updatedAt || cur?.at || cur?.createdAt || 0);
+        if (!cur || incomingAt >= currentAt) t.put(s, x);
+      }));
     });
   }
   await loadAll();
@@ -150,8 +157,8 @@ export async function importBackup(backup, mode) {
 
 /** Kasuje wszystko i przywraca stan początkowy (bez przykładowych receptur — zależnie od flagi). */
 export async function wipeAll({ keepSeeds = false } = {}) {
-  await db.tx(['recipes', 'ingredients', 'categories', 'shoppingItems', 'settings', 'history'], (t) => {
-    ['recipes', 'ingredients', 'categories', 'shoppingItems', 'settings', 'history'].forEach((s) => t.clear(s));
+  await db.tx(['recipes', 'ingredients', 'categories', 'shoppingItems', 'settings', 'history', ...PRO_STORES], (t) => {
+    ['recipes', 'ingredients', 'categories', 'shoppingItems', 'settings', 'history', ...PRO_STORES].forEach((s) => t.clear(s));
     if (!keepSeeds) t.put('settings', { key: 'seeded', value: true });
   });
   await loadAll();

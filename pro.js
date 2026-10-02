@@ -1,7 +1,7 @@
 import { db } from './db.js';
 import { uid } from './util.js';
 import { loadInventory, reloadInventory, listInventory, saveInventoryItem, adjustInventory, findInventoryMatch, unitCompatible, unitToBase, unitFromBase, consumeRecipeIngredients } from './inventory.js';
-import { getRecipe } from './recipes.js';
+import { getRecipe, getSetting } from './recipes.js';
 
 const now = () => Date.now();
 const BASE_UNITS = { g:1, kg:1000, ml:1, l:1000, szt:1, opak:1 };
@@ -250,7 +250,8 @@ export async function salesDeplete(lines=[]) {
     }
   });
   await reloadInventory();
-  return {ok:true,shortages:[],recipes,changes:next.map(x=>({name:x.item.name,delta:-x.row.required,unit:x.item.unit}))};
+  const autopilot=await runInventoryAutopilot();
+  return {ok:true,shortages:[],recipes,autopilot,changes:next.map(x=>({name:x.item.name,delta:-x.row.required,unit:x.item.unit}))};
 }
 
 export function parseSalesCsv(text=''){
@@ -276,10 +277,23 @@ export async function importSalesCsv(text=''){
 
 export async function reorderSuggestions(){
   await loadInventory();
+  const shopping=await all('shoppingItems');
   return listInventory().filter(x=>num(x.minQuantity)>0&&num(x.quantity)<=num(x.minQuantity)).map(x=>{
+    const pending=shopping.filter(s=>!s.done&&findInventoryMatch({name:s.name})?.item?.id===x.id&&unitCompatible(s.unit||'',x.unit)).reduce((sum,s)=>sum+unitFromBase(unitToBase(num(s.amount),s.unit),x.unit),0);
+
     const target=num(x.targetQuantity)>num(x.minQuantity)?num(x.targetQuantity):num(x.minQuantity)*2;
-    return {...x,orderQuantity:Math.max(0,unitFromBase(unitToBase(target-x.quantity,x.unit),x.unit)),targetQuantity:target};
+    return {...x,orderQuantity:Math.max(0,unitFromBase(unitToBase(target-x.quantity-pending,x.unit),x.unit)),pending,targetQuantity:target};
   }).filter(x=>x.orderQuantity>0);
+}
+
+export async function runInventoryAutopilot(){
+  const suggestions=await reorderSuggestions();
+  if(!getSetting('inventoryAutoShopping')) return {enabled:false,added:0,suggestions};
+  const pending=suggestions.filter(x=>x.orderQuantity>0);
+  if(!pending.length) return {enabled:true,added:0,suggestions};
+  const {addItems}=await import('./shopping.js');
+  const res=await addItems(pending.map(x=>({name:x.name,amount:x.orderQuantity,unit:x.unit})));
+  return {enabled:true,added:res.count,suggestions};
 }
 
 export async function expiryAlerts(days=3){

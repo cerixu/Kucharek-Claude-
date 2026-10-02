@@ -90,6 +90,7 @@ test('ETAP 14: miniaturka i hero wybierają źródło obrazu',async({page})=>{
   });
   expect(out.card).toContain('circle');
   expect(out.hero).toContain('rect');
+  expect(out.card).toMatch(/^data:image\\/svg\\+xml/);
 });
 
 test('ETAP 14: uszkodzone zdjęcie ma bezpieczny fallback graficzny',async({page})=>{

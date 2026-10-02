@@ -53,8 +53,8 @@ function fallbackVisual(r) {
 }
 
 export function recipeVisual(r, cls = '', { hero = false } = {}) {
-  const src = hero ? (r.photo || r.thumb) : (r.thumb || r.photo);
-  if (src) return h('img', { class: (hero ? 'hero-photo ' : 'rthumb-img ') + cls + ' recipe-visual', src, alt: hero ? ('Zdjęcie: ' + (r.name || 'receptura')) : '', loading: hero ? 'eager' : 'lazy', decoding: 'async', onError: (e) => { e.currentTarget.onerror = null; e.currentTarget.src = fallbackVisual(r); } });
+  const imageSrc = hero ? (r.photo || r.thumb) : (r.thumb || r.photo);
+  if (imageSrc) return h('img', { class: (hero ? 'hero-photo ' : 'rthumb-img ') + cls + ' recipe-visual', src, alt: hero ? ('Zdjęcie: ' + (r.name || 'receptura')) : '', loading: hero ? 'eager' : 'lazy', decoding: 'async', onError: (e) => { e.currentTarget.onerror = null; e.currentTarget.src = fallbackVisual(r); } });
   const label = String(r.name || catName(r.category) || 'Kucharek').slice(0, 28);
   const emoji = catIcon(r.category);
   const bg = hero ? '121316' : '1b1d20';

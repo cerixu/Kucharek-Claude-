@@ -10,7 +10,7 @@ const money=(v)=>n(v).toLocaleString('pl-PL',{maximumFractionDigits:2});
 
 export function proView(){
  const s=screen({title:'Kucharek PRO',right:iconBtn('refresh','Odśwież',()=>render())});
- let tab='dashboard',unsub;
+ let tab=new URLSearchParams(location.hash.split('?')[1]||'').get('tab')||'dashboard',unsub;
  const nav=(id,label)=>button(label,{sm:true,kind:tab===id?'primary':'ghost',onClick:()=>{tab=id;render();}});
  async function render(){
   const menu=h('div',{class:'pro-nav'},nav('dashboard','Dashboard'),nav('delivery','Dostawy'),nav('orders','Zamówienia'),nav('production','Produkcja'),nav('planning','Planowanie'),nav('analytics','Analityka'),nav('waste','Straty'),nav('automation','Automatyzacje'));
@@ -99,8 +99,7 @@ async function automationView(){
         toast(result.enabled?(result.added?'Dodano brakujące pozycje do zakupów 📦':'Brak nowych zakupów'):'Autopilot jest wyłączony');
         render();
       }}),
-      button('Utwórz zamówienie'+(reorders.length?' ('+reorders.length+')':''),{kind:'ghost',onClick:async()=>{if(!reorders.length){toast('Brak pozycji do zamówienia');return;}const suppliers=await listSuppliers();bulkOrderSheet(suppliers,reorders);}}),
-      button('Utwórz zamówienie'+(reorders.length?' ('+reorders.length+')':''),{kind:'ghost',onClick:async()=>{if(!reorders.length){toast('Brak pozycji do zamówienia');return;}const suppliers=await listSuppliers();bulkOrderSheet(suppliers,reorders);}}),
+      button('Utwórz zamówienie'+(reorders.length?' ('+reorders.length+')':''),{kind:'ghost',onClick:async()=>{if(!reorders.length){toast('Brak pozycji do zamówienia');return;}const suppliers=await listSuppliers();bulkOrderSheet(suppliers,reorders);}}),,
       button('Dodaj propozycje do zakupów'+(reorders.length?' ('+reorders.length+')':''),{kind:'ghost',onClick:async()=>{
         const {addItems}=await import('./shopping.js');
         await addItems(reorders.map(x=>({name:x.name,amount:x.orderQuantity,unit:x.unit,recipeName:'Autopilot magazynu'})));

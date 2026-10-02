@@ -174,5 +174,5 @@ test('ETAP 24: Pizza kalkulator ma tryb Mam mąkę i liczy składniki od mąki',
   await page.getByLabel('Mam mąkę w gramach').fill('7500');
   await expect(page.locator('.result').filter({hasText:'Woda'})).toContainText('4875');
   await expect(page.locator('.result').filter({hasText:'Sól'})).toContainText('225');
-  await expect(page.getByText('50',{exact:true}).first()).toBeVisible();
+  await expect(page.locator('.result').filter({hasText:'Kulki'})).toContainText('50');
 });

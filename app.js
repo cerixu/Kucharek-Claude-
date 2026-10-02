@@ -7,6 +7,7 @@ import { loadAll, state, subscribe, getSetting } from './recipes.js';
 import { h, icon, toast, $ } from './ui.js';
 import { route, startRouter, navigate } from './router.js';
 import { registerSW, requestPersist } from './pwa.js';
+import { proView } from './views-pro-fixed.js';
 
 import { startView } from './views-start.js';
 import { recipesView } from './views-recipes.js';
@@ -141,24 +142,7 @@ route('/calc', () => calcView({}), { tab: 'calc' });
 route('/calc/:kind', (p, q) => calcView(p, q), { tab: 'calc' });
 route('/shopping', () => shoppingView(), { tab: 'shopping' });
 route('/inventory', () => inventoryView(), { tab: 'inventory' });
-route('/pro', () => {
-  const el = document.createElement('div');
-  el.className = 'screen';
-  el.innerHTML = '<div class="scroll"><div class="content"><div class="empty"><div class="empty-emoji">👨‍🍳</div><h2>Ładuję Kucharek PRO…</h2><p class="muted">Magazyn PRO jest ładowany osobno, żeby błąd modułu PRO nigdy nie blokował startu aplikacji.</p></div></div></div>';
-  loadProModule().then(({ proView }) => {
-    try {
-      const view = proView();
-      el.replaceChildren(view.el);
-    } catch (e) {
-      console.error(e);
-      el.querySelector('.muted').textContent = 'Nie udało się otworzyć modułu PRO. Start aplikacji działa normalnie.';
-    }
-  }).catch((e) => {
-    console.error(e);
-    el.querySelector('.muted').textContent = 'Nie udało się załadować modułu PRO. Start aplikacji działa normalnie.';
-  });
-  return { el };
-}, { tab: 'inventory' });
+route('/pro', () => proView(), { tab: 'inventory' });
 route('/settings', () => settingsView(), { tab: 'settings' });
 
 /* ---------- Start ---------- */

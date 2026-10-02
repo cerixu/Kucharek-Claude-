@@ -333,7 +333,7 @@ test('ETAP 19: zakończenie gotowania zapisuje ostatnie gotowanie receptury',asy
   });
   await page.goto('/#/cook/'+id);
   await page.getByRole('button',{name:'Zakończ',exact:true}).click();
-  const out=await page.evaluate(async(id)=>{const{getRecipe}=await import('/recipes.js');const r=getRecipe(id);return {count:r?.cookCount,last:r?.lastCookedAt};},id);
+  const out=await page.evaluate(async(id)=>{const{db}=await import('/db.js');const r=await db.get('recipes',id);return {count:r?.cookCount,last:r?.lastCookedAt};},id);
   expect(out.count).toBe(1);
   expect(out.last).toBeGreaterThan(0);
 });

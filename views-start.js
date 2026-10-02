@@ -10,10 +10,10 @@ import { backupDue, daysSinceBackup } from './backup.js';
 import { loadInventory, listInventory, stockState, subscribeInventory } from './inventory.js';
 
 const plural = (n) => `${n} ${n === 1 ? 'receptura' : n % 10 >= 2 && n % 10 <= 4 && (n % 100 < 10 || n % 100 >= 20) ? 'receptury' : 'receptur'}`;
-const HEADLINE = '„No Elo kurwa, Kucharzyno za pięć złotych👨‍🍳”';
+const HEADLINE = 'Twoja kuchnia. Twoje receptury. Twój Kucharek. 👨‍🍳';
 
 export function startView() {
-  const s = screen({ title: 'Kucharzyna', cls: 'start' });
+  const s = screen({ title: 'Kucharek', cls: 'start' });
   const c = s.content;
   let unsub;
   let unsubInventory;
@@ -33,7 +33,7 @@ export function startView() {
 
     const kids = [
       h('div', { class: 'hero' },
-        h('p', { class: 'eyebrow' }, 'Kucharzyna'),
+        h('p', { class: 'eyebrow' }, 'Kucharek'),
         h('h2', { class: 'hero-line' }, HEADLINE),
         h('p', { class: 'muted hero-sub' }, `${plural(all.length)} w telefonie · działa bez internetu`)),
       h('div', { class: 'tiles' },

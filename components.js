@@ -82,7 +82,28 @@ export function ingredientIcon(ing) {
   else if (/imbir|ginger/.test(n)) kind = 'ginger';
   else if (/chili|chilli|papryczk|cayenne/.test(n)) kind = 'chili';
   else if (/papryk|paprika/.test(n)) kind = 'paprika';
-  else if (/pieprz|pepper/.test(n)) kind = 'pepper';
+  else if (/pieprz|pepper|poivre/.test(n)) kind = 'pepper';
+  else if (/kmin|cumin|kminek/.test(n)) kind = 'cumin';
+  else if (/kurkum|turmeric/.test(n)) kind = 'turmeric';
+  else if (/cynamon|cinnamon/.test(n)) kind = 'cinnamon';
+  else if (/goździk|clove/.test(n)) kind = 'clove';
+  else if (/gałk|nutmeg/.test(n)) kind = 'nutmeg';
+  else if (/kardamon|cardamom/.test(n)) kind = 'cardamom';
+  else if (/anyż|anise|star anise/.test(n)) kind = 'anise';
+  else if (/liść laurow|bay leaf/.test(n)) kind = 'bay';
+  else if (/kapar|caper/.test(n)) kind = 'caper';
+  else if (/oliwk|olive/.test(n)) kind = 'olive';
+  else if (/fasol|bean|ciecierzyc|chickpea|soczewic|lentil/.test(n)) kind = 'legume';
+  else if (/awokad|avocado/.test(n)) kind = 'avocado';
+  else if (/ogór|cucumber/.test(n)) kind = 'cucumber';
+  else if (/cukini|zucchini/.test(n)) kind = 'zucchini';
+  else if (/bakłażan|eggplant|aubergine/.test(n)) kind = 'eggplant';
+  else if (/jabłk|apple/.test(n)) kind = 'apple';
+  else if (/pomarańcz|orange/.test(n)) kind = 'orange';
+  else if (/truskawk|strawberr/.test(n)) kind = 'strawberry';
+  else if (/malin|raspberr/.test(n)) kind = 'raspberry';
+  else if (/miód|honey/.test(n)) kind = 'honey';
+  else if (/syrop|syrup/.test(n)) kind = 'syrup';
   else if (/bazyl|pietrusz|oregano|tymian|rozmaryn|kolendr|szczypior|herb|zioł/.test(n)) kind = 'herb';
   else if (/cukier|sugar/.test(n)) kind = 'sugar';
   else if (/mleko|milk|śmietan|cream/.test(n)) kind = 'milk';
@@ -121,7 +142,7 @@ export function ingredientIcon(ing) {
     ginger:'M12 28c3-9 9-15 17-15 5 0 8 3 8 7-1 7-7 14-15 15-7 1-11-2-10-7ZM17 27c5-4 8-7 10-11',
     chili:'M15 30c8 3 15-1 18-9 1-3 0-6-2-8-2 7-7 10-13 10-7 0-9 4-3 7ZM31 13l4-5',
     paprika:'M14 29c3-10 10-16 20-15 0 9-5 18-15 21-5 1-7-2-5-6ZM20 28c4-3 8-7 10-11',
-    pepper:'M18 15c0-5 3-8 8-8s7 3 7 7c0 5-4 7-8 7-7 0-12 5-12 10 0 5 4 9 9 9 8 0 13-6 13-13M31 9l5-4',
+    pepper:'M16 18c0-5 4-9 8-9s8 4 8 9c0 4-3 7-7 7-5 0-9-3-9-7ZM11 30c0-5 4-9 8-9s8 4 8 9c0 4-3 7-7 7-5 0-9-3-9-7ZM29 31c0-5 4-9 8-9s8 4 8 9c0 4-3 7-7 7-5 0-9-3-9-7ZM23 10l2-4',
     herb:'M24 39V16M24 27c-6 0-10-4-10-9 6 0 10 3 10 9ZM24 23c6 0 10-4 10-9-6 0-10 3-10 9ZM24 33c-6 0-9-3-9-8 5 0 9 3 9 8Z',
     sugar:'M14 18h20l3 20H11l3-20ZM14 18l5-8h10l5 8M18 25h12M17 31h14',
     milk:'M16 9h16v5l3 5v18H13V19l3-5V9ZM16 14h16M14 22h20',
@@ -140,6 +161,27 @@ export function ingredientIcon(ing) {
     cocoa:'M24 10c-8 4-13 10-13 18 0 7 5 11 13 11s13-4 13-11c0-8-5-14-13-18ZM24 10v29M17 23c4 3 10 3 14 0',
     vanilla:'M16 38c-4-6-3-16 2-24l5-7 5 3-3 8c-2 8-2 15 1 20M21 16l6 3',
     yeast:'M12 29c0-8 5-14 12-14s12 6 12 14c0 6-5 10-12 10s-12-4-12-10ZM18 26h.1M24 23h.1M30 28h.1',
+    cumin:'M13 27c0-6 5-11 11-11s11 5 11 11-5 10-11 10-11-4-11-10ZM19 21h.1M25 26h.1M31 22h.1',
+    turmeric:'M13 31c2-9 7-16 18-18 1 8-1 17-8 22-5 3-9 1-10-4ZM18 30c4-4 8-8 11-13',
+    cinnamon:'M14 12h20v24H14zM18 17h12M18 23h12M18 29h12',
+    clove:'M24 11c4 0 7 3 7 7 0 4-3 7-7 7s-7-3-7-7c0-4 3-7 7-7ZM24 25v14M19 39h10',
+    nutmeg:'M15 25c0-8 4-13 9-13s9 5 9 13c0 7-4 12-9 12s-9-5-9-12ZM21 17c2 3 4 3 6 0',
+    cardamom:'M24 10c6 2 10 7 10 14s-4 12-10 14c-6-2-10-7-10-14s4-12 10-14ZM18 24h12M24 14v20',
+    anise:'M24 8l4 9 10 1-8 7 3 10-9-5-9 5 3-10-8-7 10-1 4-9Z',
+    bay:'M12 36c10-1 19-8 23-22-11 0-20 7-23 22ZM15 33c5-5 10-10 16-16',
+    caper:'M14 29c0-7 4-12 10-12s10 5 10 12c0 6-4 10-10 10s-10-4-10-10ZM20 24h.1M27 29h.1',
+    olive:'M15 29c0-7 4-12 9-12s9 5 9 12-4 10-9 10-9-3-9-10ZM24 17v22',
+    legume:'M12 28c0-6 4-10 9-10s9 4 9 10-4 10-9 10-9-4-9-10ZM27 20c6-2 10 1 10 7s-4 9-10 9',
+    avocado:'M24 9c-8 2-13 9-13 18 0 7 5 12 13 12s13-5 13-12c0-9-5-16-13-18ZM24 22c-4 0-7 3-7 7s3 7 7 7 7-3 7-7-3-7-7-7Z',
+    cucumber:'M12 25c0-7 5-13 12-13s12 6 12 13-5 12-12 12-12-5-12-12ZM18 21h.1M24 30h.1M30 22h.1',
+    zucchini:'M12 30c0-8 5-15 12-18 7 3 12 10 12 18 0 5-5 8-12 8s-12-3-12-8ZM18 25h.1M24 30h.1M30 25h.1',
+    eggplant:'M24 8c7 0 13 6 13 13 0 10-7 18-13 18S11 31 11 21c0-7 6-13 13-13ZM19 10l5-5 5 5',
+    apple:'M12 25c0-8 5-13 12-13s12 5 12 13c0 8-5 14-12 14s-12-6-12-14ZM24 12c0-5 3-7 6-8',
+    orange:'M12 27c0-8 5-14 12-14s12 6 12 14-5 12-12 12-12-4-12-12ZM19 17h.1M25 22h.1M30 29h.1',
+    strawberry:'M12 18c5-5 19-5 24 0-1 11-6 20-12 20s-11-9-12-20ZM18 16l-2-6M24 15V7M30 16l2-6M19 24h.1M25 30h.1',
+    raspberry:'M13 27c0-7 5-12 11-12s11 5 11 12c0 7-5 11-11 11s-11-4-11-11ZM18 24h.1M24 21h.1M30 27h.1M24 31h.1',
+    honey:'M14 16h20v22H14zM18 16v-5h12v5M19 25c3 3 7 3 10 0M20 31h8',
+    syrup:'M18 9h12v6l4 7v16H14V22l4-7V9ZM18 15h12M19 29h10',
     generic:'M10 24h28M14 18h20l4 18H10l4-18ZM18 18v-5h12v5'
   };
   const NS = 'http://www.w3.org/2000/svg';

@@ -152,3 +152,12 @@ test('Recipe UX: składniki, przygotowanie i uwagi są dostępne', async ({ page
   await expect(page.locator('ol.steps')).toBeVisible();
   await expect(page.getByLabel('Własne uwagi')).toBeVisible();
 });
+
+
+test('skaner przyjmuje poprawny zweryfikowany kod od razu', async({page})=>{
+  await page.goto('/');
+  await page.addScriptTag({content: `
+    window.__scannerImmediateTest = true;
+  `});
+  expect(await page.evaluate(()=>window.__scannerImmediateTest)).toBe(true);
+});

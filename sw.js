@@ -1,5 +1,5 @@
 /* ==========================================================================
-   Kucharzyna — service worker
+   Kucharek — service worker
    Strategia: network-first z krótkim limitem czasu i cache jako zapasem.
    Dzięki temu online zawsze dostajesz świeże pliki (brak „starej wersji
    przez kilka dni”), a offline aplikacja otwiera się z pamięci podręcznej.
@@ -37,7 +37,7 @@ self.addEventListener('install', (event) => {
 self.addEventListener('activate', (event) => {
   event.waitUntil((async () => {
     const keys = await caches.keys();
-    await Promise.all(keys.filter((k) => k.startsWith('kucharzyna-') && k !== VERSION).map((k) => caches.delete(k)));
+    await Promise.all(keys.filter((k) => k.startsWith('kucharek-') && k !== VERSION).map((k) => caches.delete(k)));
     await self.clients.claim();
   })());
 });

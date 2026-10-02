@@ -53,7 +53,7 @@ export function recipesView(query) {
     sub, cls: 'recipes',
   });
 
-  const onSearch = debounce(() => { vs.q = search.value; paint(); }, 100);
+  const onSearch = debounce(() => { vs.q = search.value; focusPreservingPaint(paint, s.el); }, 100);
   search.addEventListener('input', () => { clear.hidden = !search.value; onSearch(); });
   search.addEventListener('keydown', (e) => { if (e.key === 'Enter') search.blur(); });
 

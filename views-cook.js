@@ -11,7 +11,7 @@ import { scaleRecipe, factorFromServings } from './calculator.js';
 import { qtyParts, ingredientIcon } from './components.js';
 import { fmtNum, fmtClock, debounce, parseNum } from './util.js';
 import { consumeRecipeIngredients } from './inventory.js';
-import { addItems } from './shopping.js';
+import { addItems, addLowStockToShopping } from './shopping.js';
 
 /* ---------- Minutnik (poziom modułu — działa też po wyjściu z ekranu) ---------- */
 
@@ -285,8 +285,8 @@ export function cookView({ id }) {
         prog.inventoryConsumptionId = sourceId;
         const result = await consumeRecipeIngredients(view(), prog.factor || 1, { sourceId });
         prog.inventoryConsumedAt = Date.now();
+        const autoShopping = getSetting('inventoryAutoShopping') !== false;
         if (result.shortages.length) {
-          const autoShopping = getSetting('inventoryAutoShopping') !== false;
           if (autoShopping) {
             await addItems(result.shortages.map((x) => ({ name: x.name, amount: x.missing, unit: x.unit, recipeId: id, recipeName: r0.name })));
             toast('Magazyn zaktualizowany. Braki dodane do zakupów 📦');
@@ -301,6 +301,9 @@ export function cookView({ id }) {
               toast('Braki dodano do zakupów');
             }
           }
+        } else if (autoShopping) {
+          const low = await addLowStockToShopping();
+          toast(low.count ? 'Magazyn zaktualizowany. Niskie stany dodane do zakupów 🛒' : (autoConsumption ? 'Zużycie zapisane w magazynie 📦' : 'Magazyn zaktualizowany 📦'));
         } else {
           toast(autoConsumption ? 'Zużycie zapisane w magazynie 📦' : 'Magazyn zaktualizowany 📦');
         }

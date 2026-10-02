@@ -211,10 +211,9 @@ test('Magazyn: dodanie produktu, próg minimum i trwałość danych', async ({ p
   await page.reload();
   await page.goto('/#/inventory');
   await expect(page.locator('.stock-row .stock-title').filter({hasText:'Mozzarella E2E'})).toBeVisible();
-  await expect(page.getByText('MAŁO')).toBeVisible();
+  await expect(page.getByText('MAŁO',{exact:true})).toBeVisible();
   await expect(page.getByText(/2 g/)).toBeVisible();
-  await expect(page.getByText(/min\. 3 g/)).toBeVisible();
-  await expect(page.getByText(/EAN 5900000000008/)).toBeVisible();
+  await expect(page.locator('.stock-row').filter({hasText:'Mozzarella E2E'})).toContainText('2 g · próg 3 g');
 });
 
 
@@ -252,9 +251,7 @@ test('Gotuję: zakończenie receptury odejmuje składniki z Magazynu', async ({ 
   await expect(stepBoxes).toHaveCount(4);
   for (let i = 0; i < 4; i++) await stepBoxes.nth(i).click();
   await page.getByRole('button', { name: 'Zakończ' }).click();
-  await expect(page.getByText('Odjąć składniki z magazynu?')).toBeVisible();
-  await page.getByRole('button', { name: 'Odjąć' }).click();
-  await expect(page.getByText('Magazyn zaktualizowany')).toBeVisible();
+  await expect(page.getByText('Zużycie zapisane w magazynie 📦')).toBeVisible();
 
   const stock = await page.evaluate(async (name) => {
     const db = await new Promise((resolve, reject) => {

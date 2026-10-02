@@ -198,8 +198,8 @@ test('Magazyn: dodanie produktu, próg minimum i trwałość danych', async ({ p
   await page.goto('/#/inventory');
   await expect(page.getByRole('heading', { name: 'Magazyn', exact: true })).toBeVisible();
   await page.getByRole('button', { name: 'Dodaj składnik' }).first().click();
-  await expect(page.getByText('Nowy produkt')).toBeVisible();
-  await page.getByLabel('Nazwa produktu').fill('Mozzarella E2E');
+  await expect(page.getByText('Nowy składnik')).toBeVisible();
+  await page.getByLabel('Nazwa składnika').fill('Mozzarella E2E');
   await page.getByLabel('Ilość').fill('2');
   await page.getByLabel('Alert poniżej tej ilości').fill('3');
   await page.getByLabel('Cena').fill('24');

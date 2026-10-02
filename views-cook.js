@@ -310,7 +310,7 @@ export function cookView({ id }) {
         saveProg.flush();
       }
     }
-    if (all) { prog.ing = {}; prog.steps = {}; prog.tab = 'ing'; prog.inventoryConsumedAt = 0; prog.inventoryConsumptionId = ''; saveProg.flush(); toast('Smacznego! 👨‍🍳'); }
+    if (all) { await patchRecipe(id, { lastCookedAt: Date.now(), cookCount: Number(base().cookCount || 0) + 1 }, { touch: true }); prog.ing = {}; prog.steps = {}; prog.tab = 'ing'; prog.inventoryConsumedAt = 0; prog.inventoryConsumptionId = ''; saveProg.flush(); toast('Smacznego! 👨‍🍳'); }
     goBack('/recipe/' + id);
   }
 

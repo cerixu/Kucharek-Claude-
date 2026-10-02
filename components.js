@@ -97,7 +97,7 @@ export function recipeVisual(r, cls = '', { hero = false } = {}) {
   return h('img', { class: (hero ? 'hero-photo ' : 'rthumb-img ') + cls + ' recipe-visual', src: fallbackVisual(r), alt: hero ? ('Grafika receptury: ' + (r.name || 'receptura')) : '', loading: hero ? 'eager' : 'lazy', decoding: 'async' });
 }
 function thumbEl(r, cls = '') {
-  return recipeVisual(r, cls);
+  return h('div', { class: 'rthumb' }, recipeVisual(r, cls));
 }
 
 /** Karta receptury (lista, ekran startowy). */

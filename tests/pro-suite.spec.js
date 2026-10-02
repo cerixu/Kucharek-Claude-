@@ -132,6 +132,3 @@ test('ETAP 19: autopilot daje propozycję zakupu i alert partii',async({page})=>
 test('ETAP 19: ekran Automatyzacje jest dostępny',async({page})=>{await reset(page);await page.goto('/#/inventory');await page.getByRole('button',{name:'PRO',exact:true}).click();await page.getByRole('button',{name:'Automatyzacje',exact:true}).click();await expect(page.getByRole('heading',{name:'Autopilot magazynu',exact:true})).toBeVisible();});
 
 test('ETAP 19: autopilot nie dubluje już oczekującego zakupu',async({page})=>{await reset(page);const out=await page.evaluate(async()=>{const i=await import('/inventory.js');const p=await import('/pro.js');const s=await import('/shopping.js');await i.saveInventoryItem({name:'Mąka pending',quantity:1,unit:'kg',minQuantity:2,targetQuantity:5});await s.addItems([{name:'Mąka pending',amount:2,unit:'kg'}]);return (await p.reorderSuggestions())[0]?.orderQuantity;});expect(out).toBe(2);});
-
-
-test('DEBUG: dynamiczny import PRO nie zgłasza błędu',async({page})=>{await reset(page);const r=await page.evaluate(async()=>{try{const m=await import('/views-pro-fixed.js?v=20261002-19-debug');return{ok:true,exports:Object.keys(m)};}catch(e){return{ok:false,error:String(e),stack:e?.stack||''};}});expect(r.ok,JSON.stringify(r)).toBe(true);});

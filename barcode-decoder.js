@@ -68,9 +68,9 @@ function decodeEAN8Bits(bits) {
   return checksumEAN(code) ? code : null;
 }
 
-function runsFromRow(gray, width, y) {
-  const values = new Uint8Array(width);
-  for (let x = 0; x < width; x++) values[x] = gray[y * width + x];
+function runsFromLine(gray, lineLength, lineIndex, stride = 1) {
+  const values = new Uint8Array(lineLength);
+  for (let i = 0; i < lineLength; i++) values[i] = gray[lineIndex * lineLength * stride + i * stride];
   let min = 255, max = 0;
   for (const v of values) { if (v < min) min = v; if (v > max) max = v; }
   if (max - min < 35) return null;
@@ -93,42 +93,83 @@ function runsFromRow(gray, width, y) {
   return runs;
 }
 
-function sampleModules(gray, width, y, start, moduleWidth, count, reverse = false) {
+function sampleBits(values, start, moduleWidth, count, threshold, reverse = false) {
   const bits = [];
   for (let i = 0; i < count; i++) {
-    const x0 = Math.max(0, Math.min(width - 1, Math.floor(start + (i + .5) * moduleWidth)));
-    const x = reverse ? width - 1 - x0 : x0;
-    let acc = 0, n = 0;
-    const y0 = Math.max(0, y - 1), y1 = Math.min(Math.floor(gray.length / width) - 1, y + 1);
-    for (let yy = y0; yy <= y1; yy++) { acc += gray[yy * width + x]; n++; }
-    bits.push(acc / Math.max(1,n) < 128 ? '1' : '0');
+    const pos = start + (i + .5) * moduleWidth;
+    const x = Math.max(0, Math.min(values.length - 1, Math.floor(reverse ? values.length - 1 - pos : pos)));
+    bits.push(values[x] < threshold ? '1' : '0');
   }
   return bits.join('');
 }
 
-function decodeDirection(gray, width, height, reverse = false) {
-  const ys = [0.12,0.22,0.32,0.42,0.50,0.58,0.68,0.78,0.88].map(v => Math.floor(height * v));
-  for (const y of ys) {
-    const runs = runsFromRow(gray, width, y);
-    if (!runs) continue;
-    for (let i = 0; i < runs.length - 2; i++) {
-      const a = runs[i], b = runs[i+1], c = runs[i+2];
-      if (!a.black || b.black || !c.black) continue;
-      const lo = Math.min(a.width,b.width,c.width), hi = Math.max(a.width,b.width,c.width);
-      if (lo < 1 || hi / lo > 2.8) continue;
-      const moduleWidth = (a.width + b.width + c.width) / 3;
-      if (moduleWidth < 1.1 || moduleWidth > width / 12) continue;
-      const start = reverse ? (width - a.end) : a.start;
-      for (const drift of [-.65,-.35,0,.35,.65]) {
-        const w = moduleWidth * (1 + drift / 10);
-        const bits95 = sampleModules(gray,width,y,start,w,95,reverse);
-        const e13 = decodeEAN13Bits(bits95);
-        if (e13) return e13;
-        const bits67 = sampleModules(gray,width,y,start,w,67,reverse);
-        const e8 = decodeEAN8Bits(bits67);
-        if (e8) return e8;
+function thresholds(values) {
+  let min = 255, max = 0, sum = 0;
+  for (const v of values) { min = Math.min(min, v); max = Math.max(max, v); sum += v; }
+  const mean = sum / Math.max(1, values.length);
+  const out = [128, mean, Math.max(min + 18, Math.min(max - 18, mean))];
+  return [...new Set(out.map(v => Math.round(v)))].filter(v => v > min && v < max);
+}
+
+function decodeLine(values) {
+  if (!values || values.length < 120) return null;
+  for (const threshold of thresholds(values)) {
+    let black = values[0] < threshold, start = 0;
+    const runs = [];
+    for (let x = 1; x < values.length; x++) {
+      const b = values[x] < threshold;
+      if (b !== black) {
+        runs.push({ black, start, end:x, width:x-start });
+        start = x; black = b;
       }
     }
+    runs.push({ black, start, end:values.length, width:values.length-start });
+
+    for (let i = 0; i < runs.length - 2; i++) {
+      const a=runs[i], b=runs[i+1], c=runs[i+2];
+      if (!a.black || b.black || !c.black) continue;
+      const moduleWidth=(a.width+b.width+c.width)/3;
+      if (moduleWidth < 0.8 || moduleWidth > values.length/20) continue;
+      const ratio=Math.max(a.width,b.width,c.width)/Math.max(0.1,Math.min(a.width,b.width,c.width));
+      if (ratio > 2.2) continue;
+
+      for (const drift of [-0.08,-0.04,0,0.04,0.08]) {
+        const w=moduleWidth*(1+drift);
+        for (const startShift of [-0.35,0,0.35]) {
+          const s=a.start + startShift*w;
+          const t=threshold;
+          const b95=sampleBits(values,s,w,95,t,false);
+          let code=decodeEAN13Bits(b95);
+          if (code) return code;
+          code=decodeEAN13Bits(b95.split('').reverse().join(''));
+          if (code) return code;
+
+          const b67=sampleBits(values,s,w,67,t,false);
+          code=decodeEAN8Bits(b67);
+          if (code) return code;
+          code=decodeEAN8Bits(b67.split('').reverse().join(''));
+          if (code) return code;
+        }
+      }
+    }
+  }
+  return null;
+}
+
+function decodeDirection(gray, width, height, vertical = false) {
+  const lineLength = vertical ? height : width;
+  const lineCount = vertical ? width : height;
+  const fractions = [0.10,0.16,0.22,0.28,0.34,0.40,0.46,0.50,0.54,0.60,0.66,0.72,0.78,0.84,0.90];
+  for (const f of fractions) {
+    const idx=Math.max(0,Math.min(lineCount-1,Math.floor(lineCount*f)));
+    const values=new Uint8Array(lineLength);
+    if (!vertical) {
+      values.set(gray.subarray(idx*width,(idx+1)*width));
+    } else {
+      for (let y=0;y<height;y++) values[y]=gray[y*width+idx];
+    }
+    const code=decodeLine(values);
+    if (code) return code;
   }
   return null;
 }
@@ -142,6 +183,7 @@ export function decodeEANImageData(imageData) {
       gray[y * width + x] = Math.round(data[p] * .299 + data[p+1] * .587 + data[p+2] * .114);
     }
   }
+  // EAN bars are normally vertical, but the phone can be rotated. Try both axes.
   return decodeDirection(gray,width,height,false) || decodeDirection(gray,width,height,true);
 }
 

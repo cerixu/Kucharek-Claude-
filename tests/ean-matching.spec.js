@@ -141,7 +141,7 @@ test('Recipe UX: skalowanie receptury na dwie porcje przelicza składniki', asyn
   await page.getByRole('button', { name: 'Przelicz', exact: true }).click();
   await page.getByLabel('Liczba porcji').fill('2');
   await page.getByRole('button', { name: 'Przelicz' }).last().click();
-  await expect(page.getByText('Przeliczone: 2 porcje')).toBeVisible();
+  await expect(page.getByRole('status')).toContainText('Przeliczone: 2 porcje');
   await expect(page.getByText('333 g', { exact: true }).first()).toBeVisible();
 });
 

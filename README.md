@@ -111,3 +111,6 @@ Service worker pobiera pliki z sieci w pierwszej kolejności (z krótkim limitem
 ## Prywatność
 
 Brak kont, reklam, analityki i śledzenia. Internet jest używany wyłącznie wtedy, gdy sam otworzysz wyszukiwarkę Google lub Google Tłumacz, albo gdy aplikacja sprawdza własne aktualizacje na hostingu, z którego jest serwowana.
+
+
+<!-- CI validation probe 2026-10-02 -->

@@ -203,7 +203,7 @@ test('Magazyn: dodanie produktu, próg minimum i trwałość danych', async ({ p
   await page.getByLabel('Ilość').fill('2');
   await page.getByLabel('Alert poniżej tej ilości').fill('3');
   await page.getByLabel('Cena').fill('24');
-  await page.getByLabel('Kod EAN').fill('5900000000001');
+  await page.getByLabel('Kod EAN').fill('5900000000008');
   await page.getByLabel('Kategoria').fill('Nabiał');
   await page.getByRole('button', { name: 'Zapisz' }).click();
   await expect(page.getByText('Mozzarella E2E')).toBeVisible();
@@ -214,7 +214,7 @@ test('Magazyn: dodanie produktu, próg minimum i trwałość danych', async ({ p
   await expect(page.getByText('MAŁO')).toBeVisible();
   await expect(page.getByText(/2 g/)).toBeVisible();
   await expect(page.getByText(/min\. 3 g/)).toBeVisible();
-  await expect(page.getByText(/EAN 5900000000001/)).toBeVisible();
+  await expect(page.getByText(/EAN 5900000000008/)).toBeVisible();
 });
 
 

@@ -4,7 +4,7 @@
    w kalkulatorach zapamiętują się (calc:*).
    ========================================================================== */
 import {
-  h, icon, screen, button, iconBtn, toast, field, numInput, selectEl, segmented, emptyState,
+  h, icon, screen, button, iconBtn, toast, field, numInput, selectEl, segmented, emptyState, focusPreservingPaint,
 } from './ui.js';
 import { navigate, goBack } from './router.js';
 import {
@@ -144,8 +144,8 @@ function pizzaCalculator() {
         field('Oliwa % (opcjonalnie)', numInput({ value: st.oil, label: 'Oliwa', dec: 2, onInput: upd('oil') }))),
       h('section', { class: 'card stack' },
         h('h2', { class: 'card-title' }, icon('thermo', 20), 'Drożdże i fermentacja'),
-        h('div', { class: 'row gap' }, col(field('Temperatura (°C)', numInput({ value: st.temp, label: 'Temperatura fermentacji', dec: 1, onInput: (v) => { st.temp = v; save(); build(); paintOut(); } }))),
-          col(field('Czas (godz.)', numInput({ value: st.hours, label: 'Czas fermentacji w godzinach', dec: 1, onInput: (v) => { st.hours = v; save(); build(); paintOut(); } })))),
+        h('div', { class: 'row gap' }, col(field('Temperatura (°C)', numInput({ value: st.temp, label: 'Temperatura fermentacji', dec: 1, onInput: (v) => { st.temp = v; save(); focusPreservingPaint(build, s.el); paintOut(); } }))),
+          col(field('Czas (godz.)', numInput({ value: st.hours, label: 'Czas fermentacji w godzinach', dec: 1, onInput: (v) => { st.hours = v; save(); focusPreservingPaint(build, s.el); paintOut(); } })))),
         h('div', { class: 'row gap' },
           col(field('Rodzaj drożdży', selectEl(Object.entries(YEAST_TYPES).map(([k, v]) => [k, v.label]), st.yeastType, (v) => { st.yeastType = v; save(); build(); paintOut(); }))),
           col(field('Drożdże %', numInput({ value: st.yeast, label: 'Drożdże procent', dec: 2, onInput: upd('yeast') })))),

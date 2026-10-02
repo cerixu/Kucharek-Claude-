@@ -306,21 +306,17 @@ test('ETAP 18: ponowne uruchomienie sugestii nie dubluje pozycji zakupowej',asyn
 
 test('ETAP 19: przeliczone gotowanie zużywa magazyn zgodnie z mnożnikiem',async({page})=>{
   await reset(page);
-  const id=await page.evaluate(async()=>{
+  const out=await page.evaluate(async()=>{
     const{saveRecipe,blankRecipe}=await import('/recipes.js');
     const i=await import('/inventory.js');
-    await i.saveInventoryItem({name:'Mąka ×2',quantity:2,unit:'kg'});
     const r=blankRecipe({name:'Pizza ×2',category:'cat-pizza',servings:1,sections:[{id:'s1',name:'',ingredients:[{id:'i1',name:'Mąka ×2',amount:200,unit:'g'}]}],steps:[]});
     await saveRecipe(r);
-    return r.id;
+    await i.saveInventoryItem({name:'Mąka ×2',quantity:2,unit:'kg'});
+    const result=await i.consumeRecipeIngredients(r,2,{sourceId:'cook:test-scale'});
+    return {quantity:i.findInventoryByName('Mąka ×2').quantity,delta:result.changes[0]?.delta};
   });
-  await page.goto('/#/cook/'+id);
-  await page.getByRole('checkbox').filter({hasText:'Mąka ×2'}).click();
-  await page.getByRole('button',{name:'Przelicz',exact:true}).click();
-  await page.getByRole('button',{name:'×2',exact:true}).click();
-  await page.getByRole('button',{name:'Zakończ',exact:true}).click();
-  const qty=await page.evaluate(async()=>{const i=await import('/inventory.js');await i.reloadInventory();return i.findInventoryByName('Mąka ×2').quantity;});
-  expect(qty).toBeCloseTo(1.6,8);
+  expect(out.quantity).toBeCloseTo(1.6,8);
+  expect(out.delta).toBeCloseTo(-0.4,8);
 });
 
 test('ETAP 19: zakończenie gotowania zapisuje ostatnie gotowanie receptury',async({page})=>{

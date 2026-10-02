@@ -738,6 +738,12 @@ body.kb-open .actionbar, body.kb-open .cookbar { padding-bottom: 10px; }
 }
 .barcode-scanner-overlay .panel-head h2 { color:#fff; }
 .barcode-scanner-overlay .panel-head .iconbtn { color:#fff; }
+.barcode-scanner-overlay .panel-head .barcode-flash-btn { transition:background .18s ease,color .18s ease,box-shadow .18s ease,transform .18s ease; }
+.barcode-scanner-overlay .panel-head .barcode-flash-btn:disabled { opacity:.35; cursor:not-allowed; }
+.barcode-scanner-overlay .panel-head .barcode-flash-btn.is-on {
+  color:#111 !important; background:#ffc21a; box-shadow:0 0 18px rgba(255,194,26,.55); transform:scale(1.04);
+}
+
 .barcode-scanner-overlay .panel-body { padding:0 !important; overflow:hidden; display:flex; flex-direction:column; min-height:0; }
 .barcode-body { position:relative; flex:1 1 auto; min-height:0; display:flex; flex-direction:column; background:#050607; }
 .barcode-viewport { position:relative; flex:1 1 auto; min-height:0; overflow:hidden; background:#050607; }

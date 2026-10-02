@@ -34,7 +34,7 @@ test('EAN: niepoprawny kod nie zostaje zaakceptowany przez formularz Magazynu', 
   await reset(page);
   await page.goto('/#/inventory');
   await page.getByRole('button', { name:'Dodaj składnik' }).first().click();
-  await page.getByLabel('Nazwa produktu').fill('EAN invalid E2E');
+  await page.getByLabel('Nazwa składnika').fill('EAN invalid E2E');
   await page.getByLabel('Kod EAN').fill('1234567890123');
   await page.getByRole('button', { name:'Zapisz' }).click();
   await expect(page.getByText('Nieprawidłowy kod EAN.')).toBeVisible();

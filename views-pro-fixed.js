@@ -100,6 +100,7 @@ async function automationView(){
         render();
       }}),
       button('Utwórz zamówienie'+(reorders.length?' ('+reorders.length+')':''),{kind:'ghost',onClick:async()=>{if(!reorders.length){toast('Brak pozycji do zamówienia');return;}const suppliers=await listSuppliers();bulkOrderSheet(suppliers,reorders);}}),
+      button('Utwórz zamówienie'+(reorders.length?' ('+reorders.length+')':''),{kind:'ghost',onClick:async()=>{if(!reorders.length){toast('Brak pozycji do zamówienia');return;}const suppliers=await listSuppliers();bulkOrderSheet(suppliers,reorders);}}),
       button('Dodaj propozycje do zakupów'+(reorders.length?' ('+reorders.length+')':''),{kind:'ghost',onClick:async()=>{
         const {addItems}=await import('./shopping.js');
         await addItems(reorders.map(x=>({name:x.name,amount:x.orderQuantity,unit:x.unit,recipeName:'Autopilot magazynu'})));

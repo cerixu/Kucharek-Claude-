@@ -1271,3 +1271,18 @@ body.kb-open .actionbar, body.kb-open .cookbar { padding-bottom: 10px; }
   .inventory-autopilot-card{padding:13px;border-radius:18px}
   .inventory-autopilot-card .row.wrap{gap:7px}
 }
+
+/* Magazyn: prosty widok główny */
+.inventory-summary-simple{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:0 0 12px}
+.inventory-count{appearance:none;border:1px solid var(--line);border-radius:16px;background:var(--surface);padding:10px 8px;text-align:left;display:flex;flex-direction:column;gap:2px;min-width:0}
+.inventory-count strong{font-size:21px;line-height:1}
+.inventory-count span{font-size:12px;color:var(--muted)}
+.inventory-count.empty strong{color:#d94a4a}.inventory-count.low strong{color:#d79a28}.inventory-count.ok strong{color:#35a56a}
+.inventory-count.active{box-shadow:0 0 0 2px var(--accent)}
+.inventory-automation-simple{display:grid;gap:10px;margin-bottom:14px}
+.inventory-automation-simple> .row:first-child{align-items:flex-start}
+.inventory-automation-simple p{margin:3px 0 0}
+.setting-toggle{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 0;border-top:1px solid var(--line);cursor:pointer}
+.setting-toggle span{display:grid;gap:2px}.setting-toggle small{font-size:12px}
+.setting-toggle input{width:22px;height:22px;accent-color:var(--accent);flex:none}
+@media(max-width:420px){.stock-actions{justify-content:stretch}.stock-actions .btn{flex:1}.stock-actions .iconbtn{flex:none}}

@@ -205,3 +205,25 @@ test('Etap 14: migracja mediów działa po zmianie wersji biblioteki', async ({ 
   expect(out.version).toBe(8);
   expect(out.photo).toMatch(/^https:\/\/photoshop-api\.adobe\.io\/v2\/short-url\//);
 });
+
+
+test('Etap 14: karta receptury trzyma zdjęcie jako miniaturę, a nazwę obok', async ({ page }) => {
+  await reset(page);
+  await page.goto('/#/recipes');
+  await page.waitForSelector('.rcard');
+  const card = page.locator('.rcard').first();
+  await expect(card.locator('.rthumb')).toBeVisible();
+  await expect(card.locator('.rthumb img.recipe-visual')).toBeVisible();
+  await expect(card.locator('.rname')).toBeVisible();
+  const layout = await card.evaluate((el) => {
+    const thumb = el.querySelector('.rthumb').getBoundingClientRect();
+    const name = el.querySelector('.rname').getBoundingClientRect();
+    const image = el.querySelector('.rthumb img').getBoundingClientRect();
+    return { thumbW: thumb.width, thumbH: thumb.height, imageW: image.width, imageH: image.height, nameX: name.x, thumbRight: thumb.right };
+  });
+  expect(layout.thumbW).toBeLessThan(140);
+  expect(layout.thumbH).toBeLessThan(140);
+  expect(layout.imageW).toBeGreaterThan(40);
+  expect(layout.imageH).toBeGreaterThan(40);
+  expect(layout.nameX).toBeGreaterThanOrEqual(layout.thumbRight - 2);
+});

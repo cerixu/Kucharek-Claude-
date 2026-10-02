@@ -3,11 +3,14 @@ import { test, expect } from '@playwright/test';
 const DB_NAME = 'kucharzyna-claude-db';
 
 async function reset(page) {
-  await page.goto('about:blank');
-  await page.evaluate(async (name) => {
-    await new Promise((resolve) => { const r = indexedDB.deleteDatabase(name); r.onsuccess = r.onerror = r.onblocked = resolve; });
-  }, DB_NAME);
   await page.goto('/');
+  await page.waitForFunction(()=>window.__kucharzyna?.ready===true);
+  await page.evaluate(async()=>{
+    const {db,STORES}=await import('/db.js');
+    for(const store of Object.keys(STORES)) await db.clear(store);
+  });
+  await page.reload();
+  await page.waitForFunction(()=>window.__kucharzyna?.ready===true);
 }
 
 test('EAN: normalizacja i dopasowanie wskazuje istniejący produkt', async ({ page }) => {

@@ -275,3 +275,17 @@ test('Gotuję: składniki mają ikony i sól ma osobną ikonę niż oliwa', asyn
   });
   expect(salt.a).toContain('ingredient-icon-salt'); expect(salt.b).toContain('ingredient-icon-oil'); expect(salt.ad).not.toBe(salt.bd);
 });
+
+
+test('Biblioteka ikon: pieprz nie jest hakiem i nowe składniki mają osobne glify', async ({ page }) => {
+  await reset(page);
+  const result = await page.evaluate(async () => {
+    const { ingredientIcon } = await import('/components.js');
+    const names=['Pieprz','Kmin rzymski','Kurkuma','Cynamon','Goździki','Gałka muszkatołowa','Kardamon','Anyż','Liść laurowy','Kapary','Oliwki','Fasola','Awokado','Ogórek','Cukinia','Bakłażan','Jabłko','Pomarańcza','Truskawka','Maliny','Miód','Syrop'];
+    return names.map(name=>{const x=ingredientIcon({name});return {name,cls:x.className,d:x.querySelector('path')?.getAttribute('d')||''};});
+  });
+  expect(result.every(x=>x.d)).toBe(true);
+  expect(result.find(x=>x.name==='Pieprz').cls).toContain('ingredient-icon-pepper');
+  expect(result.find(x=>x.name==='Pieprz').d).toContain('M16 18c0-5');
+  expect(new Set(result.map(x=>x.d)).size).toBe(result.length);
+});

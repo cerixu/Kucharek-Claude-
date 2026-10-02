@@ -45,7 +45,7 @@ export function heartBtn(r, onToggle) {
   return b;
 }
 
-export export function recipeVisual(r, cls = '', { hero = false } = {}) {
+export function recipeVisual(r, cls = '', { hero = false } = {}) {
   if (r.photo) return h('img', { class: (hero ? 'hero-photo ' : '') + cls, src: r.photo, alt: hero ? ('Zdjęcie: ' + (r.name || 'receptura')) : '', loading: hero ? 'eager' : 'lazy', decoding: 'async' });
   const label = String(r.name || catName(r.category) || 'Kucharek').slice(0, 28);
   const emoji = catIcon(r.category);

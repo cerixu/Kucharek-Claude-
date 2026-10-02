@@ -140,7 +140,7 @@ export function ingredientIcon(ing) {
 
   else if (/szpinak|spinach/.test(n)) kind = 'spinach';
 
-  if (/sól|salt|sel/.test(n)) kind = 'salt';
+  if (/\b(sól|salt)\b/.test(n)) kind = 'salt';
   else if (/mąk|flour|semolin|farin/.test(n)) kind = 'flour';
   else if (/skrobi|mączka ziemniacz|cornstarch|starch/.test(n)) kind = 'starch';
   else if (/wod|water/.test(n)) kind = 'water';
@@ -209,7 +209,7 @@ export function ingredientIcon(ing) {
     salt:'M13 25h22l-2 13H15l-2-13ZM17 25v-5h14v5M19 16c2-2 4-2 6 0s4 2 6 0M18 31h.1M24 31h.1M30 31h.1',
     tomato:'M24 14c-9 0-14 6-14 13 0 9 6 14 14 14s14-5 14-14c0-7-5-13-14-13Z M24 14l-1-6M24 11c4-4 8-2 9 1-4 1-6 2-9 2',
     egg:'M24 7c-7 7-11 13-11 21a11 11 0 0 0 22 0c0-8-4-14-11-21Z',
-    cheese:'M9 33V18l25-6 5 18-30 3Z M9 18l25 12M29 24a2 2 0 1 0 0 .1M20 31a2 2 0 1 0 0 .1',
+    cheese:'M8 35V17l29-7v24L8 35ZM8 17l29 17M14 19v14M19 18v14M28 16v14M18 25h.1M27 21h.1M31 29h.1',
     meat:'M12 30c2-8 9-16 17-16 5 0 8 3 8 7 0 9-7 17-15 17-7 0-11-3-10-8Z M25 22c3-3 7-1 6 2-1 3-5 3-6 0',
     fish:'M8 24c8-10 20-12 31-4l4 4-4 4c-11 8-23 6-31-4Z M8 24l-5-5M8 24l-5 5M31 23h.1',
     oil:'M18 10h12v6l4 7v12H14V23l4-7v-6ZM18 10h12M19 29h10',

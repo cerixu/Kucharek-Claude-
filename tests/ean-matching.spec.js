@@ -300,5 +300,7 @@ test('Ikony składników: seler naciowy i szeroka biblioteka mają własne glify
   });
   expect(result.items.every(x=>x[2])).toBe(true);
   expect(result.items.find(x=>x[0]==='Seler naciowy')[1]).toContain('ingredient-icon-celery_stalk');
-  expect(result.fallback).toContain('ingredient-icon-generic');
+  expect(result.fallback).toContain('ingredient-icon-vegetable');
+  const fruit = await page.evaluate(async () => { const { ingredientIcon } = await import('/components.js'); return ingredientIcon({name:'Nowy owoc X',category:'owoce'}).className; });
+  expect(fruit).toContain('ingredient-icon-fruit');
 });

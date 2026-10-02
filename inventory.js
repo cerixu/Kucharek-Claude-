@@ -129,9 +129,10 @@ export async function consumeRecipeIngredients(recipe, factor = 1, options = {})
     };
   });
 
-  await db.tx(['inventory', 'inventoryLog'], (t) => {
+  await db.tx(['inventory', 'inventoryLog', 'stockMovements'], (t) => {
     next.forEach((item) => {
       const before = Number(items.find((x) => x.id === item.id)?.quantity || 0);
+      const delta = item.quantity - before;
       t.put('inventory', item);
       t.put('inventoryLog', {
         id: uid('stocklog_'),
@@ -139,10 +140,25 @@ export async function consumeRecipeIngredients(recipe, factor = 1, options = {})
         type: 'recipe',
         recipeId: recipe.id,
         recipeName: recipe.name,
-        delta: item.quantity - before,
+        sourceId: sourceId || null,
+        delta,
         before,
         after: item.quantity,
         at: now,
+      });
+      t.put('stockMovements', {
+        id: uid('mov_'),
+        at: now,
+        type: 'recipe_consumption',
+        inventoryId: item.id,
+        inventoryName: item.name,
+        delta,
+        unit: item.unit,
+        before,
+        after: item.quantity,
+        sourceId: sourceId || null,
+        reason: 'gotowanie',
+        note: recipe.name || '',
       });
     });
   });

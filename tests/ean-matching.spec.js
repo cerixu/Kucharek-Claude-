@@ -202,6 +202,6 @@ test('Etap 14: migracja mediów działa po zmianie wersji biblioteki', async ({ 
     const next = listRecipes().find(x => x.id === 'rcp_seed_pizza');
     return { photo: next?.photo || '', version: (await db.get('settings', 'seedLibraryVersion'))?.value };
   });
-  expect(out.version).toBe(6);
+  expect(out.version).toBe(8);
   expect(out.photo).toMatch(/^https:\/\/photoshop-api\.adobe\.io\/v2\/short-url\//);
 });

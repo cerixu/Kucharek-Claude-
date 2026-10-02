@@ -64,6 +64,82 @@ export function recipeGraphicData(r) {
 export function ingredientIcon(ing) {
   const n = String(ing?.name || '').toLowerCase();
   let kind = 'generic';
+  const category = String(ing?.category || ing?.type || ing?.group || '').toLowerCase();
+  const categoryKind = /warzy|vegetable|veg/.test(category) ? 'generic'
+    : /owoc|fruit/.test(category) ? 'generic'
+    : /nabiał|dairy/.test(category) ? 'milk'
+    : /mięs|meat/.test(category) ? 'meat'
+    : /ryb|seafood|fish/.test(category) ? 'fish'
+    : /przypraw|spice/.test(category) ? 'herb'
+    : /zboż|grain|bakery/.test(category) ? 'flour'
+    : /tłuszcz|fat|oil/.test(category) ? 'oil'
+    : null;
+  else if (/mleko kokos|coconut milk/.test(n)) kind = 'coconut_milk';
+
+  else if (/olej sezam|sesame oil/.test(n)) kind = 'sesame_oil';
+
+  else if (/ancho|anchov/.test(n)) kind = 'anchovy';
+
+  else if (/małż|mussel/.test(n)) kind = 'mussel';
+
+  else if (/kalm|squid/.test(n)) kind = 'squid';
+
+  else if (/krewet|shrimp/.test(n)) kind = 'shrimp';
+
+  else if (/tempeh/.test(n)) kind = 'tempeh';
+
+  else if (/tofu/.test(n)) kind = 'tofu';
+
+  else if (/chleb|bread/.test(n)) kind = 'bread';
+
+  else if (/żelatyn|gelatin/.test(n)) kind = 'gelatin';
+
+  else if (/mąka ryż|rice flour/.test(n)) kind = 'flour_alt';
+
+  else if (/czekolad|chocolate/.test(n)) kind = 'chocolate';
+
+  else if (/ananas|pineapple/.test(n)) kind = 'pineapple';
+
+  else if (/kokos|coconut/.test(n)) kind = 'coconut';
+
+  else if (/śliwk|plum/.test(n)) kind = 'plum';
+
+  else if (/brzoskw|peach/.test(n)) kind = 'peach';
+
+  else if (/winogron|grape/.test(n)) kind = 'grape';
+
+  else if (/banan|banana/.test(n)) kind = 'banana';
+
+  else if (/gruszk|pear/.test(n)) kind = 'pear';
+
+  else if (/dyni|pumpkin/.test(n)) kind = 'pumpkin';
+
+  else if (/karczoch|artichoke/.test(n)) kind = 'artichoke';
+
+  else if (/szparag|asparagus/.test(n)) kind = 'asparagus';
+
+  else if (/fenkuł|koper włoski|fennel/.test(n)) kind = 'fennel';
+
+  else if (/por|leek/.test(n)) kind = 'leek';
+
+  else if (/rzodkiew|radish/.test(n)) kind = 'radish';
+
+  else if (/burak|beet/.test(n)) kind = 'beet';
+
+  else if (/groszek|pea/.test(n)) kind = 'pea';
+
+  else if (/kukurydz|corn/.test(n)) kind = 'corn';
+
+  else if (/kalafior|cauliflower/.test(n)) kind = 'cauliflower';
+
+  else if (/brokuł|broccoli/.test(n)) kind = 'broccoli';
+
+  else if (/kapust|cabbage/.test(n)) kind = 'cabbage';
+
+  else if (/sałat|lettuce/.test(n)) kind = 'lettuce';
+
+  else if (/szpinak|spinach/.test(n)) kind = 'spinach';
+
   if (/sól|salt|sel/.test(n)) kind = 'salt';
   else if (/mąk|flour|semolin|farin/.test(n)) kind = 'flour';
   else if (/skrobi|mączka ziemniacz|cornstarch|starch/.test(n)) kind = 'starch';
@@ -114,6 +190,7 @@ export function ingredientIcon(ing) {
   else if (/makaron|pasta|spaghetti|tagliatelle|noodle/.test(n)) kind = 'pasta';
   else if (/ziemniak|potato/.test(n)) kind = 'potato';
   else if (/marchew|carrot/.test(n)) kind = 'carrot';
+  else if (/seler naci|seler łodyg|naci selera|celery stalk|celery/.test(n)) kind = 'celery_stalk';
   else if (/seler|celery/.test(n)) kind = 'celery';
   else if (/orzech|walnut|almond|hazelnut|nut/.test(n)) kind = 'nut';
   else if (/sezam|sesame/.test(n)) kind = 'sesame';
@@ -123,6 +200,7 @@ export function ingredientIcon(ing) {
   else if (/wanili|vanilla/.test(n)) kind = 'vanilla';
   else if (/drożdż|yeast/.test(n)) kind = 'yeast';
 
+  if (kind === 'generic' && categoryKind) kind = categoryKind;
   const paths = {
     flour:'M10 36h28M13 36l4-22h14l4 22M17 14l7-6 7 6M20 22h8M18 29h12',
     starch:'M12 18h24l-2 20H14l-2-20ZM16 18l3-7h10l3 7M17 25h14M18 31h12',
@@ -182,6 +260,39 @@ export function ingredientIcon(ing) {
     raspberry:'M13 27c0-7 5-12 11-12s11 5 11 12c0 7-5 11-11 11s-11-4-11-11ZM18 24h.1M24 21h.1M30 27h.1M24 31h.1',
     honey:'M14 16h20v22H14zM18 16v-5h12v5M19 25c3 3 7 3 10 0M20 31h8',
     syrup:'M18 9h12v6l4 7v16H14V22l4-7V9ZM18 15h12M19 29h10',
+celery_stalk:'M18 39V13M24 39V10M30 39V15M18 22c-5-2-8-6-8-11M24 19c-4-2-6-5-6-9M30 24c5-2 8-6 8-11',
+spinach:'M24 39V24c-8-1-12-6-12-13 8 0 12 4 12 13 0-9 5-14 13-14 0 8-4 13-13 14',
+lettuce:'M10 28c4-8 8-12 14-12s10 4 14 12c-4 8-9 11-14 11S14 36 10 28ZM24 17v21M16 24c3 3 5 4 8 4s5-1 8-4',
+cabbage:'M24 10c-8 0-14 6-14 15s6 14 14 14 14-5 14-14S32 10 24 10ZM24 10v29M12 25c6-2 18-2 24 0',
+broccoli:'M12 25c0-6 4-10 9-10 1-6 6-9 11-6 4 2 5 6 4 10 3 1 5 4 5 8 0 6-5 10-12 10H19c-4 0-7-2-7-6ZM24 31v8',
+cauliflower:'M11 27c0-5 4-9 9-9 1-5 5-8 9-8s8 3 9 8c5 0 9 4 9 9 0 7-6 11-13 11H24c-7 0-13-4-13-11ZM24 38v-7',
+corn:'M17 10c-3 8-3 19 3 28h8c6-9 6-20 3-28-5-2-9-2-14 0ZM14 15l-5-4M34 15l5-4M20 18h8M19 24h10M20 30h8',
+pea:'M12 28c4-8 11-11 24-7 0 9-7 14-17 14-5 0-8-3-7-7ZM17 27c2 2 4 3 7 3M24 24c2 2 4 3 7 3',
+beet:'M13 29c0-7 5-12 11-12s11 5 11 12-5 10-11 10-11-3-11-10ZM24 17V9M20 12l-5-4M28 12l5-4',
+radish:'M13 28c0-6 5-11 11-11s11 5 11 11-5 10-11 10-11-4-11-10ZM24 17V8M20 11l-5-5M28 11l5-5',
+leek:'M17 39c-2-8-1-18 2-29h10c3 11 4 21 2 29M19 25h10M20 10l-3-5M28 10l3-5',
+fennel:'M24 39V17M15 27c4-5 9-7 9-7s5 2 9 7M17 18c3-4 7-6 7-6M31 18c-3-4-7-6-7-6',
+asparagus:'M16 39c-1-11 0-21 5-29M24 39c0-11 1-21 5-29M32 39c1-11 0-21-5-29M19 18h10M17 25h14',
+artichoke:'M24 9c-8 4-12 10-12 18 0 8 5 12 12 12s12-4 12-12c0-8-4-14-12-18ZM16 22c5 3 11 3 16 0M18 29c4 2 8 2 12 0',
+pumpkin:'M10 27c0-9 5-15 14-15s14 6 14 15-5 12-14 12-14-3-14-12ZM24 12v27M17 15c3 5 3 16 0 21M31 15c-3 5-3 16 0 21',
+pear:'M24 10c-5 2-6 7-4 11-6 3-9 8-8 14 1 7 6 11 12 11s11-4 12-11c1-6-2-11-8-14 2-4 1-8-4-11ZM24 10V6',
+banana:'M12 18c5 13 13 18 25 10 0 7-5 11-12 11-10 0-17-7-18-18l5-3ZM12 18l-3-5',
+grape:'M24 17c-6 0-11 5-11 11s5 10 11 10 11-4 11-10-5-11-11-11ZM24 17V9M20 12c-4-3-7-2-9 1M28 12c4-3 7-2 9 1',
+peach:'M12 27c0-8 5-14 12-14s12 6 12 14-5 12-12 12-12-4-12-12ZM24 13c-3 5-3 9 0 14',
+plum:'M12 27c0-8 5-14 12-14s12 6 12 14-5 12-12 12-12-4-12-12ZM24 13v-5',
+coconut:'M12 29c0-10 5-18 12-18s12 8 12 18-5 10-12 10-12-1-12-10ZM17 23c4-3 10-3 14 0M18 29h12',
+pineapple:'M14 20c0-6 4-10 10-10s10 4 10 10c0 10-4 18-10 18s-10-8-10-18ZM24 10V4M19 10l-5-5M29 10l5-5M18 22h12M18 29h12',
+chocolate:'M11 12h26v27H11zM11 21h26M11 30h26M20 12v27M29 12v27',
+gelatin:'M13 29c0-8 5-13 11-13s11 5 11 13-5 10-11 10-11-3-11-10ZM18 25h.1M24 30h.1M30 25h.1',
+bread:'M11 34V22c0-7 6-12 13-12s13 5 13 12v12H11ZM16 22c3-4 5-5 8-5s5 1 8 5',
+tofu:'M11 17h26v21H11zM15 17l4-7h10l4 7M18 25h12',
+tempeh:'M12 16h24v23H12zM16 21h16M16 28h16M16 34h16',
+shrimp:'M10 28c5-9 13-13 22-9 5 2 6 7 2 11-6 6-17 6-24-2ZM33 20l5-5M28 25h.1',
+squid:'M15 14c0-5 4-8 9-8s9 3 9 8v13c0 7-4 12-9 12s-9-5-9-12V14ZM18 39l-4 4M23 39v5M28 39l4 4',
+mussel:'M12 31c0-10 5-18 12-21 7 3 12 11 12 21-7 7-17 7-24 0ZM24 10v29',
+anchovy:'M9 27c7-9 17-11 28-5l4 4-4 4c-11 6-21 4-28-3ZM9 27l-6-4M9 27l-6 5',
+sesame_oil:'M18 10h12v6l4 7v12H14V23l4-7v-6ZM18 10h12M19 29h10',
+coconut_milk:'M14 12h20v26H14zM18 12v-4h12v4M18 21h12',
     generic:'M10 24h28M14 18h20l4 18H10l4-18ZM18 18v-5h12v5'
   };
   const NS = 'http://www.w3.org/2000/svg';

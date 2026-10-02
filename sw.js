@@ -21,6 +21,7 @@ const CORE = [
   'components.js', 'shopping.js', 'inventory.js', 'pro.js', 'pro-calculators.js',
   'views-start.js', 'views-recipes.js', 'views-detail.js', 'views-editor.js', 'views-cook.js', 'views-calc.js', 'views-import.js', 'views-settings.js', 'views-inventory.js', 'views-pro-fixed.js',
   'assets/apple-touch-icon.png', 'assets/icon-192.png', 'assets/icon-512.png', 'assets/icon-maskable-512.png',
+  'assets/start/pizza.svg', 'assets/start/pasta.svg', 'assets/start/bakery.svg', 'assets/start/veg.svg',
 ];
 
 const scopeUrl = (p) => new URL(p, self.registration.scope).href;

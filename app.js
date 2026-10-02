@@ -145,7 +145,7 @@ route('/pro', () => {
   import('./views-pro-fixed.js?v=20261002-19').then(({ proView }) => {
     try {
       const view = proView();
-      document.querySelector('#view')?.replaceChildren(view.el);
+      el.replaceChildren(view.el);
     } catch (e) {
       console.error(e);
       el.querySelector('.muted').textContent = 'Nie udało się otworzyć modułu PRO. Start aplikacji działa normalnie.';

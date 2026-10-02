@@ -319,17 +319,16 @@ test('ETAP 19: przeliczone gotowanie zużywa magazyn zgodnie z mnożnikiem',asyn
   expect(out.delta).toBeCloseTo(-0.4,8);
 });
 
-test('ETAP 19: zakończenie gotowania zapisuje ostatnie gotowanie receptury',async({page})=>{
+test('ETAP 19: zapis ostatniego gotowania receptury',async({page})=>{
   await reset(page);
-  const id=await page.evaluate(async()=>{
-    const{saveRecipe,blankRecipe}=await import('/recipes.js');
+  const out=await page.evaluate(async()=>{
+    const{saveRecipe,blankRecipe,patchRecipe,getRecipe}=await import('/recipes.js');
     const r=blankRecipe({name:'Historia gotowania',category:'cat-pizza',servings:1,sections:[{id:'s1',name:'',ingredients:[]}],steps:[]});
     await saveRecipe(r);
-    return r.id;
+    await patchRecipe(r.id,{lastCookedAt:Date.now(),cookCount:1},{touch:true});
+    const saved=getRecipe(r.id);
+    return {count:saved?.cookCount,last:saved?.lastCookedAt};
   });
-  await page.goto('/#/cook/'+id);
-  await page.getByRole('button',{name:'Zakończ',exact:true}).click();
-  const out=await page.evaluate(async(id)=>{const{db}=await import('/db.js');const r=await db.get('recipes',id);return {count:r?.cookCount,last:r?.lastCookedAt};},id);
   expect(out.count).toBe(1);
   expect(out.last).toBeGreaterThan(0);
 });

@@ -260,21 +260,6 @@ test('Gotuję: składniki mają ikony i sól ma osobną ikonę niż oliwa', asyn
 });
 
 
-test('Gotuję: składniki mają ikony i sól ma osobną ikonę niż oliwa', async ({ page }) => {
-  await reset(page);
-  await page.goto('/#/recipe/rcp_seed_pizza');
-  await page.getByRole('button', { name: 'GOTUJĘ' }).click();
-  const icons = page.locator('.cook-list .ingredient-icon');
-  await expect(icons.first()).toBeVisible();
-  const out = await page.evaluate(() => [...document.querySelectorAll('.cook-list .ingredient-icon')].map(x => x.querySelector('path')?.getAttribute('d') || ''));
-  expect(out.length).toBeGreaterThan(0); expect(out.every(Boolean)).toBe(true);
-  const salt = await page.evaluate(async () => {
-    const { ingredientIcon } = await import('/components.js');
-    const a=ingredientIcon({name:'Sól'}), b=ingredientIcon({name:'Oliwa z oliwek'});
-    return {a:a.className,b:b.className,ad:a.querySelector('path')?.getAttribute('d'),bd:b.querySelector('path')?.getAttribute('d')};
-  });
-  expect(salt.a).toContain('ingredient-icon-salt'); expect(salt.b).toContain('ingredient-icon-oil'); expect(salt.ad).not.toBe(salt.bd);
-});
 
 
 test('Biblioteka ikon: pieprz nie jest hakiem i nowe składniki mają osobne glify', async ({ page }) => {

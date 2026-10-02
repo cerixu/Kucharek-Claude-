@@ -2,7 +2,7 @@ import { h, screen, button, iconBtn, toast, field, textInput, selectEl, openShee
 import { navigate } from './router.js';
 import { listInventory, loadInventory, subscribeInventory } from './inventory.js';
 import { listSuppliers, addSupplier, createPurchaseOrder, listPurchaseOrders, receiveDelivery, listDeliveries, recordWaste, startStocktake, updateStocktake, finalizeStocktake, createProductionBatch, completeProductionBatch, planRecipe, analyticsSummary, adjustStockPro, wasteReport, salesDeplete, parseSalesCsv, importSalesCsv, reorderSuggestions, expiryAlerts, runInventoryAutopilot } from './pro.js';
-import { listRecipes } from './recipes.js';
+import { listRecipes, getSetting, setSetting } from './recipes.js';
 
 const units=[['g','g'],['kg','kg'],['ml','ml'],['l','l'],['szt','szt'],['opak','opak']];
 const n=(v)=>Number(v||0);
@@ -74,17 +74,25 @@ export function proView(){
 }
 
 async function automationView(){
+  const enabled=!!getSetting('inventoryAutoShopping');
   const [reorders,expiring]=await Promise.all([reorderSuggestions(),expiryAlerts(3)]);
   const reorderRows=reorders.length
     ? reorders.slice(0,10).map(x=>h('div',{class:'row between'},h('span',null,x.name+' · stan '+money(x.quantity)+' '+x.unit),h('strong',null,'+'+money(x.orderQuantity)+' '+x.unit)))
     : [h('p',{class:'muted'},'Brak pozycji wymagających uzupełnienia.')];
-  const expiryRows=expiring.length
-    ? expiring.slice(0,10).map(x=>h('div',{class:'row between'},h('span',null,x.inventoryName),h('strong',null,new Date(x.expiryAt).toLocaleDateString('pl-PL'))))
+  const expired=expiring.filter(x=>x.expiryAt< Date.now());
+  const soon=expiring.filter(x=>x.expiryAt>=Date.now());
+  const expiryRows=[...expired,...soon].length
+    ? [...expired,...soon].slice(0,10).map(x=>h('div',{class:'row between'},
+        h('span',null,x.inventoryName),
+        h('strong',{class:expired.includes(x)?'danger-text':''},expired.includes(x)?'PRZETERMINOWANE':new Date(x.expiryAt).toLocaleDateString('pl-PL'))
+      ))
     : [h('p',{class:'muted'},'Brak partii kończących się w ciągu 3 dni.')];
   return h('div',{class:'stack'},
     h('div',{class:'card'},
-      h('h3',null,'Autopilot magazynu'),
-      h('p',{class:'muted'},'Po rozliczeniu sprzedaży Kucharek sam sprawdza braki i może dodać je do zakupów. Nie musisz wpisywać zużycia co pół godziny.'),
+      h('div',{class:'row between'},h('div',null,h('h3',null,'Autopilot magazynu'),h('p',{class:'muted'},enabled?'AKTYWNY · zakupy mogą być uzupełniane automatycznie.':'WYŁĄCZONY · nic nie zostanie dodane automatycznie.')),
+        button(enabled?'Wyłącz autopilota':'Włącz autopilota',{sm:true,kind:enabled?'ghost':'primary',onClick:async()=>{await setSetting('inventoryAutoShopping',!enabled);toast(!enabled?'Autopilot włączony':'Autopilot wyłączony');render();}})
+      ),
+      h('p',{class:'muted'},'Po rozliczeniu sprzedaży Kucharek sprawdza braki według minimum i stanu docelowego.'),
       button('Uruchom autopilota teraz',{kind:'primary',onClick:async()=>{
         const result=await runInventoryAutopilot();
         toast(result.enabled?(result.added?'Dodano brakujące pozycje do zakupów 📦':'Brak nowych zakupów'):'Autopilot jest wyłączony');
@@ -92,13 +100,13 @@ async function automationView(){
       }}),
       button('Dodaj propozycje do zakupów'+(reorders.length?' ('+reorders.length+')':''),{kind:'ghost',onClick:async()=>{
         const {addItems}=await import('./shopping.js');
-        await addItems(reorders.map(x=>({name:x.name,amount:x.orderQuantity,unit:x.unit})));
+        await addItems(reorders.map(x=>({name:x.name,amount:x.orderQuantity,unit:x.unit,recipeName:'Autopilot magazynu'})));
         toast(reorders.length?'Propozycje dodane do zakupów':'Brak pozycji do zamówienia');
         render();
       }})
     ),
     h('div',{class:'card'},h('h3',null,'Do uzupełnienia'),...reorderRows),
-    h('div',{class:'card'},h('h3',null,'Terminy ważności'),...expiryRows),
+    h('div',{class:'card'},h('h3',null,'Terminy ważności'),h('p',{class:'muted'},expired.length?'Najpierw pokazuję partie już przeterminowane.':'Najbliższe 3 dni'),...expiryRows),
     h('div',{class:'card'},
       h('h3',null,'Sprzedaż'),
       h('p',{class:'muted'},'Eksport sprzedaży z POS raz na zmianę wystarczy. Import rozbije sprzedaż na składniki receptur i odejmie je atomowo.'),

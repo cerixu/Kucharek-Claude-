@@ -322,3 +322,18 @@ test('ETAP 19: przeliczone gotowanie zużywa magazyn zgodnie z mnożnikiem',asyn
   const qty=await page.evaluate(async()=>{const i=await import('/inventory.js');await i.reloadInventory();return i.findInventoryByName('Mąka ×2').quantity;});
   expect(qty).toBeCloseTo(1.6,8);
 });
+
+test('ETAP 19: zakończenie gotowania zapisuje ostatnie gotowanie receptury',async({page})=>{
+  await reset(page);
+  const id=await page.evaluate(async()=>{
+    const{saveRecipe,blankRecipe}=await import('/recipes.js');
+    const r=blankRecipe({name:'Historia gotowania',category:'cat-pizza',servings:1,sections:[{id:'s1',name:'',ingredients:[]}],steps:[]});
+    await saveRecipe(r);
+    return r.id;
+  });
+  await page.goto('/#/cook/'+id);
+  await page.getByRole('button',{name:'Zakończ',exact:true}).click();
+  const out=await page.evaluate(async(id)=>{const{getRecipe}=await import('/recipes.js');const r=getRecipe(id);return {count:r?.cookCount,last:r?.lastCookedAt};},id);
+  expect(out.count).toBe(1);
+  expect(out.last).toBeGreaterThan(0);
+});

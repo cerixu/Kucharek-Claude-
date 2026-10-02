@@ -531,6 +531,22 @@ body.kb-open #toasts { bottom: auto; top: calc(var(--vv-top, 0px) + env(safe-are
 .ing { display: flex; align-items: baseline; gap: 10px; min-height: 48px; padding: 10px 0; border-bottom: 1px dashed var(--line); }
 .ing:last-child { border-bottom: 0; }
 .ing-name { flex: 1 1 auto; min-width: 0; font-size: 1.05rem; line-height: 1.3; }
+.ingredient-icon { flex: none; width: 32px; height: 32px; display: grid; place-items: center; border-radius: 10px; color: var(--muted); background: var(--surface-2); }
+.ingredient-icon svg { width: 18px; height: 18px; }
+.ingredient-icon-flour { color: #b59b75; }
+.ingredient-icon-water { color: #6d9fb8; }
+.ingredient-icon-tomato { color: #c56a62; }
+.ingredient-icon-egg { color: #c3a25f; }
+.ingredient-icon-cheese { color: #c9a85c; }
+.ingredient-icon-meat { color: #a86f6f; }
+.ingredient-icon-fish { color: #7195a3; }
+.ingredient-icon-oil { color: #b9a15a; }
+.ingredient-icon-onion, .ingredient-icon-garlic { color: #9f8caa; }
+.ingredient-icon-pepper { color: #7f858d; }
+.ingredient-icon-herb { color: #76937b; }
+.ingredient-icon-sugar, .ingredient-icon-milk, .ingredient-icon-butter { color: #aaa28d; }
+.ingredient-icon-lemon { color: #b9ad59; }
+.ingredient-icon-mushroom { color: #988c7d; }
 .kind { margin-left: 8px; font-size: .68rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
 .ing-pct { flex: none; font-size: .9rem; color: var(--muted); font-weight: 650; }
 .ing-qty { flex: none; display: flex; align-items: baseline; gap: 5px; white-space: nowrap; text-align: right; }

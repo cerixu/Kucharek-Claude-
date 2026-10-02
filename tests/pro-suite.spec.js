@@ -150,7 +150,7 @@ test('ETAP 23: Magazyn pokazuje autopilota i żywe sugestie po zmianie stanu',as
   await page.goto('/#/inventory');
   await expect(page.getByText('Automatyzacja zakupów',{exact:true})).toBeVisible();
   await expect(page.getByText(/sugestii uzupełnienia/).first()).toBeVisible();
-  await expect(page.getByText('Mąka 00 test',{exact:true})).toBeVisible();
+  await expect(page.locator('.stock-row .stock-title').filter({hasText:'Mąka 00 test'})).toBeVisible();
   await expect(page.getByText('+10.8 kg',{exact:true})).toBeVisible();
   await page.getByRole('button',{name:/Otwórz automatyzacje/}).click();
   await expect(page.getByRole('heading',{name:'Autopilot magazynu',exact:true})).toBeVisible();

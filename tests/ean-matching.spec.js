@@ -171,3 +171,19 @@ test('Etap 14: karta i hero korzystają ze zdjęcia potrawy',async({page})=>{
   await page.getByRole('link',{name:'Pizza Napoletana'}).click();
   await expect(page.locator('.hero-photo.recipe-visual')).toHaveAttribute('src',/photoshop-api\.adobe\.io\/v2\/short-url/);
 });
+
+test('Etap 14: migracja podmienia stare zdjęcie seedowane',async({page})=>{
+  await reset(page);
+  const out=await page.evaluate(async()=>{
+    const {db}=await import('/db.js');
+    const {restoreSeeds,listRecipes}=await import('/recipes.js');
+    const old='https://images.unsplash.com/photo-legacy-test';
+    const cur=await db.get('recipes','rcp_seed_pizza');
+    await db.put('recipes',{...cur,photo:old,thumb:old});
+    await restoreSeeds();
+    const next=(await listRecipes()).find(x=>x.id==='rcp_seed_pizza');
+    return {photo:next?.photo||'',old};
+  });
+  expect(out.photo).toMatch(/^https:\/\/photoshop-api\.adobe\.io\/v2\/short-url\//);
+  expect(out.photo).not.toBe(out.old);
+});

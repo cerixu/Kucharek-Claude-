@@ -198,9 +198,6 @@ export function openBarcodeScanner({ onDetected }) {
     video.srcObject=null;
   }
 
-  sheet.panel.querySelector('.panel-head')?.appendChild(
-    iconBtn('info','Informacje o skanowaniu',()=>toast('Skaner analizuje cały obraz. Linia jest prowadnicą, ale kod nie musi jej przecinać.'))
-  );
   const flashButton = iconBtn('flash','Włącz latarkę',()=>toggleTorch());
   flashButton.disabled = true;
   flashButton.classList.add('barcode-flash-btn');

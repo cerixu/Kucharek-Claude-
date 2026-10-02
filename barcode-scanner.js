@@ -70,7 +70,7 @@ export function openBarcodeScanner({ onDetected }) {
     if (!vw || !vh) return null;
     // Cały kadr: kod może znajdować się gdziekolwiek na ekranie.
     // Ograniczamy rozdzielczość dla płynności, bez zawężania obszaru skanowania.
-    const scale=Math.min(1,1600/vw);
+    const scale=Math.min(1,1280/vw);
     const w=Math.max(1,Math.round(vw*scale)), h=Math.max(1,Math.round(vh*scale));
     canvas.width=w; canvas.height=h;
     const ctx=canvas.getContext('2d',{willReadFrequently:true});
@@ -102,12 +102,11 @@ export function openBarcodeScanner({ onDetected }) {
       if (Date.now()-lastAt>700) { stable=0; lastCode=''; }
       return;
     }
-    const now=Date.now();
-    if (code===lastCode && now-lastAt<900) stable++;
-    else { lastCode=code; stable=1; }
-    lastAt=now;
-    if (stable>=2) finish(code);
-    else setStatus('Kod wykryty — jeszcze moment…','near');
+    // Kod jest już zweryfikowany przez BarcodeDetector albo checksum lokalnego
+    // dekodera. Nie czekamy na drugi kadr: użytkownik ma dostać wynik natychmiast.
+    const normalized=normalizeScannedEAN(code);
+    if (!validScannedEAN(normalized)) return;
+    finish(normalized);
   }
 
   async function tick() {

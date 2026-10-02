@@ -1239,3 +1239,35 @@ body.kb-open .actionbar, body.kb-open .cookbar { padding-bottom: 10px; }
 }
 
 .danger-text{color:#b42318;font-weight:700}
+
+/* Magazyn · automatyzacja zakupów: widoczna od razu, kompaktowa na iPhonie. */
+.inventory-autopilot-card{
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+  padding:14px;
+  border-radius:20px;
+  background:
+    linear-gradient(145deg,color-mix(in srgb,var(--accent) 9%,var(--surface)),var(--surface));
+  border-color:color-mix(in srgb,var(--accent) 24%,var(--line));
+  box-shadow:0 8px 24px color-mix(in srgb,var(--accent) 7%,transparent);
+}
+.inventory-autopilot-copy{min-width:0}
+.inventory-autopilot-copy strong{display:block;font-size:1rem;letter-spacing:-.01em}
+.inventory-autopilot-copy .muted{margin-top:3px}
+.autopilot-pill{font-weight:800;white-space:nowrap}
+.autopilot-pill.is-on{color:var(--accent-text);background:var(--accent-soft)}
+.autopilot-pill.is-off{color:var(--muted);background:var(--surface-2)}
+.inventory-suggestions{display:grid;gap:6px}
+.inventory-suggestion{
+  display:flex;align-items:center;justify-content:space-between;gap:12px;
+  min-height:36px;padding:8px 10px;border-radius:12px;
+  background:color-mix(in srgb,var(--surface-2) 62%,transparent);
+  border:1px solid color-mix(in srgb,var(--line) 72%,transparent);
+}
+.inventory-suggestion span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.inventory-suggestion strong{white-space:nowrap;font-variant-numeric:tabular-nums}
+@media(max-width:420px){
+  .inventory-autopilot-card{padding:13px;border-radius:18px}
+  .inventory-autopilot-card .row.wrap{gap:7px}
+}

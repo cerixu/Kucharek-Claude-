@@ -148,7 +148,7 @@ export function openBarcodeScanner({ onDetected }) {
       video.srcObject=stream;
       await video.play();
       setStatus('Ustaw kod kreskowy na linii');
-      raf=requestAnimationFrame(tick);
+      timer=setTimeout(tick,120);
     } catch (e) {
       console.error(e);
       const denied=e?.name==='NotAllowedError'||e?.name==='SecurityError';

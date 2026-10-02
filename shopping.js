@@ -8,7 +8,7 @@ import {
   h, icon, screen, button, iconBtn, toast, openSheet, confirmDialog, emptyState, field, textInput, numInput, selectEl, segmented,
 } from './ui.js';
 import { navigate } from './router.js';
-import { loadInventory, findInventoryByName, findInventoryMatch, unitCompatible, unitToBase, unitFromBase, receiveStock } from './inventory.js';
+import { loadInventory, listInventory, findInventoryByName, findInventoryMatch, unitCompatible, unitToBase, unitFromBase, receiveStock } from './inventory.js';
 
 /* ---------- Logika ---------- */
 

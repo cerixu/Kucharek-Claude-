@@ -11,7 +11,8 @@ function supportedNativeFormats() {
 }
 
 export function openBarcodeScanner({ onDetected }) {
-  let stream = null, timer = 0, stopped = false, busy = false, detector = null;
+  let stream = null, videoTrack = null, timer = 0, stopped = false, busy = false, detector = null;
+  let torchSupported = false, torchOn = false;
   let lastCode = '', stable = 0, lastAt = 0;
   const video = h('video', {
     class:'barcode-video',
@@ -143,6 +144,11 @@ export function openBarcodeScanner({ onDetected }) {
         }
       });
       video.srcObject=stream;
+      videoTrack=stream.getVideoTracks?.()[0] || null;
+      torchSupported=!!videoTrack && supportsTorch(videoTrack);
+      flashButton.disabled=!torchSupported;
+      flashButton.setAttribute('aria-label', torchSupported ? 'Włącz latarkę' : 'Latarka niedostępna w tej przeglądarce');
+      flashButton.title=torchSupported ? 'Włącz latarkę' : 'Latarka niedostępna w tej przeglądarce';
       await video.play();
       setStatus('Zbliż kod kreskowy do aparatu');
       timer=setTimeout(tick,120);
@@ -154,15 +160,51 @@ export function openBarcodeScanner({ onDetected }) {
     }
   }
 
+  function supportsTorch(track) {
+    try {
+      if (typeof track.getCapabilities !== 'function') return false;
+      const caps=track.getCapabilities();
+      return caps?.torch === true || (Array.isArray(caps?.torch) && caps.torch.includes(true));
+    } catch (_) { return false; }
+  }
+
+  async function toggleTorch() {
+    if (!videoTrack || !torchSupported || stopped) return;
+    const next=!torchOn;
+    try {
+      await videoTrack.applyConstraints({advanced:[{torch:next}]});
+      torchOn=next;
+      flashButton.classList.toggle('is-on',torchOn);
+      flashButton.setAttribute('aria-label',torchOn?'Wyłącz latarkę':'Włącz latarkę');
+      flashButton.title=torchOn?'Wyłącz latarkę':'Włącz latarkę';
+      setStatus(torchOn?'Latarka włączona':'Latarka wyłączona',torchOn?'near':'');
+    } catch (e) {
+      console.warn('Torch unavailable',e);
+      toast('Nie udało się przełączyć latarki w tym aparacie.',{type:'error'});
+    }
+  }
+
   function stop() {
     if (stopped && !stream) return;
     stopped=true;
     clearTimeout(timer);
+    if (videoTrack && torchOn) {
+      try { videoTrack.applyConstraints({advanced:[{torch:false}]}); } catch (_) {}
+    }
+    torchOn=false;
+    videoTrack=null;
     if (stream) stream.getTracks().forEach(t=>t.stop());
     stream=null;
     video.srcObject=null;
   }
 
+  sheet.panel.querySelector('.panel-head')?.appendChild(
+    iconBtn('info','Informacje o skanowaniu',()=>toast('Skaner analizuje cały obraz. Linia jest prowadnicą, ale kod nie musi jej przecinać.'))
+  );
+  const flashButton = iconBtn('flash','Włącz latarkę',()=>toggleTorch());
+  flashButton.disabled = true;
+  flashButton.classList.add('barcode-flash-btn');
+  sheet.panel.querySelector('.panel-head')?.appendChild(flashButton);
   sheet.panel.querySelector('.panel-head')?.appendChild(
     iconBtn('info','Informacje o skanowaniu',()=>toast('Skaner analizuje cały obraz. Linia jest prowadnicą, ale kod nie musi jej przecinać.'))
   );

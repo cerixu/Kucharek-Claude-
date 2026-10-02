@@ -45,6 +45,13 @@ export function heartBtn(r, onToggle) {
   return b;
 }
 
+const CATEGORY_VISUALS = {
+  'cat-pizza': 'assets/start/pizza.svg',
+  'cat-pasta': 'assets/start/pasta.svg',
+  'cat-pieczywo': 'assets/start/bakery.svg',
+  'cat-warzywa': 'assets/start/veg.svg',
+};
+
 function fallbackVisual(r) {
   const label = String(r.name || catName(r.category) || 'Kucharek').slice(0, 28).replace(/[&<>]/g, '');
   const emoji = catIcon(r.category);
@@ -54,7 +61,9 @@ function fallbackVisual(r) {
 
 export function recipeVisual(r, cls = '', { hero = false } = {}) {
   const imageSrc = hero ? (r.photo || r.thumb) : (r.thumb || r.photo);
+  const categoryVisual = CATEGORY_VISUALS[r.category] || '';
   if (imageSrc) return h('img', { class: (hero ? 'hero-photo ' : 'rthumb-img ') + cls + ' recipe-visual', src: imageSrc, alt: hero ? ('Zdjęcie: ' + (r.name || 'receptura')) : '', loading: hero ? 'eager' : 'lazy', decoding: 'async', onError: (e) => { e.currentTarget.onerror = null; e.currentTarget.src = fallbackVisual(r); } });
+  if (categoryVisual) return h('img', { class: (hero ? 'hero-photo ' : 'rthumb-img ') + cls + ' recipe-visual', src: categoryVisual, alt: hero ? ('Grafika: ' + (r.name || catName(r.category))) : '', loading: hero ? 'eager' : 'lazy', decoding: 'async' });
   const label = String(r.name || catName(r.category) || 'Kucharek').slice(0, 28);
   const emoji = catIcon(r.category);
   const bg = hero ? '121316' : '1b1d20';

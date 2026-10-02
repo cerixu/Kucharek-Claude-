@@ -77,7 +77,7 @@ export function blankRecipe(over = {}) {
   const now = Date.now();
   return {
     id: uid('rcp_'), schema: 1, name: '', category: 'cat-inne', description: '', photo: '', thumb: '',
-    servings: 4, yieldAmount: null, yieldUnit: 'g', prepTime: 0, cookTime: 0, fermentTime: 0, temperature: '',
+    servings: 1, yieldAmount: null, yieldUnit: 'g', prepTime: 0, cookTime: 0, fermentTime: 0, temperature: '',
     bakers: false, sections: [blankSection('')], steps: [], notes: '', tags: [], favorite: false, favoritedAt: 0,
     source: '', sourceUrl: '', traditional: false, origin: '', salePrice: null,
     createdAt: now, updatedAt: now, lastOpenedAt: 0, openCount: 0, ...over,

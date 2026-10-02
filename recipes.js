@@ -447,8 +447,8 @@ export function seedRecipes() {
         T('Na koniec dodaj darte ręcznie liście bazylii; w razie potrzeby popraw solą.'),
       ],
     }),
-  ];
   ...extraSeedRecipes(now),
+  ];
 }
 
 function extraSeedRecipes(now) {

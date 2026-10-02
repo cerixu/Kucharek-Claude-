@@ -62,28 +62,48 @@ export function recipeGraphicData(r) {
 }
 
 export function ingredientIcon(ing) {
-  const n=String(ing?.name||'').toLowerCase();
-  let kind='generic';
-  if(/mąk|flour|semolin|farin/.test(n))kind='flour';
-  else if(/wod|water/.test(n))kind='water';
-  else if(/pomidor|tomato/.test(n))kind='tomato';
-  else if(/jaj|egg|żółtk/.test(n))kind='egg';
-  else if(/ser|cheese|pecorino|parmezan|parmigiano|mozzarella/.test(n))kind='cheese';
-  else if(/mięs|wołow|wieprz|kurcz|guancial|boczek|szynk|chashu|meat|beef|pork|chicken/.test(n))kind='meat';
-  else if(/ryb|łosoś|tuńczy|sushi|fish|salmon|tuna/.test(n))kind='fish';
-  else if(/oliw|olej|oil/.test(n))kind='oil';
-  else if(/cebula|onion/.test(n))kind='onion';
-  else if(/czosn|garlic/.test(n))kind='garlic';
-  else if(/pieprz|pepper/.test(n))kind='pepper';
-  else if(/bazyl|pietrusz|oregano|tymian|rozmaryn|herb|zioł/.test(n))kind='herb';
-  else if(/cukier|sugar/.test(n))kind='sugar';
-  else if(/mleko|milk|śmietan|cream/.test(n))kind='milk';
-  else if(/masło|butter/.test(n))kind='butter';
-  else if(/cytr|lemon/.test(n))kind='lemon';
-  else if(/pieczark|grzyb|mushroom/.test(n))kind='mushroom';
+  const n = String(ing?.name || '').toLowerCase();
+  let kind = 'generic';
+  if (/mąk|flour|semolin|farin/.test(n)) kind = 'flour';
+  else if (/wod|water/.test(n)) kind = 'water';
+  else if (/pomidor|tomato/.test(n)) kind = 'tomato';
+  else if (/jaj|egg|żółtk/.test(n)) kind = 'egg';
+  else if (/ser|cheese|pecorino|parmezan|parmigiano|mozzarella/.test(n)) kind = 'cheese';
+  else if (/mięs|wołow|wieprz|kurcz|guancial|boczek|szynk|chashu|meat|beef|pork|chicken/.test(n)) kind = 'meat';
+  else if (/ryb|łosoś|tuńczy|sushi|fish|salmon|tuna/.test(n)) kind = 'fish';
+  else if (/oliw|olej|oil/.test(n)) kind = 'oil';
+  else if (/cebula|onion/.test(n)) kind = 'onion';
+  else if (/czosn|garlic/.test(n)) kind = 'garlic';
+  else if (/pieprz|pepper/.test(n)) kind = 'pepper';
+  else if (/bazyl|pietrusz|oregano|tymian|rozmaryn|herb|zioł/.test(n)) kind = 'herb';
+  else if (/cukier|sugar/.test(n)) kind = 'sugar';
+  else if (/mleko|milk|śmietan|cream/.test(n)) kind = 'milk';
+  else if (/masło|butter/.test(n)) kind = 'butter';
+  else if (/cytr|lemon/.test(n)) kind = 'lemon';
+  else if (/pieczark|grzyb|mushroom/.test(n)) kind = 'mushroom';
+  const paths = {
+    flour:'M10 36h28M13 36l4-22h14l4 22M17 14l7-6 7 6M20 22h8M18 29h12',
+    water:'M24 7C18 15 13 20 13 27a11 11 0 0 0 22 0c0-7-5-12-11-20Z',
+    tomato:'M24 14c-9 0-14 6-14 13 0 9 6 14 14 14s14-5 14-14c0-7-5-13-14-13Z M24 14l-1-6M24 11c4-4 8-2 9 1-4 1-6 2-9 2',
+    egg:'M24 7c-7 7-11 13-11 21a11 11 0 0 0 22 0c0-8-4-14-11-21Z',
+    cheese:'M9 33V18l25-6 5 18-30 3Z M9 18l25 12M29 24a2 2 0 1 0 0 .1M20 31a2 2 0 1 0 0 .1',
+    meat:'M12 30c2-8 9-16 17-16 5 0 8 3 8 7 0 9-7 17-15 17-7 0-11-3-10-8Z M25 22c3-3 7-1 6 2-1 3-5 3-6 0',
+    fish:'M8 24c8-10 20-12 31-4l4 4-4 4c-11 8-23 6-31-4Z M8 24l-5-5M8 24l-5 5M31 23h.1',
+    oil:'M18 10h12v6l4 7v12H14V23l4-7v-6ZM18 10h12M19 29h10',
+    onion:'M24 10c-7 5-12 11-12 18a12 12 0 0 0 24 0c0-7-5-13-12-18ZM24 10v28M16 28c3 3 5 4 8 4s5-1 8-4',
+    garlic:'M24 9c-5 5-9 8-9 15 0 8 4 14 9 14s9-6 9-14c0-7-4-10-9-15ZM24 9v29M19 15c2 2 3 3 5 3s3-1 5-3',
+    pepper:'M18 15c0-5 3-8 8-8s7 3 7 7c0 5-4 7-8 7-7 0-12 5-12 10 0 5 4 9 9 9 8 0 13-6 13-13M31 9l5-4',
+    herb:'M24 39V16M24 27c-6 0-10-4-10-9 6 0 10 3 10 9ZM24 23c6 0 10-4 10-9-6 0-10 3-10 9ZM24 33c-6 0-9-3-9-8 5 0 9 3 9 8Z',
+    sugar:'M14 18h20l3 20H11l3-20ZM14 18l5-8h10l5 8M18 25h12M17 31h14',
+    milk:'M16 9h16v5l3 5v18H13V19l3-5V9ZM16 14h16M14 22h20',
+    butter:'M11 28h26v10H11zM15 28l5-13h12l5 13M20 15h12',
+    lemon:'M10 31c5-12 15-17 28-14-2 13-9 21-22 20-5 0-8-2-6-6Z M20 22c5 3 9 7 11 12',
+    mushroom:'M10 25c0-8 6-14 14-14s14 6 14 14H10ZM21 25v13h6V25M15 21h.1M24 17h.1M32 21h.1',
+    generic:'M10 24h28M14 18h20l4 18H10l4-18ZM18 18v-5h12v5'
+  };
   return h('span',{class:'ingredient-icon ingredient-icon-'+kind,'aria-hidden':'true'},
     h('svg',{class:'ingredient-svg',viewBox:'0 0 48 48',width:30,height:30,focusable:'false'},
-      h('use',{href:'./assets/ingredient-icons.svg#'+kind})
+      h('path',{d:paths[kind]||paths.generic,fill:'none',stroke:'currentColor','stroke-width':'2.4','stroke-linecap':'round','stroke-linejoin':'round'})
     )
   );
 }

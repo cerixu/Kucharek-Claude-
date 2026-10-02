@@ -78,3 +78,26 @@ test('Zużycie receptury korzysta z aliasu produktu w Magazynie', async ({ page 
   expect(result.quantity).toBe(700);
   expect(result.shortages).toBe(0);
 });
+
+
+test('Skaner EAN: otwiera kamerę i aktywną linię skanującą', async ({ page }) => {
+  let requested = false;
+  await page.addInitScript(() => {
+    const originalPlay = HTMLMediaElement.prototype.play;
+    HTMLMediaElement.prototype.play = async function(){ return; };
+    if (!navigator.mediaDevices) Object.defineProperty(navigator, 'mediaDevices', { value: {}, configurable: true });
+    navigator.mediaDevices.getUserMedia = async () => {
+      window.__getUserMediaRequested = true;
+      return new MediaStream();
+    };
+  });
+  await page.goto('/');
+  await page.waitForFunction(()=>window.__kucharzyna?.ready===true);
+  await page.goto('/#/inventory');
+  await page.getByRole('button', { name:'Skanuj kod kreskowy' }).click();
+  await expect(page.getByRole('heading', { name:'Skanuj kod kreskowy' })).toBeVisible();
+  await expect(page.locator('.barcode-scan-line')).toBeVisible();
+  await expect(page.getByText('Przesuń linię przez kod kreskowy')).toBeVisible();
+  requested = await page.evaluate(() => !!window.__getUserMediaRequested);
+  expect(requested).toBe(true);
+});

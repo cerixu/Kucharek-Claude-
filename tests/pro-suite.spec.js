@@ -274,3 +274,51 @@ test('ETAP 27: wyłączenie automatycznego zużycia zachowuje stan magazynu',asy
   expect(out.enabled).toBe(false);
   expect(out.qty).toBe(1);
 });
+
+
+test('ETAP 18: niski stan po gotowaniu trafia automatycznie do zakupów',async({page})=>{
+  await reset(page);
+  const out=await page.evaluate(async()=>{
+    const i=await import('/inventory.js');
+    const sh=await import('/shopping.js');
+    await i.saveInventoryItem({name:'Oliwa low auto',quantity:1.2,unit:'l',minQuantity:1.5,targetQuantity:5});
+    const r=await sh.addLowStockToShopping();
+    return {count:r.count,items:r.items.map(x=>({name:x.name,amount:x.amount,unit:x.unit})),shopping:(await import('/recipes.js')).state.shopping.filter(x=>!x.done&&x.name==='Oliwa low auto').map(x=>x.amount)};
+  });
+  expect(out.count).toBe(1);
+  expect(out.items[0].amount).toBeCloseTo(3.8,8);
+  expect(out.shopping[0]).toBeCloseTo(3.8,8);
+});
+
+test('ETAP 18: ponowne uruchomienie sugestii nie dubluje pozycji zakupowej',async({page})=>{
+  await reset(page);
+  const out=await page.evaluate(async()=>{
+    const i=await import('/inventory.js');
+    const sh=await import('/shopping.js');
+    await i.saveInventoryItem({name:'Mozz low auto',quantity:1,unit:'kg',minQuantity:2,targetQuantity:5});
+    await sh.addLowStockToShopping();
+    await sh.addLowStockToShopping();
+    return (await import('/recipes.js')).state.shopping.filter(x=>!x.done&&x.name==='Mozz low auto');
+  });
+  expect(out).toHaveLength(1);
+  expect(out[0].amount).toBeCloseTo(4,8);
+});
+
+test('ETAP 19: przeliczone gotowanie zużywa magazyn zgodnie z mnożnikiem',async({page})=>{
+  await reset(page);
+  const id=await page.evaluate(async()=>{
+    const{saveRecipe,blankRecipe}=await import('/recipes.js');
+    const i=await import('/inventory.js');
+    await i.saveInventoryItem({name:'Mąka ×2',quantity:2,unit:'kg'});
+    const r=blankRecipe({name:'Pizza ×2',category:'cat-pizza',servings:1,sections:[{id:'s1',name:'',ingredients:[{id:'i1',name:'Mąka ×2',amount:200,unit:'g'}]}],steps:[]});
+    await saveRecipe(r);
+    return r.id;
+  });
+  await page.goto('/#/cook/'+id);
+  await page.getByRole('checkbox').filter({hasText:'Mąka ×2'}).click();
+  await page.getByRole('button',{name:'Przelicz',exact:true}).click();
+  await page.getByRole('button',{name:'×2',exact:true}).click();
+  await page.getByRole('button',{name:'Zakończ',exact:true}).click();
+  const qty=await page.evaluate(async()=>{const i=await import('/inventory.js');await i.reloadInventory();return i.findInventoryByName('Mąka ×2').quantity;});
+  expect(qty).toBeCloseTo(1.6,8);
+});

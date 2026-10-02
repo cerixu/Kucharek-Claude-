@@ -8,10 +8,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Create ZIP
-        run: zip -qr ../Kucharek-Claude-etap14-backup.zip .
+        run: zip -qr Kucharek-Claude-etap14-backup.zip .
       - name: Upload backup
         uses: actions/upload-artifact@v4
         with:
           name: Kucharek-Claude-etap14-before-redesign
-          path: ../Kucharek-Claude-etap14-backup.zip
+          path: Kucharek-Claude-etap14-backup.zip
           retention-days: 90

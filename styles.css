@@ -789,3 +789,24 @@ body.kb-open .actionbar, body.kb-open .cookbar { padding-bottom: 10px; }
   .barcode-help { display:none; }
   .barcode-actions { padding-bottom:6px; }
 }
+
+/* Skan: pełny kadr + efekt potwierdzenia */
+.barcode-viewport.barcode-success::before {
+  content:""; position:absolute; inset:0; z-index:5; pointer-events:none;
+  background:rgba(255,255,255,.16); animation:barcodeFlash .34s ease-out forwards;
+}
+.barcode-viewport.barcode-success::after {
+  background:linear-gradient(to bottom,rgba(74,222,128,.16),transparent 25%,transparent 75%,rgba(74,222,128,.22));
+}
+.barcode-scan-line-success {
+  background:#4ade80 !important;
+  box-shadow:0 0 7px #4ade80,0 0 24px rgba(74,222,128,.95),0 0 60px rgba(74,222,128,.6) !important;
+  animation:barcodeLock .34s ease-out 1;
+}
+.barcode-scan-line-success span { animation:none; opacity:0; }
+@keyframes barcodeLock {
+  0% { transform:scaleX(1); }
+  45% { transform:scaleX(.92); height:5px; }
+  100% { transform:scaleX(1); height:3px; }
+}
+@keyframes barcodeFlash { 0%{opacity:0} 25%{opacity:1} 100%{opacity:0} }

@@ -238,9 +238,54 @@ export function promptDialog({ title, label, value = '', placeholder = '', confi
 export const field = (label, control, hint) =>
   h('label', { class: 'field' }, h('span', { class: 'field-label' }, label), control, hint ? h('span', { class: 'field-hint' }, hint) : null);
 
+function inputIdentity(el) {
+  return {
+    tag: el.tagName,
+    key: el.getAttribute('aria-label') || el.id || el.name || el.placeholder || '',
+    value: el.value,
+    start: typeof el.selectionStart === 'number' ? el.selectionStart : null,
+    end: typeof el.selectionEnd === 'number' ? el.selectionEnd : null,
+  };
+}
+
+function restoreInputFocus(snapshot, root = document) {
+  if (!snapshot || !snapshot.key) return;
+  const find = () => {
+    if (document.activeElement && document.activeElement.tagName === snapshot.tag && document.contains(document.activeElement)) return document.activeElement;
+    const candidates = [...root.querySelectorAll('input,textarea,select')];
+    return candidates.find((el) =>
+      el.tagName === snapshot.tag &&
+      (el.getAttribute('aria-label') === snapshot.key || el.id === snapshot.key || el.getAttribute('name') === snapshot.key || el.getAttribute('placeholder') === snapshot.key)
+    );
+  };
+  const restore = () => {
+    const next = find();
+    if (!next) return;
+    if ('value' in next && next.value !== snapshot.value) next.value = snapshot.value;
+    try {
+      next.focus({ preventScroll: true });
+      if (snapshot.start != null && typeof next.setSelectionRange === 'function') {
+        const max = next.value.length;
+        next.setSelectionRange(Math.min(snapshot.start, max), Math.min(snapshot.end ?? snapshot.start, max));
+      }
+    } catch (_) { /* iOS Safari */ }
+  };
+  restore();
+  queueMicrotask(restore);
+  requestAnimationFrame(restore);
+  setTimeout(restore, 0);
+}
+
+function withInputFocus(el, fn) {
+  const snapshot = inputIdentity(el);
+  const result = fn();
+  if (!document.contains(el) || document.activeElement !== el) restoreInputFocus(snapshot);
+  return result;
+}
+
 export function textInput({ value = '', placeholder = '', onInput, label, cls = '', list, type = 'text', inputmode, capitalize = 'sentences' } = {}) {
   const el = h('input', { class: 'input ' + cls, type, value, placeholder, 'aria-label': label, autocomplete: 'off', autocapitalize: capitalize, list, inputmode, enterkeyhint: 'next' });
-  if (onInput) el.addEventListener('input', () => onInput(el.value, el));
+  if (onInput) el.addEventListener('input', () => withInputFocus(el, () => onInput(el.value, el)));
   return el;
 }
 
@@ -256,7 +301,7 @@ export const autosizeAll = (root) => $$('textarea.auto', root).forEach((t) => t.
 
 export function textArea({ value = '', placeholder = '', onInput, label, rows = 3, cls = '' } = {}) {
   const el = h('textarea', { class: 'input textarea auto ' + cls, rows, placeholder, 'aria-label': label, value, autocapitalize: 'sentences' });
-  if (onInput) el.addEventListener('input', () => onInput(el.value, el));
+  if (onInput) el.addEventListener('input', () => withInputFocus(el, () => onInput(el.value, el)));
   return autosize(el);
 }
 
@@ -264,11 +309,11 @@ export function textArea({ value = '', placeholder = '', onInput, label, rows = 
 export function numInput({ value = null, onInput, placeholder = '', label, dec = 3, cls = '' } = {}) {
   const el = h('input', { class: 'input num ' + cls, type: 'text', inputmode: 'decimal', autocomplete: 'off', autocapitalize: 'off', spellcheck: 'false',
     'aria-label': label, placeholder, value: value == null ? '' : fmtNum(value, dec), enterkeyhint: 'done' });
-  el.addEventListener('input', () => {
+  el.addEventListener('input', () => withInputFocus(el, () => {
     const n = parseNum(el.value);
     el.classList.toggle('invalid', el.value.trim() !== '' && n == null);
     if (onInput) onInput(n, el);
-  });
+  }));
   el.addEventListener('focus', () => setTimeout(() => { try { el.select(); } catch (_) { /* */ } }, 0));
   return el;
 }

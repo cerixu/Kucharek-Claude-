@@ -13,7 +13,7 @@ import { norm, debounce, uid } from './util.js';
 import { recipeCard } from './components.js';
 
 const SORTS = [
-  ['name', 'Nazwa A–Z'], ['updated', 'Ostatnio zmienione'], ['created', 'Ostatnio dodane'], ['recent', 'Ostatnio otwierane'], ['time', 'Najkrótszy czas'],
+  ['name', 'Nazwa A–Z'], ['updated', 'Ostatnio zmienione'], ['created', 'Ostatnio dodane'], ['recent', 'Ostatnio otwierane'], ['cooked', 'Najczęściej gotowane'], ['time', 'Najkrótszy czas'],
 ];
 
 // Stan widoku zostaje w pamięci, więc po powrocie z receptury lista wygląda tak samo.
@@ -26,6 +26,7 @@ function sorter(kind) {
     case 'updated': return (a, b) => b.updatedAt - a.updatedAt;
     case 'created': return (a, b) => b.createdAt - a.createdAt;
     case 'recent': return (a, b) => (b.lastOpenedAt || 0) - (a.lastOpenedAt || 0);
+    case 'cooked': return (a, b) => (Number(b.cookCount || 0) - Number(a.cookCount || 0)) || ((b.lastCookedAt || 0) - (a.lastCookedAt || 0));
     case 'time': return (a, b) => (activeTime(a) || 1e9) - (activeTime(b) || 1e9);
     default: return (a, b) => a.name.localeCompare(b.name, 'pl');
   }
@@ -35,6 +36,7 @@ export function recipesView(query) {
   const f = query && query.get && query.get('f');
   if (f === 'fav') { vs.chip = 'fav'; vs.q = ''; }
   else if (f === 'recent') { vs.chip = 'recent'; vs.q = ''; }
+  else if (f === 'cooked') { vs.chip = 'cooked'; vs.q = ''; }
   else if (f === 'trad') { vs.chip = 'trad'; vs.q = ''; }
 
   const search = h('input', { class: 'input search-input', type: 'search', placeholder: 'Szukaj receptury, składnika, tagu…', value: vs.q,
@@ -62,13 +64,14 @@ export function recipesView(query) {
     let list = listRecipes();
     if (vs.chip === 'fav') list = list.filter((r) => r.favorite);
     else if (vs.chip === 'recent') list = list.filter((r) => r.lastOpenedAt);
+    else if (vs.chip === 'cooked') list = list.filter((r) => Number(r.cookCount || 0) > 0 || Number(r.lastCookedAt || 0) > 0);
     else if (vs.chip === 'trad') list = list.filter((r) => r.traditional);
     else if (vs.chip !== 'all') list = list.filter((r) => r.category === vs.chip);
     if (vs.favOnly) list = list.filter((r) => r.favorite);
     if (vs.tag) list = list.filter((r) => r.tags.includes(vs.tag));
     if (vs.maxTime) list = list.filter((r) => { const t = activeTime(r); return t > 0 && t <= vs.maxTime; });
     if (words.length) list = list.filter((r) => { const t = searchText(r); return words.every((w) => t.includes(w)); });
-    const sortKey = vs.chip === 'recent' ? 'recent' : getSetting('sort') || 'name';
+    const sortKey = vs.chip === 'recent' ? 'recent' : vs.chip === 'cooked' ? 'cooked' : getSetting('sort') || 'name';
     list.sort(sorter(sortKey));
     if (getSetting('pinTraditional') && vs.chip !== 'recent') {
       const t = list.filter((r) => r.traditional), o = list.filter((r) => !r.traditional);
@@ -86,6 +89,7 @@ export function recipesView(query) {
       mk('all', 'Wszystkie', all.length),
       mk('fav', '★ Ulubione', all.filter((r) => r.favorite).length),
       mk('recent', 'Ostatnie', all.filter((r) => r.lastOpenedAt).length),
+      mk('cooked', 'Gotowane', all.filter((r) => Number(r.cookCount || 0) > 0 || Number(r.lastCookedAt || 0) > 0).length),
       mk('trad', 'Tradycyjne', all.filter((r) => r.traditional).length),
       ...state.categories.filter((c) => used.has(c.id) || vs.chip === c.id).map((c) => mk(c.id, `${c.icon || ''} ${c.name}`.trim(), all.filter((r) => r.category === c.id).length)),
       h('button', { type: 'button', class: 'chip ghost', 'aria-label': 'Zarządzaj kategoriami', onClick: () => openCategoryManager() }, icon('sliders', 16), 'Kategorie'),

@@ -239,8 +239,8 @@ test('Etap 14: karta ma kompaktową miniaturę i widoczny tytuł', async ({ page
   const m=await card.evaluate(el=>{const a=el.querySelector('.rthumb').getBoundingClientRect(),b=el.querySelector('.rname').getBoundingClientRect();return {w:a.width,h:a.height,nameX:b.x,right:a.right}});
   expect(m.w).toBeLessThan(140); expect(m.h).toBeLessThan(140); expect(m.nameX).toBeGreaterThanOrEqual(m.right-2);
 });
-test('Etap 14: ingredientIcon wskazuje atlas składników', async ({ page }) => {
+test('Etap 14: ingredientIcon renderuje ikonę inline', async ({ page }) => {
   await reset(page);
-  const out=await page.evaluate(async()=>{const {ingredientIcon}=await import('/components.js');const el=ingredientIcon({name:'Mąka pszenna'});document.body.appendChild(el);return {svg:!!el.querySelector('svg'),href:el.querySelector('use')?.getAttribute('href')||''}});
-  expect(out.svg).toBe(true); expect(out.href).toContain('/assets/ingredient-icons.svg#flour');
+  const out=await page.evaluate(async()=>{const {ingredientIcon}=await import('/components.js');const el=ingredientIcon({name:'Mąka pszenna'});document.body.appendChild(el);const p=el.querySelector('svg path');return {svg:!!el.querySelector('svg'),path:!!p,d:p?.getAttribute('d')||''}});
+  expect(out.svg).toBe(true); expect(out.path).toBe(true); expect(out.d).toContain('M10 36');
 });

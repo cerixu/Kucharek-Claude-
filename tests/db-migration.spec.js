@@ -197,7 +197,7 @@ test('v2/v4 stores są zapisywalne', async ({ page }) => {
 test('Magazyn: dodanie produktu, próg minimum i trwałość danych', async ({ page }) => {
   await page.goto('/#/inventory');
   await expect(page.getByRole('heading', { name: 'Magazyn', exact: true })).toBeVisible();
-  await page.getByRole('button', { name: 'Dodaj produkt' }).first().click();
+  await page.getByRole('button', { name: 'Dodaj składnik' }).first().click();
   await expect(page.getByText('Nowy produkt')).toBeVisible();
   await page.getByLabel('Nazwa produktu').fill('Mozzarella E2E');
   await page.getByLabel('Ilość').fill('2');

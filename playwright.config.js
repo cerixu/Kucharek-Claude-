@@ -18,6 +18,7 @@ export default defineConfig({
     timeout: 10000,
   },
   projects: [
-    { name: 'chromium', use: { ...devices['Desktop Chrome'] } },
+    { name: 'chromium', use: { ...devices['Desktop Chrome'], serviceWorkers: 'block' } },
+    { name: 'pwa', use: { ...devices['Desktop Chrome'], serviceWorkers: 'allow' }, testMatch: /pwa\.spec\.js/ },
   ],
 });

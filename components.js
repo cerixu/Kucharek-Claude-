@@ -65,8 +65,8 @@ export function ingredientIcon(ing) {
   const n = String(ing?.name || '').toLowerCase();
   let kind = 'generic';
   const category = String(ing?.category || ing?.type || ing?.group || '').toLowerCase();
-  const categoryKind = /warzy|vegetable|veg/.test(category) ? 'generic'
-    : /owoc|fruit/.test(category) ? 'generic'
+  const categoryKind = /warzy|vegetable|veg/.test(category) ? 'vegetable'
+    : /owoc|fruit/.test(category) ? 'fruit'
     : /nabiał|dairy/.test(category) ? 'milk'
     : /mięs|meat/.test(category) ? 'meat'
     : /ryb|seafood|fish/.test(category) ? 'fish'
@@ -293,6 +293,8 @@ mussel:'M12 31c0-10 5-18 12-21 7 3 12 11 12 21-7 7-17 7-24 0ZM24 10v29',
 anchovy:'M9 27c7-9 17-11 28-5l4 4-4 4c-11 6-21 4-28-3ZM9 27l-6-4M9 27l-6 5',
 sesame_oil:'M18 10h12v6l4 7v12H14V23l4-7v-6ZM18 10h12M19 29h10',
 coconut_milk:'M14 12h20v26H14zM18 12v-4h12v4M18 21h12',
+    vegetable:'M24 39V24M24 27c-7-1-12-6-12-13 7 0 12 4 12 13 0-8 5-13 12-13 0 7-5 12-12 13M24 24c-4-5-7-8-7-13M24 24c4-5 7-8 7-13',
+    fruit:'M12 28c0-9 5-15 12-15s12 6 12 15-5 11-12 11-12-2-12-11ZM24 13V7M20 9l-4-4M28 9l4-4',
     generic:'M10 24h28M14 18h20l4 18H10l4-18ZM18 18v-5h12v5'
   };
   const NS = 'http://www.w3.org/2000/svg';

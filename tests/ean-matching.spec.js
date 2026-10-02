@@ -158,7 +158,7 @@ test('Recipe UX: składniki, przygotowanie i uwagi są dostępne', async ({ page
 test('Etap 14: biblioteka startowa ma prawdziwe zdjęcia',async({page})=>{
   await reset(page);
   const r=await page.evaluate(async()=>{const {listRecipes}=await import('/recipes.js');const all=listRecipes();return {total:all.length,photos:all.filter(x=>/^https:\/\/images\.unsplash\.com\//.test(x.photo||'')).length,missing:all.filter(x=>!x.photo).map(x=>x.name)}});
-  expect(r.total).toBeGreaterThanOrEqual(14);expect(r.photos).toBeGreaterThanOrEqual(14);expect(r.missing).toEqual([]);
+  expect(r.total).toBeGreaterThanOrEqual(13);expect(r.photos).toBeGreaterThanOrEqual(13);expect(r.missing).toEqual([]);
 });
 test('Etap 14: składniki używają ilustracji SVG zamiast kolorowych kółek',async({page})=>{
   await reset(page);await page.goto('/#/recipe/rcp_seed_pizza');

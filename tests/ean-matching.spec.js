@@ -187,3 +187,21 @@ test('Etap 14: migracja podmienia stare zdjęcie seedowane',async({page})=>{
   expect(out.photo).toMatch(/^https:\/\/photoshop-api\.adobe\.io\/v2\/short-url\//);
   expect(out.photo).not.toBe(out.old);
 });
+
+    
+test('Etap 14: migracja mediów działa po zmianie wersji biblioteki', async ({ page }) => {
+  await reset(page);
+  const out = await page.evaluate(async () => {
+    const { db } = await import('/db.js');
+    const { loadAll, listRecipes } = await import('/recipes.js');
+    const legacy = 'https://images.unsplash.com/photo-legacy-build';
+    const cur = await db.get('recipes', 'rcp_seed_pizza');
+    await db.put('recipes', { ...cur, photo: legacy, thumb: legacy });
+    await db.put('settings', { key: 'seedLibraryVersion', value: 5 });
+    await loadAll();
+    const next = listRecipes().find(x => x.id === 'rcp_seed_pizza');
+    return { photo: next?.photo || '', version: (await db.get('settings', 'seedLibraryVersion'))?.value };
+  });
+  expect(out.version).toBe(6);
+  expect(out.photo).toMatch(/^https:\/\/photoshop-api\.adobe\.io\/v2\/short-url\//);
+});

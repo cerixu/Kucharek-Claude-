@@ -101,7 +101,7 @@ test('ETAP 14: uszkodzone zdjęcie ma bezpieczny fallback graficzny',async({page
     el.dispatchEvent(new Event('error'));
     return el.getAttribute('src');
   });
-  expect(out).toMatch(/^data:image\\/svg\\+xml/);
+  expect(out).toMatch(/^data:image\/svg\+xml/);
 });
 
 test('ETAP 14: ekran startowy używa nazwy Kucharek',async({page})=>{

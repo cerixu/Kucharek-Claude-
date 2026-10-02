@@ -14,3 +14,16 @@ function imageFor(code,scale=6){
 test('dekoder EAN-13 odczytuje kod dokładnie z obrazu linii skanującej',()=>{expect(decodeEANImageData(imageFor('5901234123457'))).toBe('5901234123457');});
 test('dekoder akceptuje UPC-A jako znormalizowany EAN-13',()=>{expect(normalizeScannedEAN('036000291452')).toBe('0036000291452');expect(validScannedEAN('0036000291452')).toBe(true);});
 test('odrzuca kod z błędną cyfrą kontrolną',()=>{expect(validScannedEAN('5901234123458')).toBe(false);});
+
+test('dekoder EAN-13 działa również po obrocie obrazu o 90 stopni',()=>{
+  const src=imageFor('5901234123457',6);
+  const rw=src.height, rh=src.width;
+  const data=new Uint8ClampedArray(rw*rh*4);
+  for(let y=0;y<src.height;y++) for(let x=0;x<src.width;x++){
+    const sp=(y*src.width+x)*4;
+    const nx=src.height-1-y, ny=x;
+    const dp=(ny*rw+nx)*4;
+    data[dp]=src.data[sp]; data[dp+1]=src.data[sp+1]; data[dp+2]=src.data[sp+2]; data[dp+3]=255;
+  }
+  expect(decodeEANImageData({data,width:rw,height:rh})).toBe('5901234123457');
+});

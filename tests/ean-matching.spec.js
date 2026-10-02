@@ -124,3 +124,11 @@ test('Recipe UX: domyślnie pokazuje jedną porcję', async ({ page }) => {
   await page.goto('/#/recipe/rcp_seed_pizza');
   await expect(page.getByText('1 porcja', { exact: true })).toBeVisible();
 });
+
+
+test('Recipe UX: lista otwiera szczegóły', async ({ page }) => {
+  await reset(page);
+  await page.goto('/#/recipes');
+  await page.getByRole('link', { name: 'Pizza Napoletana' }).click();
+  await expect(page.getByRole('heading', { name: 'Pizza Napoletana' })).toBeVisible();
+});

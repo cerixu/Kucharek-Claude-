@@ -35,9 +35,8 @@ test('ETAP 13: receptura domyślnie pokazuje ilości na 1 porcję',async({page})
     const r=blankRecipe({name:'Test jedna porcja',category:'cat-pizza',servings:4,sections:[{id:'s1',name:'',ingredients:[{id:'i1',name:'Mąka',amount:400,unit:'g'}]}]});
     await saveRecipe(r);
   });
-  await page.goto('/#/recipe/');
-  const href=await page.evaluate(()=>location.hash);
-  await page.goto(href.replace('/recipe/','/#/recipe/'));
+  const id=await page.evaluate(async()=>{const{listRecipes}=await import('/recipes.js');return listRecipes().find(r=>r.name==='Test jedna porcja').id;});
+  await page.goto('/#/recipe/'+id);
   await expect(page.getByText('1 porcja',{exact:true})).toBeVisible();
   await expect(page.getByText('100',{exact:true})).toBeVisible();
 });

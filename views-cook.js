@@ -90,7 +90,7 @@ export function cookView({ id }) {
     return { el: s.el };
   }
 
-  let prog = { ing: {}, steps: {}, factor: 1, tab: 'ing', ts: 1.15, inventoryConsumedAt: 0 };
+  let prog = { ing: {}, steps: {}, factor: 1, tab: 'ing', ts: 1.15, inventoryConsumedAt: 0, inventoryConsumptionId: '' };
   let loaded = false;
   const base = () => getRecipe(id) || r0;
   const view = () => scaleRecipe(base(), prog.factor || 1);
@@ -274,31 +274,40 @@ export function cookView({ id }) {
       if (!ok) return;
     }
     if (all && !prog.inventoryConsumedAt) {
-      const useStock = await confirmDialog({
+      const autoConsumption = getSetting('inventoryAutoConsumption') !== false;
+      const useStock = autoConsumption ? true : await confirmDialog({
         title: 'Odjąć składniki z magazynu?',
         message: 'Aplikacja odejmie od Magazynu ilości użyte w tej recepturze.',
         confirmText: 'Odjąć',
       });
       if (useStock) {
-        const result = await consumeRecipeIngredients(view(), prog.factor || 1);
+        const sourceId = prog.inventoryConsumptionId || `cook:${id}:${Date.now()}`;
+        prog.inventoryConsumptionId = sourceId;
+        const result = await consumeRecipeIngredients(view(), prog.factor || 1, { sourceId });
         prog.inventoryConsumedAt = Date.now();
         if (result.shortages.length) {
-          const addMissing = await confirmDialog({
-            title: 'Braki w magazynie',
-            message: result.shortages.map((x) => `${x.name}: brakuje ${fmtNum(x.missing, 3)} ${x.unit}`).join(' · '),
-            confirmText: 'Dodaj braki do zakupów',
-          });
-          if (addMissing) {
+          const autoShopping = getSetting('inventoryAutoShopping') !== false;
+          if (autoShopping) {
             await addItems(result.shortages.map((x) => ({ name: x.name, amount: x.missing, unit: x.unit, recipeId: id, recipeName: r0.name })));
-            toast('Brakujące składniki dodano do zakupów');
+            toast('Magazyn zaktualizowany. Braki dodane do zakupów 📦');
+          } else {
+            const addMissing = await confirmDialog({
+              title: 'Braki w magazynie',
+              message: result.shortages.map((x) => `${x.name}: brakuje ${fmtNum(x.missing, 3)} ${x.unit}`).join(' · '),
+              confirmText: 'Dodaj do zakupów',
+            });
+            if (addMissing) {
+              await addItems(result.shortages.map((x) => ({ name: x.name, amount: x.missing, unit: x.unit, recipeId: id, recipeName: r0.name })));
+              toast('Braki dodano do zakupów');
+            }
           }
         } else {
-          toast('Magazyn zaktualizowany 📦');
+          toast(autoConsumption ? 'Zużycie zapisane w magazynie 📦' : 'Magazyn zaktualizowany 📦');
         }
         saveProg.flush();
       }
     }
-    if (all) { prog.ing = {}; prog.steps = {}; prog.tab = 'ing'; saveProg.flush(); toast('Smacznego! 👨‍🍳'); }
+    if (all) { prog.ing = {}; prog.steps = {}; prog.tab = 'ing'; prog.inventoryConsumedAt = 0; prog.inventoryConsumptionId = ''; saveProg.flush(); toast('Smacznego! 👨‍🍳'); }
     goBack('/recipe/' + id);
   }
 
@@ -334,7 +343,7 @@ export function cookView({ id }) {
   paint(); paintTimer();
   db.get('cookSessions', id).then((p) => {
     if (p && typeof p === 'object') {
-      prog = { ing: {}, steps: {}, factor: 1, tab: 'ing', ts: 1.15, inventoryConsumedAt: 0, ...p };
+      prog = { ing: {}, steps: {}, factor: 1, tab: 'ing', ts: 1.15, inventoryConsumedAt: 0, inventoryConsumptionId: '', ...p };
       s.el.style.setProperty('--cook-ts', String(prog.ts));
       const c = counts();
       if (p.tab === undefined && c.ni && c.di === c.ni) prog.tab = 'steps';

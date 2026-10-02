@@ -6,16 +6,16 @@
 
 /* ---------- Tokeny kolorów ---------- */
 :root {
-  --bg: #f4f4f1;
-  --surface: #ffffff;
-  --surface-2: #ebebe6;
-  --line: #dcdcd5;
-  --text: #17181a;
-  --muted: #5d6168;
+  --bg: #e9e7e1;
+  --surface: #f7f5ef;
+  --surface-2: #dfddd6;
+  --line: #cbc8bf;
+  --text: #18191b;
+  --muted: #565a61;
   --accent: #f5b400;
   --on-accent: #1a1400;
   --accent-text: #8a5d00;
-  --accent-soft: #fff3cc;
+  --accent-soft: #fff0bf;
   --danger: #b3261e;
   --danger-solid: #c62828;
   --danger-soft: #fdeaea;
@@ -1139,3 +1139,73 @@ body.kb-open .actionbar, body.kb-open .cookbar { padding-bottom: 10px; }
 .screen:has(.hero-photo) .ingredient-icon{background:rgba(255,255,255,.025)!important;border-color:rgba(255,255,255,.10)!important}
 .screen:has(.hero-photo) .ingredient-icon svg{width:38px!important;height:38px!important;filter:drop-shadow(0 4px 8px rgba(0,0,0,.35))}
 @media(max-width:420px){.screen:has(.rcard) .rcard{min-height:98px;max-height:116px}.screen:has(.rcard) .rcard-main{min-height:98px!important;padding-right:48px!important}.screen:has(.rcard) .rthumb{flex-basis:78px!important;width:78px!important;height:78px!important;min-width:78px!important}}
+
+
+/* ETAP 15B · Cook ingredient icons + light editorial recipe theme */
+.cook-text{display:flex;align-items:center;gap:12px;min-width:0}
+.cook-text .ingredient-icon{width:42px;height:42px;flex:0 0 42px;border-radius:13px}
+.cook-text .ingredient-icon svg{width:30px;height:30px;display:block}
+.ingredient-icon-salt{color:#7b7f86}
+.ingredient-icon-starch{color:#b08a55}
+.ingredient-icon-broth{color:#9a6b45}
+.ingredient-icon-vinegar{color:#8d5f48}
+.ingredient-icon-wine{color:#9d4f62}
+.ingredient-icon-ginger{color:#b5793d}
+.ingredient-icon-chili{color:#c64d42}
+.ingredient-icon-paprika{color:#b86b43}
+.ingredient-icon-rice{color:#c1a46e}
+.ingredient-icon-pasta{color:#c79a48}
+.ingredient-icon-potato{color:#9d845e}
+.ingredient-icon-carrot{color:#d58a38}
+.ingredient-icon-celery{color:#6e9d68}
+.ingredient-icon-nut{color:#9b7555}
+.ingredient-icon-sesame{color:#b49b68}
+.ingredient-icon-soy,.ingredient-icon-miso{color:#8f654a}
+.ingredient-icon-cocoa{color:#76543f}
+.ingredient-icon-vanilla{color:#b89b6c}
+.ingredient-icon-yeast{color:#b8a07c}
+
+:root:not([data-theme="dark"]) .screen:has(.rcard),
+:root[data-theme="auto"] .screen:has(.rcard) {
+  background:
+    radial-gradient(circle at 90% 0%, rgba(255,196,45,.11), transparent 34%),
+    linear-gradient(180deg,#ece9e2 0%,#e5e2db 100%);
+}
+:root:not([data-theme="dark"]) .screen:has(.hero-photo),
+:root[data-theme="auto"] .screen:has(.hero-photo) {
+  background:
+    radial-gradient(circle at 88% 2%, rgba(35,35,32,.09), transparent 30%),
+    linear-gradient(180deg,#ece9e2 0%,#e4e1da 100%);
+}
+:root:not([data-theme="dark"]) .screen:has(.hero-photo) .card,
+:root[data-theme="auto"] .screen:has(.hero-photo) .card {
+  background:rgba(250,248,242,.94);
+  border-color:rgba(55,55,50,.13);
+  box-shadow:0 12px 34px rgba(35,32,25,.10),inset 0 1px 0 rgba(255,255,255,.8);
+}
+:root:not([data-theme="dark"]) .screen:has(.hero-photo) .hero-photo.recipe-visual {
+  box-shadow:0 24px 52px rgba(20,18,15,.20),0 0 0 1px rgba(20,18,15,.10);
+}
+:root:not([data-theme="dark"]) .screen:has(.hero-photo) .fact {
+  background:rgba(255,255,255,.58);
+  border-color:rgba(35,35,32,.12);
+  color:#50545b;
+}
+:root:not([data-theme="dark"]) .screen:has(.hero-photo) .ingredient-icon {
+  background:linear-gradient(145deg,#f8f5ed,#e5e1d8)!important;
+  border-color:rgba(35,35,32,.12)!important;
+  box-shadow:0 5px 14px rgba(30,28,23,.08);
+}
+:root:not([data-theme="dark"]) .screen:has(.hero-photo) .actions-row .btn {
+  background:rgba(250,248,242,.72);
+  border-color:rgba(35,35,32,.12);
+  color:var(--text);
+  box-shadow:0 5px 14px rgba(30,28,23,.07);
+}
+:root:not([data-theme="dark"]) .screen:has(.hero-photo) .ing {
+  border-bottom-color:rgba(35,35,32,.10);
+}
+@media(max-width:420px){
+  .cook-text .ingredient-icon{width:38px;height:38px;flex-basis:38px}
+  .cook-text .ingredient-icon svg{width:27px;height:27px}
+}

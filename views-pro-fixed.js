@@ -52,9 +52,60 @@ export function proView(){
  function deliverySheet(suppliers){let supplierId='',supplierName='',name='',qty='',unit='kg',price='',lot='';const form=h('div',{class:'stack'},field('Dostawca',selectEl([['','Brak'],...suppliers.map(x=>[x.id,x.name])],'',v=>{supplierId=v;supplierName=suppliers.find(x=>x.id===v)?.name||''})),textInput({label:'Produkt',onInput:v=>name=v}),textInput({type:'number',label:'Ilość',onInput:v=>qty=v}),selectEl(units,unit,v=>unit=v),textInput({type:'number',label:'Cena zakupu',onInput:v=>price=v}),textInput({label:'Partia',onInput:v=>lot=v}));openSheet({title:'Dostawa',variant:'sheet',body:form,actions:[{label:'Anuluj',kind:'ghost'},{label:'Przyjmij',kind:'primary',onClick:async()=>{await receiveDelivery({supplierId,supplierName,items:[{name,quantity:qty,unit,purchasePrice:price,priceUnit:unit,lot}]});toast('Dostawa przyjęta');render();}}]});}
  function orderSheet(suppliers){let supplierId='',supplierName='',name='',qty='',unit='kg';const form=h('div',{class:'stack'},field('Dostawca',selectEl([['','Brak'],...suppliers.map(x=>[x.id,x.name])],'',v=>{supplierId=v;supplierName=suppliers.find(x=>x.id===v)?.name||''})),textInput({label:'Produkt',onInput:v=>name=v}),textInput({type:'number',label:'Ilość',onInput:v=>qty=v}),selectEl(units,unit,v=>unit=v));openSheet({title:'Zamówienie',variant:'sheet',body:form,actions:[{label:'Anuluj',kind:'ghost'},{label:'Zapisz',kind:'primary',onClick:async()=>{await createPurchaseOrder({supplierId,supplierName,status:'ordered',items:[{name,amount:qty,unit}]});toast('Zamówienie zapisane');render();}}]});}
  function wasteSheet(inv){if(!inv.length)return toast('Magazyn jest pusty',{type:'error'});let id=inv[0].id,qty='',reason='zepsucie';const form=h('div',{class:'stack'},field('Produkt',selectEl(inv.map(x=>[x.id,x.name]),id,v=>id=v)),textInput({type:'number',label:'Ilość',onInput:v=>qty=v}),textInput({label:'Powód',value:reason,onInput:v=>reason=v}));openSheet({title:'Strata',variant:'sheet',body:form,actions:[{label:'Anuluj',kind:'ghost'},{label:'Zapisz',kind:'primary',onClick:async()=>{await recordWaste(id,qty,reason);toast('Strata zapisana');render();}}]});}
- async function wasteView(){ const r=await wasteReport(); const range=new Date(r.start).toLocaleDateString('pl-PL',{day:'2-digit',month:'2-digit'})+'–'+new Date(r.end).toLocaleDateString('pl-PL',{day:'2-digit',month:'2-digit'}); return h('div',{class:'stack'},h('div',{class:'card'},h('div',{class:'row between'},h('div',null,h('h3',null,'Raport strat'),h('p',{class:'muted'},'Bieżący tydzień · '+range)),h('strong',null,money(r.totalCost)+' zł')),h('p',{class:'muted'},r.totalEntries?'Koszt liczony według ceny z chwili wyrzucenia.':'Brak strat w tym tygodniu.')),h('div',{class:'card'},h('h3',null,'Największe straty'),r.products.length?r.products.map(x=>h('div',{class:'row between'},h('span',null,x.name+' · '+money(x.amount)+' '+x.unit),h('strong',null,money(x.cost)+' zł'))):h('p',{class:'muted'},'Brak danych.')),h('div',{class:'card'},h('h3',null,'Według powodu'),r.reasons.length?r.reasons.map(x=>h('div',{class:'row between'},h('span',null,x.reason),h('strong',null,money(x.cost)+' zł'))):h('p',{class:'muted'},'Brak danych.')); }
- async function automationView(){ const [reorders,expiring]=await Promise.all([reorderSuggestions(),expiryAlerts(3)]); return h('div',{class:'stack'},h('div',{class:'card'},h('h3',null,'Autopilot magazynu'),h('p',{class:'muted'},'Kucharek sam wykrywa braki po sprzedaży i przygotowuje zakupy. Nie musisz co chwilę przepisywać zużycia.'),button('Uruchom autopilota teraz',{kind:'primary',onClick:async()=>{const r=await runInventoryAutopilot();toast(r.enabled?(r.added?'Dodano brakujące pozycje do zakupów 📦':'Brak nowych zakupów'):'Autopilot jest wyłączony');render();}}),button('Dodaj propozycje do zakupów'+(reorders.length?' ('+reorders.length+')':''),{kind:'primary',onClick:async()=>{const {addItems}=await import('./shopping.js');await addItems(reorders.map(x=>({name:x.name,amount:x.orderQuantity,unit:x.unit})));toast(reorders.length?'Propozycje dodane do zakupów':'Brak pozycji do zamówienia');}}),h('div',{class:'stack'},...reorders.slice(0,10).map(x=>h('div',{class:'row between'},h('span',null,x.name+' · stan '+money(x.quantity)+' '+x.unit),h('strong',null,'+'+money(x.orderQuantity)+' '+x.unit)))),h('div',{class:'card'},h('h3',null,'Terminy ważności'),expiring.length?expiring.slice(0,10).map(x=>h('div',{class:'row between'},h('span',null,x.inventoryName),h('strong',null,new Date(x.expiryAt).toLocaleDateString('pl-PL')))):h('p',{class:'muted'},'Brak partii kończących się w ciągu 3 dni.')),h('div',{class:'card'},h('h3',null,'Sprzedaż'),h('p',{class:'muted'},'Najwygodniej: eksport sprzedaży z POS → import raz na zmianę. Kucharek rozbije sprzedaż na składniki receptur i odejmie je atomowo.'),button('Import CSV sprzedaży',{kind:'primary',onClick:()=>salesImportSheet()}))); }
- function salesImportSheet(){ let text=''; const form=h('div',{class:'stack'},h('p',{class:'muted'},'CSV: nazwa receptury, ilość. Obsługiwany separator , lub ;.'),textInput({label:'CSV sprzedaży',placeholder:'Pizza Margherita,12',onInput:v=>text=v})); openSheet({title:'Import sprzedaży',variant:'sheet',body:form,actions:[{label:'Anuluj',kind:'ghost'},{label:'Importuj',kind:'primary',onClick:async()=>{const r=await importSalesCsv(text);if(!r.ok){toast(r.missing?.length?'Nie znaleziono receptur: '+r.missing.map(x=>x.name).join(', '):'Nie udało się zaimportować',{type:'error'});return false;}toast('Sprzedaż rozliczona, magazyn zaktualizowany 📦');render();}}]}); }
+ async function wasteView(){
+  const r=await wasteReport();
+  const range=new Date(r.start).toLocaleDateString('pl-PL',{day:'2-digit',month:'2-digit'})+'–'+new Date(r.end).toLocaleDateString('pl-PL',{day:'2-digit',month:'2-digit'});
+  const productRows=r.products.length
+    ? r.products.map(x=>h('div',{class:'row between'},h('span',null,x.name+' · '+money(x.amount)+' '+x.unit),h('strong',null,money(x.cost)+' zł')))
+    : [h('p',{class:'muted'},'Brak danych.')];
+  const reasonRows=r.reasons.length
+    ? r.reasons.map(x=>h('div',{class:'row between'},h('span',null,x.reason),h('strong',null,money(x.cost)+' zł')))
+    : [h('p',{class:'muted'},'Brak danych.')];
+  return h('div',{class:'stack'},
+    h('div',{class:'card'},h('div',{class:'row between'},
+      h('div',null,h('h3',null,'Raport strat'),h('p',{class:'muted'},'Bieżący tydzień · '+range)),
+      h('strong',null,money(r.totalCost)+' zł')
+    ),h('p',{class:'muted'},r.totalEntries?'Koszt liczony według ceny z chwili wyrzucenia.':'Brak strat w tym tygodniu.')),
+    h('div',{class:'card'},h('h3',null,'Największe straty'),...productRows),
+    h('div',{class:'card'},h('h3',null,'Według powodu'),...reasonRows)
+  );
+}
+
+async function automationView(){
+  const [reorders,expiring]=await Promise.all([reorderSuggestions(),expiryAlerts(3)]);
+  const reorderRows=reorders.length
+    ? reorders.slice(0,10).map(x=>h('div',{class:'row between'},h('span',null,x.name+' · stan '+money(x.quantity)+' '+x.unit),h('strong',null,'+'+money(x.orderQuantity)+' '+x.unit)))
+    : [h('p',{class:'muted'},'Brak pozycji wymagających uzupełnienia.')];
+  const expiryRows=expiring.length
+    ? expiring.slice(0,10).map(x=>h('div',{class:'row between'},h('span',null,x.inventoryName),h('strong',null,new Date(x.expiryAt).toLocaleDateString('pl-PL'))))
+    : [h('p',{class:'muted'},'Brak partii kończących się w ciągu 3 dni.')];
+  return h('div',{class:'stack'},
+    h('div',{class:'card'},
+      h('h3',null,'Autopilot magazynu'),
+      h('p',{class:'muted'},'Po rozliczeniu sprzedaży Kucharek sam sprawdza braki i może dodać je do zakupów. Nie musisz wpisywać zużycia co pół godziny.'),
+      button('Uruchom autopilota teraz',{kind:'primary',onClick:async()=>{
+        const result=await runInventoryAutopilot();
+        toast(result.enabled?(result.added?'Dodano brakujące pozycje do zakupów 📦':'Brak nowych zakupów'):'Autopilot jest wyłączony');
+        render();
+      }}),
+      button('Dodaj propozycje do zakupów'+(reorders.length?' ('+reorders.length+')':''),{kind:'ghost',onClick:async()=>{
+        const {addItems}=await import('./shopping.js');
+        await addItems(reorders.map(x=>({name:x.name,amount:x.orderQuantity,unit:x.unit})));
+        toast(reorders.length?'Propozycje dodane do zakupów':'Brak pozycji do zamówienia');
+        render();
+      }})
+    ),
+    h('div',{class:'card'},h('h3',null,'Do uzupełnienia'),...reorderRows),
+    h('div',{class:'card'},h('h3',null,'Terminy ważności'),...expiryRows),
+    h('div',{class:'card'},
+      h('h3',null,'Sprzedaż'),
+      h('p',{class:'muted'},'Eksport sprzedaży z POS raz na zmianę wystarczy. Import rozbije sprzedaż na składniki receptur i odejmie je atomowo.'),
+      button('Import CSV sprzedaży',{kind:'primary',onClick:()=>salesImportSheet()})
+    )
+  );
+}
+
+function salesImportSheet(){ let text=''; const form=h('div',{class:'stack'},h('p',{class:'muted'},'CSV: nazwa receptury, ilość. Obsługiwany separator , lub ;.'),textInput({label:'CSV sprzedaży',placeholder:'Pizza Margherita,12',onInput:v=>text=v})); openSheet({title:'Import sprzedaży',variant:'sheet',body:form,actions:[{label:'Anuluj',kind:'ghost'},{label:'Importuj',kind:'primary',onClick:async()=>{const r=await importSalesCsv(text);if(!r.ok){toast(r.missing?.length?'Nie znaleziono receptur: '+r.missing.map(x=>x.name).join(', '):'Nie udało się zaimportować',{type:'error'});return false;}toast('Sprzedaż rozliczona, magazyn zaktualizowany 📦');render();}}]}); }
  function adjustSheet(inv){if(!inv.length)return toast('Magazyn jest pusty',{type:'error'});let id=inv[0].id,delta='',reason='korekta';const form=h('div',{class:'stack'},field('Produkt',selectEl(inv.map(x=>[x.id,x.name]),id,v=>id=v)),textInput({type:'number',label:'Zmiana',onInput:v=>delta=v}),textInput({label:'Powód',onInput:v=>reason=v}));openSheet({title:'Korekta',variant:'sheet',body:form,actions:[{label:'Anuluj',kind:'ghost'},{label:'Zapisz',kind:'primary',onClick:async()=>{await adjustStockPro(id,delta,reason);toast('Korekta zapisana');render();}}]});}
  async function stocktake(){
   const t=await startStocktake();

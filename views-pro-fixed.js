@@ -14,16 +14,18 @@ export function proView(){
  const nav=(id,label)=>button(label,{sm:true,kind:tab===id?'primary':'ghost',onClick:()=>{tab=id;render();}});
  async function render(){
   const menu=h('div',{class:'pro-nav'},nav('dashboard','Dashboard'),nav('delivery','Dostawy'),nav('orders','Zamówienia'),nav('production','Produkcja'),nav('planning','Planowanie'),nav('analytics','Analityka'),nav('waste','Straty'),nav('automation','Automatyzacje'));
-  s.content.replaceChildren(menu,h('p',{class:'muted'},'Ładuję dane…'));
-
   if(tab==='waste'){
-    try{s.content.replaceChildren(menu,await wasteView());}catch(e){console.error(e);s.content.appendChild(h('p',{class:'muted'},'Nie udało się wczytać raportu strat.'));} 
+    s.content.replaceChildren(menu,h('div',{class:'stack'},h('div',{class:'card'},h('h3',null,'Raport strat'),h('p',{class:'muted'},'Ładuję raport tygodniowy…'))));
+    try{s.content.replaceChildren(menu,await wasteView());}catch(e){console.error(e);s.content.replaceChildren(menu,h('div',{class:'card'},h('h3',null,'Raport strat'),h('p',{class:'muted'},'Nie udało się wczytać raportu strat.')));}
     return;
   }
   if(tab==='automation'){
-    try{s.content.replaceChildren(menu,await automationView());}catch(e){console.error(e);s.content.appendChild(h('p',{class:'muted'},'Nie udało się wczytać automatyzacji.'));} 
+    s.content.replaceChildren(menu,h('div',{class:'stack'},h('div',{class:'card'},h('h3',null,'Autopilot magazynu'),h('p',{class:'muted'},'Ładuję automatyzacje…'))));
+    try{s.content.replaceChildren(menu,await automationView());}catch(e){console.error(e);s.content.replaceChildren(menu,h('div',{class:'card'},h('h3',null,'Autopilot magazynu'),h('p',{class:'muted'},'Nie udało się wczytać automatyzacji.')));}
     return;
   }
+
+  s.content.replaceChildren(menu,h('p',{class:'muted'},'Ładuję dane…'));
 
   try{
     await loadInventory();

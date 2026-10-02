@@ -4,6 +4,9 @@ import { loadInventory, reloadInventory, listInventory, saveInventoryItem, adjus
 import { getRecipe } from './recipes.js';
 
 const now = () => Date.now();
+const BASE_UNITS = { g:1, kg:1000, ml:1, l:1000, szt:1, opak:1 };
+const costForAmount = (amount, unit, price, priceUnit) => num(amount) * (BASE_UNITS[unit] || 1) / (BASE_UNITS[priceUnit] || 1) * num(price);
+const weekBounds = (at = now()) => { const d = new Date(at); const day = d.getDay() || 7; d.setHours(0,0,0,0); const end = new Date(d); end.setDate(d.getDate() + (7-day)); const start = new Date(d); start.setDate(d.getDate() - (day-1)); return {start:start.getTime(), end:end.getTime()+86400000-1}; };
 const num = (v, fallback = 0) => Number.isFinite(Number(v)) ? Number(v) : fallback;
 
 async function all(store) { return db.getAll(store); }
@@ -106,7 +109,10 @@ export async function recordWaste(inventoryId, amount, reason='inne', note='') {
   const item=listInventory().find(x=>x.id===inventoryId); if(!item) throw new Error('Produkt nie istnieje.');
   const qty=num(amount); if(!(qty>0)) throw new Error('Podaj ilość straty.');
   const before=num(item.quantity), actual=Math.min(before,qty), after=before-actual, at=now();
-  const row={id:uid('waste_'),inventoryId,inventoryName:item.name,amount:actual,unit:item.unit,reason,note,at};
+  const price = item.purchasePrice == null ? null : num(item.purchasePrice);
+  const priceUnit = item.priceUnit || item.unit;
+  const costValue = price == null ? null : costForAmount(actual, item.unit, price, priceUnit);
+  const row={id:uid('waste_'),inventoryId,inventoryName:item.name,amount:actual,unit:item.unit,reason,note,at,price,priceUnit,costValue};
   const next={...item,quantity:after,updatedAt:at};
   await db.tx(['inventory','inventoryLog','waste','stockMovements'],t=>{
     t.put('inventory',next);
@@ -117,6 +123,10 @@ export async function recordWaste(inventoryId, amount, reason='inne', note='') {
   await reloadInventory();
   return row;
 }
+
+export async function listWaste({start=null,end=null}={}) { const rows=await all('waste'); return rows.filter(x=>(start==null||x.at>=start)&&(end==null||x.at<=end)).sort((a,b)=>b.at-a.at); }
+export async function wasteReport(start=null,end=null) { if(start==null||end==null){const b=weekBounds();start=start==null?b.start:start;end=end==null?b.end:end;} const rows=await listWaste({start,end}); const byProduct=new Map(),byReason=new Map(); for(const row of rows){const cost=row.costValue==null?0:num(row.costValue);const p=byProduct.get(row.inventoryId)||{inventoryId:row.inventoryId,name:row.inventoryName,amount:0,unit:row.unit,cost:0,count:0};p.amount+=num(row.amount);p.cost+=cost;p.count++;byProduct.set(row.inventoryId,p);const reason=row.reason||'inne';const r=byReason.get(reason)||{reason,cost:0,count:0};r.cost+=cost;r.count++;byReason.set(reason,r);} const products=[...byProduct.values()].sort((a,b)=>b.cost-a.cost); const reasons=[...byReason.values()].sort((a,b)=>b.cost-a.cost); return {start,end,totalCost:rows.reduce((s,x)=>s+(x.costValue==null?0:num(x.costValue)),0),totalEntries:rows.length,products,reasons,topProduct:products[0]||null}; }
+export { weekBounds };
 
 export async function startStocktake(note='') {
   await loadInventory();
@@ -218,7 +228,7 @@ export async function analyticsSummary() {
   const [deliveries,waste,movements,prices,takes,orders]=await Promise.all([all('deliveries'),all('waste'),all('stockMovements'),all('priceHistory'),all('stocktakes'),all('purchaseOrders')]);
   const base={'g':1,'kg':1000,'ml':1,'l':1000,'szt':1,'opak':1};
   const stockValue=inv.reduce((s,x)=>{if(x.purchasePrice==null)return s;const factor=(base[x.unit]||1)/(base[x.priceUnit]||1);return s+(num(x.quantity)*factor*num(x.purchasePrice));},0);
-  const wasteValue=waste.reduce((s,x)=>{const i=inv.find(y=>y.id===x.inventoryId);return s+(i&&i.purchasePrice!=null?num(x.amount)*(base[x.unit]||1)/(base[i.priceUnit]||1)*num(i.purchasePrice):0)},0);
+  const wasteValue=waste.reduce((s,x)=>s+(x.costValue==null?(()=>{const i=inv.find(y=>y.id===x.inventoryId);return i&&i.purchasePrice!=null?costForAmount(x.amount,x.unit,i.purchasePrice,i.priceUnit||x.unit):0})():num(x.costValue)),0);
   const byType={}; movements.forEach(m=>byType[m.type]=(byType[m.type]||0)+Math.abs(num(m.delta)));
   const latestPrices={}; prices.forEach(p=>{if(!latestPrices[p.inventoryId])latestPrices[p.inventoryId]=p});
   const priceChanges=Object.values(latestPrices).map(p=>{const old=prices.filter(x=>x.inventoryId===p.inventoryId).sort((a,b)=>a.at-b.at)[0];return {...p,firstPrice:old?.price||p.price,change:p.price-(old?.price||p.price)}});

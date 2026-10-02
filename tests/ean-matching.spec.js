@@ -227,3 +227,20 @@ test('Etap 14: karta receptury trzyma zdjęcie jako miniaturę, a nazwę obok', 
   expect(layout.imageH).toBeGreaterThan(40);
   expect(layout.nameX).toBeGreaterThanOrEqual(layout.thumbRight - 2);
 });
+
+test('Etap 14: karta ma kompaktową miniaturę i widoczny tytuł', async ({ page }) => {
+  await reset(page);
+  await page.goto('/#/recipes');
+  await page.waitForSelector('.rcard');
+  const card=page.locator('.rcard').first();
+  await expect(card.locator('.rthumb')).toBeVisible();
+  await expect(card.locator('.rthumb img.recipe-visual')).toBeVisible();
+  await expect(card.locator('.rname')).toBeVisible();
+  const m=await card.evaluate(el=>{const a=el.querySelector('.rthumb').getBoundingClientRect(),b=el.querySelector('.rname').getBoundingClientRect();return {w:a.width,h:a.height,nameX:b.x,right:a.right}});
+  expect(m.w).toBeLessThan(140); expect(m.h).toBeLessThan(140); expect(m.nameX).toBeGreaterThanOrEqual(m.right-2);
+});
+test('Etap 14: ingredientIcon wskazuje atlas składników', async ({ page }) => {
+  await reset(page);
+  const out=await page.evaluate(async()=>{const {ingredientIcon}=await import('/components.js');const el=ingredientIcon({name:'Mąka pszenna'});document.body.appendChild(el);return {svg:!!el.querySelector('svg'),href:el.querySelector('use')?.getAttribute('href')||''}});
+  expect(out.svg).toBe(true); expect(out.href).toContain('/assets/ingredient-icons.svg#flour');
+});

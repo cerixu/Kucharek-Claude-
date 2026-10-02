@@ -62,28 +62,31 @@ export function recipeGraphicData(r) {
 }
 
 export function ingredientIcon(ing) {
-  const n = String(ing?.name || '').toLowerCase();
-  let kind = 'generic';
-  if (/mąk|flour|semolin|farin/.test(n)) kind = 'flour';
-  else if (/wod|water/.test(n)) kind = 'water';
-  else if (/pomidor|tomato/.test(n)) kind = 'tomato';
-  else if (/jaj|egg|żółtk/.test(n)) kind = 'egg';
-  else if (/ser|cheese|pecorino|parmezan|mozzarella/.test(n)) kind = 'cheese';
-  else if (/mięs|wołow|wieprz|kurcz|guancial|boczek|szynk|meat|beef|pork|chicken/.test(n)) kind = 'meat';
-  else if (/ryb|łosoś|tuńczy|fish|salmon|tuna/.test(n)) kind = 'fish';
-  else if (/oliw|olej|oil/.test(n)) kind = 'oil';
-  else if (/cebula|onion/.test(n)) kind = 'onion';
-  else if (/czosn|garlic/.test(n)) kind = 'garlic';
-  else if (/pieprz|pepper/.test(n)) kind = 'pepper';
-  else if (/bazyl|pietrusz|oregano|tymian|rozmaryn|herb|zioł/.test(n)) kind = 'herb';
-  else if (/cukier|sugar/.test(n)) kind = 'sugar';
-  else if (/mleko|milk/.test(n)) kind = 'milk';
-  else if (/masło|butter/.test(n)) kind = 'butter';
-  else if (/cytr|lemon/.test(n)) kind = 'lemon';
-  else if (/pieczark|grzyb|mushroom/.test(n)) kind = 'mushroom';
-  return h('span', { class: 'ingredient-icon ingredient-icon-' + kind, 'aria-hidden': 'true' }, icon('ingredient', 18));
+  const n=String(ing?.name||'').toLowerCase();
+  let kind='generic';
+  if(/mąk|flour|semolin|farin/.test(n))kind='flour';
+  else if(/wod|water/.test(n))kind='water';
+  else if(/pomidor|tomato/.test(n))kind='tomato';
+  else if(/jaj|egg|żółtk/.test(n))kind='egg';
+  else if(/ser|cheese|pecorino|parmezan|parmigiano|mozzarella/.test(n))kind='cheese';
+  else if(/mięs|wołow|wieprz|kurcz|guancial|boczek|szynk|chashu|meat|beef|pork|chicken/.test(n))kind='meat';
+  else if(/ryb|łosoś|tuńczy|sushi|fish|salmon|tuna/.test(n))kind='fish';
+  else if(/oliw|olej|oil/.test(n))kind='oil';
+  else if(/cebula|onion/.test(n))kind='onion';
+  else if(/czosn|garlic/.test(n))kind='garlic';
+  else if(/pieprz|pepper/.test(n))kind='pepper';
+  else if(/bazyl|pietrusz|oregano|tymian|rozmaryn|herb|zioł/.test(n))kind='herb';
+  else if(/cukier|sugar/.test(n))kind='sugar';
+  else if(/mleko|milk|śmietan|cream/.test(n))kind='milk';
+  else if(/masło|butter/.test(n))kind='butter';
+  else if(/cytr|lemon/.test(n))kind='lemon';
+  else if(/pieczark|grzyb|mushroom/.test(n))kind='mushroom';
+  return h('span',{class:'ingredient-icon ingredient-icon-'+kind,'aria-hidden':'true'},
+    h('svg',{class:'ingredient-svg',viewBox:'0 0 48 48',width:30,height:30,focusable:'false'},
+      h('use',{href:'./assets/ingredient-icons.svg#'+kind})
+    )
+  );
 }
-
 function fallbackVisual(r) { return recipeGraphicData(r); }
 
 export function recipeVisual(r, cls = '', { hero = false } = {}) {

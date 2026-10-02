@@ -155,3 +155,24 @@ test('ETAP 23: Magazyn pokazuje autopilota i żywe sugestie po zmianie stanu',as
   await page.getByRole('button',{name:/Otwórz automatyzacje/}).click();
   await expect(page.getByRole('heading',{name:'Autopilot magazynu',exact:true})).toBeVisible();
 });
+
+test('ETAP 24: Pizza kalkulator ma tryb Mam mąkę i liczy składniki od mąki',async({page})=>{
+  await reset(page);
+  const out=await page.evaluate(async()=>{
+    const{pizzaCalcFromFlour}=await import('/calculator.js');
+    return pizzaCalcFromFlour({flour:7500,ballWeight:250,hydration:65,salt:3,oil:0,yeast:0.2});
+  });
+  expect(out.flour).toBe(7500);
+  expect(out.water).toBe(4875);
+  expect(out.salt).toBe(225);
+  expect(out.yeast).toBe(15);
+  expect(out.total).toBe(12615);
+  expect(out.balls).toBe(50);
+  await page.goto('/#/calc/pizza');
+  await page.getByRole('button',{name:'Mam mąkę',exact:true}).click();
+  await expect(page.getByLabel('Mam mąkę w gramach')).toBeVisible();
+  await page.getByLabel('Mam mąkę w gramach').fill('7500');
+  await expect(page.getByText('4 875',{exact:true})).toBeVisible();
+  await expect(page.getByText('225',{exact:true})).toBeVisible();
+  await expect(page.getByText('50',{exact:true}).first()).toBeVisible();
+});

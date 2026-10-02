@@ -132,3 +132,13 @@ test('Recipe UX: lista otwiera szczegóły', async ({ page }) => {
   await page.getByRole('link', { name: 'Pizza Napoletana' }).click();
   await expect(page.getByRole('heading', { name: 'Pizza Napoletana' })).toBeVisible();
 });
+
+
+test('Recipe UX: skalowanie receptury na dwie porcje', async ({ page }) => {
+  await reset(page);
+  await page.goto('/#/recipe/rcp_seed_pizza');
+  await page.getByRole('button', { name: 'Przelicz' }).click();
+  await page.getByLabel('Liczba porcji').fill('2');
+  await page.getByRole('button', { name: 'Przelicz' }).last().click();
+  await expect(page.getByText('Przeliczone: 2 porcji')).toBeVisible();
+});

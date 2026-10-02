@@ -1,4 +1,4 @@
-# Kucharzyna 👨‍🍳
+# Kucharek 👨‍🍳
 
 Prywatny notatnik szefa kuchni na iPhone'a (działa też na innych telefonach i komputerze).
 Instalowalna aplikacja PWA, **działa bez internetu**, bez kont, reklam, śledzenia i płatnych API.
@@ -22,7 +22,7 @@ Wszystkie dane są w pamięci Twojego urządzenia.
 ## Struktura plików
 
 ```
-kucharzyna/
+kucharek/
 ├── index.html              # powłoka aplikacji, meta tagi iOS, wczesne ustawienie motywu
 ├── styles.css              # wszystkie style (motywy, safe-area, komponenty, ekrany)
 ├── manifest.webmanifest    # manifest PWA
@@ -31,7 +31,7 @@ kucharzyna/
 ├── app.js                  # start, motyw, nawigacja dolna, klawiatura iOS, trasy
 ├── router.js               # router po hashu (#/…), pamięć przewijania
 ├── pwa.js                  # rejestracja SW, „Nowa wersja → Odśwież”, trwały magazyn
-├── db.js                   # IndexedDB (recipes, ingredients, categories, shoppingItems, settings, history)
+├── db.js                   # IndexedDB (receptury, zakupy, magazyn, dostawy, partie, PRO)
 ├── recipes.js              # model danych, zapis, historia, kategorie, dane startowe
 ├── calculator.js           # przeliczanie, procenty piekarskie, pizza, food cost
 ├── importer.js             # parser tekstu przepisu (PL/EN, JSON-LD)
@@ -56,7 +56,7 @@ Brak bundlera i zależności — czyste moduły ES. Nic nie trzeba instalować a
 Service worker i instalacja wymagają `http://localhost` albo HTTPS (otwarcie pliku z dysku przez `file://` nie zadziała).
 
 ```bash
-cd kucharzyna
+cd kucharek
 python3 -m http.server 8080
 # albo: npx serve .
 ```
@@ -65,9 +65,9 @@ Otwórz `http://localhost:8080`.
 
 ## Publikacja na GitHub Pages
 
-1. Utwórz repozytorium na GitHubie (np. `kucharzyna`) i wgraj **zawartość tego folderu** do katalogu głównego repozytorium (z plikiem `.nojekyll`).
+1. Utwórz repozytorium na GitHubie (np. `kucharek`) i wgraj **zawartość tego folderu** do katalogu głównego repozytorium (z plikiem `.nojekyll`).
 2. W repozytorium: **Settings → Pages → Build and deployment → Source: Deploy from a branch**, gałąź `main`, folder `/ (root)` → **Save**.
-3. Po minucie–dwóch aplikacja będzie pod `https://TWOJA-NAZWA.github.io/kucharzyna/`.
+3. Po minucie–dwóch aplikacja będzie pod `https://TWOJA-NAZWA.github.io/kucharek/`.
 
 Wszystkie ścieżki są względne, więc działa w podkatalogu repozytorium. Repozytorium może być prywatne tylko na planie GitHuba, który to dla Pages dopuszcza — w przeciwnym razie strona jest publiczna (same dane i tak zostają w telefonie, nie w repozytorium).
 
@@ -82,20 +82,20 @@ Wszystkie ścieżki są względne, więc działa w podkatalogu repozytorium. Rep
 
 ## Gdzie są dane
 
-W **IndexedDB** w przeglądarce / zainstalowanej aplikacji na tym urządzeniu (stores: `recipes`, `ingredients`, `categories`, `shoppingItems`, `settings`, `history`). Nic nie jest wysyłane na żaden serwer. Zdjęcia są kompresowane i przechowywane razem z recepturą.
+W **IndexedDB** w przeglądarce / zainstalowanej aplikacji na tym urządzeniu (stores: `recipes`, `ingredients`, `categories`, `shoppingItems`, `settings`, `history`, `cookSessions`, `drafts`, `inventory`, `inventoryLog`, `deliveries`, `lots`, `stockMovements`, `suppliers`, `purchaseOrders`, `productionBatches`, `stocktakes`, `waste`, `priceHistory`). Nic nie jest wysyłane na żaden serwer. Zdjęcia są kompresowane i przechowywane razem z recepturą.
 
 Skutki: dane jednego telefonu nie pojawią się na drugim (przenoś kopią JSON), a **usunięcie danych witryny lub aplikacji kasuje receptury**. Przeglądarka może też wyczyścić pamięć, gdy brakuje miejsca albo długo jej nie używasz — dlatego rób kopie.
 
 ## Kopia zapasowa
 
-- **Ustawienia → Eksportuj kopię** — na iPhonie otworzy się arkusz udostępniania: wybierz **Zachowaj w Plikach** (np. iCloud Drive). Plik ma nazwę `kucharzyna-kopia-RRRR-MM-DD.json`.
+- **Ustawienia → Eksportuj kopię** — na iPhonie otworzy się arkusz udostępniania: wybierz **Zachowaj w Plikach** (np. iCloud Drive). Plik ma nazwę `kucharek-kopia-RRRR-MM-DD.json`.
 - **Ustawienia → Wczytaj kopię z pliku**: **Połącz** (dodaje brakujące, przy tej samej recepturze zostaje nowsza wersja) albo **Zastąp wszystko** (po dodatkowym potwierdzeniu).
 - Kopia obejmuje receptury, katalog składników z cenami, kategorie, uwagi, ulubione, ustawienia, zakupy i historię zmian. Szkice edytora nie są w niej zapisywane.
 - Aplikacja przypomina o kopii, gdy ostatnia ma ponad 14 dni.
 
 ## Aktualizacje aplikacji
 
-1. Zmień pliki, podbij wersję w **`sw.js`** (`VERSION = 'kucharzyna-1.0.1'`) i w **`util.js`** (`APP_VERSION = '1.0.1'`) — muszą być zgodne.
+1. Zmień pliki, podbij wersję w **`sw.js`** (`VERSION = 'kucharek-1.0.1'`) i w **`util.js`** (`APP_VERSION = '1.0.1'`) — muszą być zgodne.
 2. Wypchnij zmiany na GitHub.
 3. Telefon wykryje nową wersję i pokaże: **„Nowa wersja Kucharzyny jest dostępna” → Odśwież**. Ręcznie: Ustawienia → Sprawdź aktualizacje.
 

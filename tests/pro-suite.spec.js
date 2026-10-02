@@ -26,3 +26,46 @@ test('ETAP 5-11: ekran PRO jest dostępny z Magazynu',async({page})=>{await rese
 
 test('backup obejmuje dane PRO',async({page})=>{await reset(page);const out=await page.evaluate(async()=>{const i=await import('/inventory.js');const p=await import('/pro.js');const b=await import('/backup.js');await i.saveInventoryItem({name:'Backup PRO',quantity:5,unit:'kg'});await p.addSupplier({name:'Backup dostawca'});const x=await b.buildBackup();return {inventory:x.data.inventory.length,suppliers:x.data.suppliers.length,deliveries:x.data.deliveries.length,lots:x.data.lots.length};});expect(out.inventory).toBe(1);expect(out.suppliers).toBe(1);expect(out.deliveries).toBe(0);});
 test('inwentaryzacja nie pozwala zamknąć bez policzonej ilości',async({page})=>{await reset(page);const out=await page.evaluate(async()=>{const i=await import('/inventory.js');const p=await import('/pro.js');await i.saveInventoryItem({name:'Stockcheck',quantity:10,unit:'kg'});const t=await p.startStocktake();try{await p.finalizeStocktake(t.id);return false;}catch(e){return true;}});expect(out).toBe(true);});
+
+
+test('ETAP 13: receptura domyślnie pokazuje ilości na 1 porcję',async({page})=>{
+  await reset(page);
+  await page.evaluate(async()=>{
+    const{saveRecipe,blankRecipe}=await import('/recipes.js');
+    const r=blankRecipe({name:'Test jedna porcja',category:'cat-pizza',servings:4,sections:[{id:'s1',name:'',ingredients:[{id:'i1',name:'Mąka',amount:400,unit:'g'}]}]});
+    await saveRecipe(r);
+  });
+  await page.goto('/#/recipe/');
+  const href=await page.evaluate(()=>location.hash);
+  await page.goto(href.replace('/recipe/','/#/recipe/'));
+  await expect(page.getByText('1 porcja',{exact:true})).toBeVisible();
+  await expect(page.getByText('100',{exact:true})).toBeVisible();
+});
+
+test('ETAP 13: receptura bez zdjęcia dostaje offline grafikę zastępczą',async({page})=>{
+  await reset(page);
+  await page.evaluate(async()=>{
+    const{saveRecipe,blankRecipe}=await import('/recipes.js');
+    await saveRecipe(blankRecipe({name:'Grafika test',category:'cat-pizza',servings:1}));
+  });
+  const id=await page.evaluate(async()=>{const{listRecipes}=await import('/recipes.js');return listRecipes().find(r=>r.name==='Grafika test').id;});
+  await page.goto('/#/recipe/'+id);
+  await expect(page.locator('img.recipe-visual')).toBeVisible();
+  await expect(page.locator('img.recipe-visual')).toHaveAttribute('src',/^data:image\/svg\+xml/);
+});
+
+test('ETAP 13: edytor potrafi utworzyć grafikę receptury offline',async({page})=>{
+  await reset(page);
+  await page.goto('/#/new');
+  await expect(page.getByRole('button',{name:'Utwórz grafikę',exact:true})).toBeVisible();
+  await page.getByRole('button',{name:'Utwórz grafikę',exact:true}).click();
+  await expect(page.locator('img.photo-prev')).toBeVisible();
+  await expect(page.locator('img.photo-prev')).toHaveAttribute('src',/^data:image\/svg\+xml/);
+});
+
+test('ETAP 13: nowa receptura ma domyślnie 1 porcję',async({page})=>{
+  await reset(page);
+  await page.goto('/#/new');
+  const input=page.getByLabel('Liczba porcji');
+  await expect(input).toHaveValue('1');
+});

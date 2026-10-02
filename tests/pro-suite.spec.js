@@ -210,3 +210,18 @@ test('ETAP 25: pola temperatury i czasu w kalkulatorze pizzy zachowują focus po
   await expect(hours).toBeVisible();
   await expect(hours).toBeFocused();
 });
+
+test('ETAP 26: edytor pozwala pisać ciągłym tekstem bez utraty focusu',async({page})=>{
+  await reset(page);
+  await page.goto('/#/new');
+  const name=page.getByLabel('Nazwa receptury');
+  await name.click();
+  await name.pressSequentially('Carbonara', {delay: 20});
+  await expect(name).toHaveValue('Carbonara');
+  await expect(name).toBeFocused();
+  const desc=page.getByLabel('Opis');
+  await desc.click();
+  await desc.pressSequentially('Opis testowy', {delay: 20});
+  await expect(desc).toHaveValue('Opis testowy');
+  await expect(desc).toBeFocused();
+});

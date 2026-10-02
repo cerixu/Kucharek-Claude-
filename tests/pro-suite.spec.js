@@ -181,7 +181,7 @@ test('ETAP 24: Pizza kalkulator ma tryb Mam mąkę i liczy składniki od mąki',
 test('ETAP 25: wyszukiwarka receptur nie traci focusu po wpisaniu kolejnych znaków',async({page})=>{
   await reset(page);
   await page.goto('/#/recipes');
-  const input=page.getByLabel('Szukaj receptur');
+  const input=page.locator('input.search-input');
   await expect(input).toBeVisible();
   await input.fill('pizza');
   await expect(input).toHaveValue('pizza');
@@ -191,7 +191,7 @@ test('ETAP 25: wyszukiwarka receptur nie traci focusu po wpisaniu kolejnych znak
 test('ETAP 25: wyszukiwarka magazynu nie traci focusu po wpisaniu kolejnych znaków',async({page})=>{
   await reset(page);
   await page.goto('/#/inventory');
-  const input=page.getByLabel('Szukaj produktu…');
+  const input=page.locator('input.search-input');
   await expect(input).toBeVisible();
   await input.fill('mąka');
   await expect(input).toHaveValue('mąka');

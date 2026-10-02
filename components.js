@@ -190,8 +190,15 @@ export function ingredientIcon(ing) {
   else if (/makaron|pasta|spaghetti|tagliatelle|noodle/.test(n)) kind = 'pasta';
   else if (/ziemniak|potato/.test(n)) kind = 'potato';
   else if (/marchew|carrot/.test(n)) kind = 'carrot';
-  else if (/seler naci|seler łodyg|naci selera|celery stalk|celery/.test(n)) kind = 'celery_stalk';
-  else if (/seler|celery/.test(n)) kind = 'celery';
+  else if (/seler korzeni|korzeń selera|celery root|celeriac/.test(n)) kind = 'celery_root';
+  else if (/seler naci|seler łodyg|naci selera|łodyg[ai] selera|celery stalk|celery stem/.test(n)) kind = 'celery_stalk';
+  else if (/seler/.test(n)) kind = 'celery';
+  else if (/pietruszk[aę]|korzeń pietruszk|parsley root|parsnip/.test(n)) kind = 'parsley_root';
+  else if (/koperek|koper|dill/.test(n)) kind = 'dill';
+  else if (/mięt[aę]|mint/.test(n)) kind = 'mint';
+  else if (/szczypior|szczypiorek|spring onion|scallion|green onion/.test(n)) kind = 'spring_onion';
+  else if (/szałwi|sage/.test(n)) kind = 'sage';
+  else if (/majeran|marjoram/.test(n)) kind = 'marjoram';
   else if (/orzech|walnut|almond|hazelnut|nut/.test(n)) kind = 'nut';
   else if (/sezam|sesame/.test(n)) kind = 'sesame';
   else if (/soja|soy|sos sojowy/.test(n)) kind = 'soy';
@@ -200,7 +207,10 @@ export function ingredientIcon(ing) {
   else if (/wanili|vanilla/.test(n)) kind = 'vanilla';
   else if (/drożdż|yeast/.test(n)) kind = 'yeast';
 
+  if (/parmigiano|parmezan|parmesan|pecorino|mozzarella|ricotta|mascarpone|gorgonzol|grana padano|gruy[eè]re|emmental|cheddar|feta|halloumi|camembert|brie/.test(n)) kind = 'cheese';
   if (kind === 'generic' && categoryKind) kind = categoryKind;
+  // Nigdy nie zostawiamy „przypadkowej” ikony. Nowy składnik dostaje
+  // bezpieczny fallback zgodny z kategorią, a dopiero potem ikonę ogólną.
   const paths = {
     flour:'M10 36h28M13 36l4-22h14l4 22M17 14l7-6 7 6M20 22h8M18 29h12',
     starch:'M12 18h24l-2 20H14l-2-20ZM16 18l3-7h10l3 7M17 25h14M18 31h12',
@@ -232,6 +242,13 @@ export function ingredientIcon(ing) {
     potato:'M13 29c-2-8 4-17 12-18 8-1 13 5 12 13-1 9-8 15-17 13-4-1-6-4-7-8ZM19 21h.1M28 27h.1',
     carrot:'M13 18c4-4 12-4 20 0-2 8-5 16-9 21-4-5-7-13-11-21ZM24 18V8M20 11l-5-3M28 11l5-3',
     celery:'M24 39V14M24 27c-5-2-9-6-9-12M24 30c5-2 9-6 9-12M24 19c-3-3-5-6-5-9',
+    celery_root:'M24 11c-8 1-13 7-13 15 0 8 5 13 13 13s13-5 13-13c0-8-5-14-13-15ZM19 18h.1M29 22h.1M21 29h.1M28 33h.1M24 11V6',
+    parsley_root:'M16 37c-2-7 0-16 4-25h8c4 9 6 18 4 25-5 3-11 3-16 0ZM24 12V6M20 9l-5-4M28 9l5-4',
+    dill:'M24 39V10M24 25c-5-2-9-6-9-12M24 28c5-2 9-6 9-12M24 19c-3-3-5-7-5-11M24 19c3-3 5-7 5-11',
+    mint:'M24 39V18M24 28c-7-1-11-5-11-12 7 0 11 4 11 12 0-8 5-13 12-13 0 8-4 12-12 13',
+    spring_onion:'M19 39c-1-9 0-19 2-29M27 39c1-9 0-19-2-29M21 12l-6-6M27 12l6-6M24 10V4',
+    sage:'M24 38V18M24 28c-7 0-11-4-11-10 7 0 11 4 11 10 0-7 5-11 12-11 0 7-4 11-12 11',
+    marjoram:'M24 39V17M24 27c-6-1-9-5-9-10 6 0 9 3 9 10 0-6 4-10 10-10 0 6-4 10-10 10',
     nut:'M13 30c-1-8 4-15 11-17 7 2 12 9 11 17-1 7-7 11-14 9-5-1-8-5-8-9Z M24 15v24',
     sesame:'M17 13c4-3 8 0 7 5-1 4-5 5-8 2-3-2-3-5 1-7ZM31 28c4-3 8 0 7 5-1 4-5 5-8 2-3-2-3-5 1-7Z',
     soy:'M13 20h22l-2 18H15l-2-18ZM17 20v-6h14v6M18 27h12M19 32h10',

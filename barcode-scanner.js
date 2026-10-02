@@ -146,7 +146,7 @@ export function openBarcodeScanner({ onDetected }) {
       try { video.srcObject=stream; } catch (_) {}
       videoTrack=stream.getVideoTracks?.()[0] || null;
       torchSupported=!!videoTrack;
-      flashButton.disabled=!torchSupported;
+      flashButton.disabled=false;
       flashButton.setAttribute('aria-label', torchSupported ? 'Włącz latarkę' : 'Latarka niedostępna w tej przeglądarce');
       flashButton.title=torchSupported ? 'Włącz latarkę' : 'Latarka niedostępna w tej przeglądarce';
       await video.play();

@@ -304,3 +304,24 @@ test('Ikony składników: seler naciowy i szeroka biblioteka mają własne glify
   const fruit = await page.evaluate(async () => { const { ingredientIcon } = await import('/components.js'); return ingredientIcon({name:'Nowy owoc X',category:'owoce'}).className; });
   expect(fruit).toContain('ingredient-icon-fruit');
 });
+
+test('Ikony serów: Parmigiano ma wyraźny glif sera, a seler naciowy nie wpada do soli', async ({ page }) => {
+  await reset(page);
+  const out = await page.evaluate(async () => {
+    const { ingredientIcon } = await import('/components.js');
+    const cheese = ingredientIcon({ name:'Parmigiano Reggiano' });
+    const celery = ingredientIcon({ name:'Seler naciowy' });
+    const salt = ingredientIcon({ name:'Sól' });
+    return {
+      cheeseClass: cheese.className,
+      cheesePath: cheese.querySelector('path')?.getAttribute('d') || '',
+      celeryClass: celery.className,
+      saltClass: salt.className,
+    };
+  });
+  expect(out.cheeseClass).toContain('ingredient-icon-cheese');
+  expect(out.cheesePath).toContain('M8 35V17l29-7v24L8 35');
+  expect(out.celeryClass).toContain('ingredient-icon-celery_stalk');
+  expect(out.celeryClass).not.toContain('ingredient-icon-salt');
+  expect(out.saltClass).toContain('ingredient-icon-salt');
+});

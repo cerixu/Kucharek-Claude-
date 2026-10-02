@@ -137,7 +137,7 @@ test('Recipe UX: lista otwiera szczegóły', async ({ page }) => {
 test('Recipe UX: skalowanie receptury na dwie porcje', async ({ page }) => {
   await reset(page);
   await page.goto('/#/recipe/rcp_seed_pizza');
-  await page.getByRole('button', { name: 'Przelicz' }).click();
+  await page.getByRole('button', { name: 'Przelicz', exact: true }).click();
   await page.getByLabel('Liczba porcji').fill('2');
   await page.getByRole('button', { name: 'Przelicz' }).last().click();
   await expect(page.getByText('Przeliczone: 2 porcji')).toBeVisible();

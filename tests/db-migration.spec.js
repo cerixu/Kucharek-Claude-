@@ -125,7 +125,7 @@ test('migracja IndexedDB v1 → v4 zachowuje dane i rozdziela stores', async ({ 
 });
 
 test('v2/v4 stores są zapisywalne', async ({ page }) => {
-  await page.goto('/');
+  await page.goto('about:blank');
   await page.evaluate(async (name) => {
     const db = await new Promise((resolve, reject) => {
       const req = indexedDB.open(name);

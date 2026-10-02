@@ -23,19 +23,19 @@ export function stockState(item) { const qty=Number(item.quantity||0), min=Numbe
 export async function saveInventoryItem(data) { const now=Date.now(); const item={id:data.id||uid('stock_'),name:String(data.name||'').trim(),quantity:Number(data.quantity||0),unit:data.unit||'g',minQuantity:Number(data.minQuantity||0),targetQuantity:Number(data.targetQuantity||0),purchasePrice:data.purchasePrice==null||data.purchasePrice===''?null:Number(data.purchasePrice),priceUnit:data.priceUnit||'kg',ean:normalizeEAN(data.ean),aliases:Array.isArray(data.aliases)?[...new Set(data.aliases.map(x=>String(x).trim()).filter(Boolean))]:[],category:String(data.category||'').trim(),updatedAt:now,createdAt:data.createdAt||now}; if(!item.name)throw new Error('Podaj nazwę produktu.'); await db.put('inventory',item); const i=items.findIndex(x=>x.id===item.id); if(i>=0)items[i]=item;else items.push(item);items.sort((a,b)=>a.name.localeCompare(b.name,'pl'));emit();return item; }
 export async function seedTestInventory() {
   const demo = [
-    { name: 'Mąka 00 test', quantity: 1.2, unit: 'kg', minQuantity: 5, targetQuantity: 12, purchasePrice: 4.5, priceUnit: 'kg', category: 'Suche' },
-    { name: 'Mozzarella test', quantity: 1.5, unit: 'kg', minQuantity: 3, targetQuantity: 6, purchasePrice: 28, priceUnit: 'kg', category: 'Nabiał' },
-    { name: 'Pecorino Romano test', quantity: 0.4, unit: 'kg', minQuantity: 1, targetQuantity: 2, purchasePrice: 55, priceUnit: 'kg', category: 'Nabiał' },
-    { name: 'Guanciale test', quantity: 0.7, unit: 'kg', minQuantity: 1.5, targetQuantity: 3, purchasePrice: 72, priceUnit: 'kg', category: 'Mięso' },
-    { name: 'Pomodoro test', quantity: 8, unit: 'szt', minQuantity: 4, targetQuantity: 12, purchasePrice: 6, priceUnit: 'szt', category: 'Warzywa' },
-    { name: 'Oliwa EVO test', quantity: 0.8, unit: 'l', minQuantity: 2, targetQuantity: 5, purchasePrice: 32, priceUnit: 'l', category: 'Tłuszcze' },
-    { name: 'Bazylia test', quantity: 0.2, unit: 'kg', minQuantity: 0.5, targetQuantity: 1, purchasePrice: 45, priceUnit: 'kg', category: 'Zioła' },
-    { name: 'Sól morska test', quantity: 3, unit: 'kg', minQuantity: 1, targetQuantity: 4, purchasePrice: 5, priceUnit: 'kg', category: 'Przyprawy' },
+    { id: 'demo_stock_flour', name: 'Mąka 00 test', quantity: 1.2, unit: 'kg', minQuantity: 5, targetQuantity: 12, purchasePrice: 4.5, priceUnit: 'kg', category: 'Suche' },
+    { id: 'demo_stock_mozzarella', name: 'Mozzarella test', quantity: 1.5, unit: 'kg', minQuantity: 3, targetQuantity: 6, purchasePrice: 28, priceUnit: 'kg', category: 'Nabiał' },
+    { id: 'demo_stock_pecorino', name: 'Pecorino Romano test', quantity: 0.4, unit: 'kg', minQuantity: 1, targetQuantity: 2, purchasePrice: 55, priceUnit: 'kg', category: 'Nabiał' },
+    { id: 'demo_stock_guanciale', name: 'Guanciale test', quantity: 0.7, unit: 'kg', minQuantity: 1.5, targetQuantity: 3, purchasePrice: 72, priceUnit: 'kg', category: 'Mięso' },
+    { id: 'demo_stock_tomato', name: 'Pomodoro test', quantity: 8, unit: 'szt', minQuantity: 4, targetQuantity: 12, purchasePrice: 6, priceUnit: 'szt', category: 'Warzywa' },
+    { id: 'demo_stock_oil', name: 'Oliwa EVO test', quantity: 0.8, unit: 'l', minQuantity: 2, targetQuantity: 5, purchasePrice: 32, priceUnit: 'l', category: 'Tłuszcze' },
+    { id: 'demo_stock_basil', name: 'Bazylia test', quantity: 0.2, unit: 'kg', minQuantity: 0.5, targetQuantity: 1, purchasePrice: 45, priceUnit: 'kg', category: 'Zioła' },
+    { id: 'demo_stock_salt', name: 'Sól morska test', quantity: 3, unit: 'kg', minQuantity: 1, targetQuantity: 4, purchasePrice: 5, priceUnit: 'kg', category: 'Przyprawy' },
   ];
   await loadInventory();
   const created = [];
   for (const row of demo) {
-    if (findInventoryByName(row.name)) continue;
+    if (await db.get('inventory', row.id)) continue;
     created.push(await saveInventoryItem(row));
   }
   return created;

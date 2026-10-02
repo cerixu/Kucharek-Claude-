@@ -45,33 +45,52 @@ export function heartBtn(r, onToggle) {
   return b;
 }
 
-const CATEGORY_VISUALS = {
-  'cat-pizza': 'assets/start/pizza.svg',
-  'cat-pasta': 'assets/start/pasta.svg',
-  'cat-pieczywo': 'assets/start/bakery.svg',
-  'cat-warzywa': 'assets/start/veg.svg',
-};
+function visualKind(r) {
+  const text = String(r.name || '').toLowerCase();
+  if (/pizza|focaccia|ciasto|chleb|bułk|pieczyw/.test(text)) return 'bakery';
+  if (/makaron|pasta|spaghetti|carbonara|lasagn/.test(text)) return 'pasta';
+  if (/sałat|warzyw|zupa|sos|krem/.test(text)) return 'fresh';
+  return 'dish';
+}
 
-function fallbackVisual(r) {
-  const label = String(r.name || catName(r.category) || 'Kucharek').slice(0, 28).replace(/[&<>]/g, '');
-  const emoji = catIcon(r.category);
-  const svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 600"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#2b2e33"/><stop offset="1" stop-color="#0e1012"/></linearGradient></defs><rect width="900" height="600" fill="#121316"/><rect x="28" y="28" width="844" height="544" rx="42" fill="url(%23g)"/><text x="450" y="300" text-anchor="middle" font-size="150">' + emoji + '</text><text x="450" y="430" text-anchor="middle" fill="#f4f4f1" font-family="system-ui,sans-serif" font-size="34" font-weight="700">' + label + '</text><text x="450" y="480" text-anchor="middle" fill="#aeb3ba" font-family="system-ui,sans-serif" font-size="20">KUCHAREK</text></svg>';
+export function recipeGraphicData(r) {
+  const label = String(r.name || catName(r.category) || 'Receptura').slice(0, 34).replace(/[&<>]/g, '');
+  const kind = visualKind(r);
+  const title = kind === 'bakery' ? 'PIECZYWO' : kind === 'pasta' ? 'MAKARON' : kind === 'fresh' ? 'WARZYWA · SOSY' : 'RECEPTURA';
+  const svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 800"><defs><linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#17191c"/><stop offset="1" stop-color="#08090b"/></linearGradient><radialGradient id="gl"><stop stop-color="#ffffff" stop-opacity=".16"/><stop offset="1" stop-color="#ffffff" stop-opacity="0"/></radialGradient></defs><rect width="1200" height="800" fill="url(%23bg)"/><circle cx="980" cy="130" r="360" fill="url(%23gl)"/><circle cx="180" cy="700" r="300" fill="#fff" opacity=".035"/><ellipse cx="600" cy="440" rx="300" ry="190" fill="#0b0c0e" stroke="#3a3d42" stroke-width="5"/><ellipse cx="600" cy="430" rx="245" ry="145" fill="#111317" stroke="#292c31" stroke-width="3"/><path d="M420 410c55-75 120-95 180-58 48-48 126-25 168 34 36 51 24 101-28 127-86 42-254 35-319-12-35-25-35-57-1-91z" fill="#22262b"/><circle cx="515" cy="410" r="24" fill="#8d939b"/><circle cx="590" cy="370" r="18" fill="#666b73"/><circle cx="675" cy="423" r="28" fill="#9a9fa6"/><circle cx="720" cy="475" r="15" fill="#5e636a"/><text x="600" y="105" text-anchor="middle" fill="#aeb3ba" font-family="system-ui,sans-serif" font-size="20" font-weight="800" letter-spacing="6">' + title + '</text><text x="600" y="690" text-anchor="middle" fill="#f5f5f2" font-family="system-ui,sans-serif" font-size="48" font-weight="800">' + label + '</text><text x="600" y="735" text-anchor="middle" fill="#8f949c" font-family="system-ui,sans-serif" font-size="18" letter-spacing="3">KUCHAREK</text></svg>';
   return 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
 }
 
-export function recipeVisual(r, cls = '', { hero = false } = {}) {
-  const imageSrc = hero ? (r.photo || r.thumb) : (r.thumb || r.photo);
-  const categoryVisual = CATEGORY_VISUALS[r.category] || '';
-  if (imageSrc) return h('img', { class: (hero ? 'hero-photo ' : 'rthumb-img ') + cls + ' recipe-visual', src: imageSrc, alt: hero ? ('Zdjęcie: ' + (r.name || 'receptura')) : '', loading: hero ? 'eager' : 'lazy', decoding: 'async', onError: (e) => { e.currentTarget.onerror = null; e.currentTarget.src = fallbackVisual(r); } });
-  if (categoryVisual) return h('img', { class: (hero ? 'hero-photo ' : 'rthumb-img ') + cls + ' recipe-visual', src: categoryVisual, alt: hero ? ('Grafika: ' + (r.name || catName(r.category))) : '', loading: hero ? 'eager' : 'lazy', decoding: 'async' });
-  const label = String(r.name || catName(r.category) || 'Kucharek').slice(0, 28);
-  const emoji = catIcon(r.category);
-  const bg = hero ? '121316' : '1b1d20';
-  const svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 600"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#2b2e33"/><stop offset="1" stop-color="#0e1012"/></linearGradient><filter id="b"><feGaussianBlur stdDeviation="28"/></filter></defs><rect width="900" height="600" fill="#' + bg + '"/><circle cx="760" cy="90" r="180" fill="#ffffff" opacity=".05" filter="url(%23b)"/><circle cx="130" cy="520" r="230" fill="#ffffff" opacity=".04" filter="url(%23b)"/><rect x="28" y="28" width="844" height="544" rx="42" fill="url(%23g)" opacity=".72"/><text x="450" y="300" text-anchor="middle" font-size="150">' + emoji + '</text><text x="450" y="430" text-anchor="middle" fill="#f4f4f1" font-family="system-ui,sans-serif" font-size="34" font-weight="700">' + label.replace(/[&<>]/g, '') + '</text><text x="450" y="480" text-anchor="middle" fill="#aeb3ba" font-family="system-ui,sans-serif" font-size="20">KUCHAREK</text></svg>';
-  const fallbackSrc = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
-  return h('img', { class: (hero ? 'hero-photo ' : 'rthumb-img ') + cls + ' recipe-visual', src: fallbackSrc, alt: hero ? ('Grafika: ' + label) : '', loading: hero ? 'eager' : 'lazy', decoding: 'async' });
+export function ingredientIcon(ing) {
+  const n = String(ing?.name || '').toLowerCase();
+  let kind = 'generic';
+  if (/mąk|flour|semolin|farin/.test(n)) kind = 'flour';
+  else if (/wod|water/.test(n)) kind = 'water';
+  else if (/pomidor|tomato/.test(n)) kind = 'tomato';
+  else if (/jaj|egg|żółtk/.test(n)) kind = 'egg';
+  else if (/ser|cheese|pecorino|parmezan|mozzarella/.test(n)) kind = 'cheese';
+  else if (/mięs|wołow|wieprz|kurcz|guancial|boczek|szynk|meat|beef|pork|chicken/.test(n)) kind = 'meat';
+  else if (/ryb|łosoś|tuńczy|fish|salmon|tuna/.test(n)) kind = 'fish';
+  else if (/oliw|olej|oil/.test(n)) kind = 'oil';
+  else if (/cebula|onion/.test(n)) kind = 'onion';
+  else if (/czosn|garlic/.test(n)) kind = 'garlic';
+  else if (/pieprz|pepper/.test(n)) kind = 'pepper';
+  else if (/bazyl|pietrusz|oregano|tymian|rozmaryn|herb|zioł/.test(n)) kind = 'herb';
+  else if (/cukier|sugar/.test(n)) kind = 'sugar';
+  else if (/mleko|milk/.test(n)) kind = 'milk';
+  else if (/masło|butter/.test(n)) kind = 'butter';
+  else if (/cytr|lemon/.test(n)) kind = 'lemon';
+  else if (/pieczark|grzyb|mushroom/.test(n)) kind = 'mushroom';
+  return h('span', { class: 'ingredient-icon ingredient-icon-' + kind, 'aria-hidden': 'true' }, icon('ingredient', 18));
 }
 
+function fallbackVisual(r) { return recipeGraphicData(r); }
+
+export function recipeVisual(r, cls = '', { hero = false } = {}) {
+  const imageSrc = hero ? (r.photo || r.thumb) : (r.thumb || r.photo);
+  if (imageSrc) return h('img', { class: (hero ? 'hero-photo ' : 'rthumb-img ') + cls + ' recipe-visual', src: imageSrc, alt: hero ? ('Zdjęcie: ' + (r.name || 'receptura')) : '', loading: hero ? 'eager' : 'lazy', decoding: 'async', onError: (e) => { e.currentTarget.onerror = null; e.currentTarget.src = fallbackVisual(r); } });
+  return h('img', { class: (hero ? 'hero-photo ' : 'rthumb-img ') + cls + ' recipe-visual', src: fallbackVisual(r), alt: hero ? ('Grafika receptury: ' + (r.name || 'receptura')) : '', loading: hero ? 'eager' : 'lazy', decoding: 'async' });
+}
 function thumbEl(r, cls = '') {
   return recipeVisual(r, cls);
 }

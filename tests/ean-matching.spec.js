@@ -142,3 +142,13 @@ test('Recipe UX: skalowanie receptury na dwie porcje', async ({ page }) => {
   await page.getByRole('button', { name: 'Przelicz' }).last().click();
   await expect(page.getByText('Przeliczone: 2 porcji')).toBeVisible();
 });
+
+
+test('Recipe UX: składniki, przygotowanie i uwagi są dostępne', async ({ page }) => {
+  await reset(page);
+  await page.goto('/#/recipe/rcp_seed_pizza');
+  await expect(page.locator('.ingredients')).toBeVisible();
+  await expect(page.locator('.ingredient-icon').first()).toBeVisible();
+  await expect(page.locator('ol.steps')).toBeVisible();
+  await expect(page.getByLabel('Własne uwagi')).toBeVisible();
+});

@@ -57,7 +57,7 @@ export async function markPurchased(item) {
 export async function addLowStockToShopping() {
   await loadInventory();
   const missing = [];
-  for (const item of listInventory()) {
+  for (const item of (await listInventory())) {
     const min = Number(item.minQuantity || 0);
     const target = Number(item.targetQuantity || 0);
     const qty = Number(item.quantity || 0);

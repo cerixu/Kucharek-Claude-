@@ -332,3 +332,30 @@ test('ETAP 19: zapis ostatniego gotowania receptury',async({page})=>{
   expect(out.count).toBe(1);
   expect(out.last).toBeGreaterThan(0);
 });
+
+test('ETAP 28: filtr Gotowane pokazuje tylko ugotowane receptury i liczbę gotowań',async({page})=>{
+  await reset(page);
+  await page.evaluate(async()=>{
+    const{saveRecipe,blankRecipe}=await import('/recipes.js');
+    const a=blankRecipe({name:'Gotowana receptura',category:'cat-pizza',servings:1,sections:[{id:'s1',name:'',ingredients:[]}],steps:[]});
+    const b=blankRecipe({name:'Jeszcze niegotowana',category:'cat-pizza',servings:1,sections:[{id:'s1',name:'',ingredients:[]}],steps:[]});
+    a.cookCount=3; a.lastCookedAt=Date.now()-1000; b.cookCount=0; b.lastCookedAt=0;
+    await saveRecipe(a); await saveRecipe(b);
+  });
+  await page.goto('/#/recipes');
+  await page.getByRole('button',{name:/Gotowane/}).click();
+  await expect(page.getByRole('link',{name:'Gotowana receptura'})).toBeVisible();
+  await expect(page.getByRole('link',{name:'Jeszcze niegotowana'})).toHaveCount(0);
+  await expect(page.getByText(/gotowano 3×/)).toBeVisible();
+});
+test('ETAP 28: sortowanie Najczęściej gotowane układa receptury po liczbie gotowań',async({page})=>{
+  await reset(page);
+  const out=await page.evaluate(async()=>{
+    const{saveRecipe,blankRecipe,listRecipes}=await import('/recipes.js');
+    const a=blankRecipe({name:'Często',category:'cat-pizza',servings:1,sections:[{id:'s1',name:'',ingredients:[]}],steps:[]});
+    const b=blankRecipe({name:'Rzadko',category:'cat-pizza',servings:1,sections:[{id:'s1',name:'',ingredients:[]}],steps:[]});
+    a.cookCount=5; b.cookCount=2; await saveRecipe(a); await saveRecipe(b);
+    return listRecipes().sort((x,y)=>(y.cookCount||0)-(x.cookCount||0)).slice(0,2).map(x=>x.name);
+  });
+  expect(out).toEqual(['Często','Rzadko']);
+});

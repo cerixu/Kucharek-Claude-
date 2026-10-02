@@ -292,9 +292,10 @@ export async function runInventoryAutopilot(){
   if(setting && setting.value===false) return {enabled:false,added:0,suggestions};
   const pending=suggestions.filter(x=>x.orderQuantity>0);
   if(!pending.length) return {enabled:true,added:0,suggestions};
-  const {addItems}=await import('./shopping.js');
-  const res=await addItems(pending.map(x=>({name:x.name,amount:x.orderQuantity,unit:x.unit})));
-  return {enabled:true,added:res.count,suggestions};
+  const items=pending.map(x=>({id:uid('shop_'),name:x.name,amount:x.orderQuantity,unit:x.unit,done:false,createdAt:now(),source:'inventory-autopilot'}));
+  if(!items.length) return {enabled:true,added:0,suggestions};
+  await db.tx(['shoppingItems'],tx=>items.forEach(item=>tx.put('shoppingItems',item)));
+  return {enabled:true,added:items.length,suggestions};
 }
 
 export async function expiryAlerts(days=3){

@@ -148,6 +148,13 @@ export function editorView({ id }, query) {
   function photoBlock() {
     const fileIn = h('input', { type: 'file', accept: 'image/*', class: 'sr-file', 'aria-label': 'Wybierz zdjęcie' });
     const holder = h('div', { class: 'photo-block' });
+    const pasteZone = h('div', { class: 'photo-paste-zone', contenteditable: 'true', role: 'button', 'aria-label': 'Wklej zdjęcie ze schowka' }, 'Wklej skopiowane zdjęcie tutaj');
+    pasteZone.addEventListener('paste', async (e) => {
+      const file = [...(e.clipboardData?.files || [])].find((f) => String(f.type || '').startsWith('image/'));
+      if (!file) return;
+      e.preventDefault();
+      try { const x = await compressPhoto(file); work.photo = x.photo; work.thumb = x.thumb; paintPhoto(); touch(); toast('Wklejono zdjęcie'); } catch (_) { toast('Nie udało się wkleić zdjęcia', { type: 'error' }); }
+    });
     const paintPhoto = () => {
       holder.replaceChildren(
         work.photo ? h('img', { class: 'photo-prev', src: work.photo, alt: 'Zdjęcie receptury' }) : h('div', { class: 'photo-empty' }, icon('image', 30), h('span', null, 'Brak zdjęcia')),
@@ -168,7 +175,7 @@ export function editorView({ id }, query) {
       fileIn.value = '';
     });
     paintPhoto();
-    return h('div', null, fileIn, holder);
+    return h('div', null, fileIn, pasteZone, holder);
   }
 
   function basics() {

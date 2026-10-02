@@ -9,7 +9,7 @@
    ZMIANA WERSJI: podbij VERSION (i APP_VERSION w util.js) przy każdej
    aktualizacji plików, żeby urządzenia wykryły nową wersję.
    ========================================================================== */
-const VERSION = 'kucharek-claude-1.2.1';
+const VERSION = 'kucharek-claude-1.3.0';
 const NETWORK_TIMEOUT = 3500;
 
 const CORE = [
@@ -22,6 +22,23 @@ const CORE = [
   'views-start.js', 'views-recipes.js', 'views-detail.js', 'views-editor.js', 'views-cook.js', 'views-calc.js', 'views-import.js', 'views-settings.js', 'views-inventory.js', 'views-pro-fixed.js',
   'assets/apple-touch-icon.png', 'assets/icon-192.png', 'assets/icon-512.png', 'assets/icon-maskable-512.png',
   'assets/start/pizza.svg', 'assets/start/pasta.svg', 'assets/start/bakery.svg', 'assets/start/veg.svg', 'assets/ingredient-icons.svg',
+];
+
+
+const GENERATED_MEDIA = [
+  "https://photoshop-api.adobe.io/v2/short-url/urn:aaid:ps:US:19d098c7-f308-4416-951d-4d5bb6ed6cc4",
+  "https://photoshop-api.adobe.io/v2/short-url/urn:aaid:ps:US:995b5785-cd24-4bff-b5c2-ba36d567a827",
+  "https://photoshop-api.adobe.io/v2/short-url/urn:aaid:ps:US:4a0ea06e-609d-4c9f-ac74-c8b8b01f54f0",
+  "https://photoshop-api.adobe.io/v2/short-url/urn:aaid:ps:US:2658c6f7-7192-453a-9b54-2b21dcedd143",
+  "https://photoshop-api.adobe.io/v2/short-url/urn:aaid:ps:US:ce7495e9-ffd9-4eb0-839d-2d3f0ea7c2cb",
+  "https://photoshop-api.adobe.io/v2/short-url/urn:aaid:ps:US:5472cbc9-c5fe-4931-aae3-7294344bc4f2",
+  "https://photoshop-api.adobe.io/v2/short-url/urn:aaid:ps:US:1e2c10cf-9142-48c0-8996-8a5b66cb9015",
+  "https://photoshop-api.adobe.io/v2/short-url/urn:aaid:ps:US:1adf5a93-c4f0-4427-93fd-fd5e11e2db63",
+  "https://photoshop-api.adobe.io/v2/short-url/urn:aaid:ps:US:453ca6a8-7b9e-4e7e-ae2c-7aab3b425a34",
+  "https://photoshop-api.adobe.io/v2/short-url/urn:aaid:ps:US:ef0f08fd-ee15-4d66-b56b-d31ef64a64ba",
+  "https://photoshop-api.adobe.io/v2/short-url/urn:aaid:ps:US:0d05b6dc-b2d8-4875-93d3-85443f23381d",
+  "https://photoshop-api.adobe.io/v2/short-url/urn:aaid:ps:US:67f0ca3a-3fd1-4491-b46d-8342a620a693",
+  "https://photoshop-api.adobe.io/v2/short-url/urn:aaid:ps:US:f8b5dce7-934d-4fd2-8e7f-9ccac2c5fc3a"
 ];
 
 const scopeUrl = (p) => new URL(p, self.registration.scope).href;

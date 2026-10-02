@@ -101,11 +101,24 @@ export function ingredientIcon(ing) {
     mushroom:'M10 25c0-8 6-14 14-14s14 6 14 14H10ZM21 25v13h6V25M15 21h.1M24 17h.1M32 21h.1',
     generic:'M10 24h28M14 18h20l4 18H10l4-18ZM18 18v-5h12v5'
   };
-  return h('span',{class:'ingredient-icon ingredient-icon-'+kind,'aria-hidden':'true'},
-    h('svg',{class:'ingredient-svg',viewBox:'0 0 48 48',width:30,height:30,focusable:'false'},
-      h('path',{d:paths[kind]||paths.generic,fill:'none',stroke:'currentColor','stroke-width':'2.4','stroke-linecap':'round','stroke-linejoin':'round'})
-    )
-  );
+  const NS = 'http://www.w3.org/2000/svg';
+  const span = h('span', { class:'ingredient-icon ingredient-icon-'+kind, 'aria-hidden':'true' });
+  const svg = document.createElementNS(NS, 'svg');
+  svg.setAttribute('class', 'ingredient-svg');
+  svg.setAttribute('viewBox', '0 0 48 48');
+  svg.setAttribute('width', '30');
+  svg.setAttribute('height', '30');
+  svg.setAttribute('focusable', 'false');
+  const path = document.createElementNS(NS, 'path');
+  path.setAttribute('d', paths[kind] || paths.generic);
+  path.setAttribute('fill', 'none');
+  path.setAttribute('stroke', 'currentColor');
+  path.setAttribute('stroke-width', '2.4');
+  path.setAttribute('stroke-linecap', 'round');
+  path.setAttribute('stroke-linejoin', 'round');
+  svg.appendChild(path);
+  span.appendChild(svg);
+  return span;
 }
 function fallbackVisual(r) { return recipeGraphicData(r); }
 

@@ -13,25 +13,39 @@ export function proView(){
  let tab='dashboard',unsub;
  const nav=(id,label)=>button(label,{sm:true,kind:tab===id?'primary':'ghost',onClick:()=>{tab=id;render();}});
  async function render(){
-  await loadInventory();
-  const summary=await analyticsSummary();
-  const inv=listInventory();
-  const [suppliers,orders,deliveries]=await Promise.all([listSuppliers(),listPurchaseOrders(),listDeliveries()]);
   const menu=h('div',{class:'pro-nav'},nav('dashboard','Dashboard'),nav('delivery','Dostawy'),nav('orders','Zamówienia'),nav('production','Produkcja'),nav('planning','Planowanie'),nav('analytics','Analityka'),nav('waste','Straty'),nav('automation','Automatyzacje'));
-  let body;
-  if(tab==='dashboard') body=h('div',{class:'stack'},
-   h('div',{class:'results-grid'},
-    stat('Produkty',summary.products),stat('Niskie stany',summary.low),stat('Wartość',money(summary.stockValue)+' zł'),stat('Straty',money(summary.wasteValue)+' zł'),
-    stat('Dostawy',summary.deliveries),stat('Zamówienia',summary.orders),stat('Ruchy',summary.movements),stat('Spisy',summary.stocktakes)),
-   h('div',{class:'card'},h('h3',null,'Operacje'),button('Nowa dostawa',{kind:'primary',onClick:()=>deliverySheet(suppliers)}),button('Strata',{onClick:()=>wasteSheet(inv)}),button('Korekta',{onClick:()=>adjustSheet(inv)}),button('Inwentaryzacja',{onClick:()=>stocktake()})));
-  else if(tab==='delivery') body=listBlock('Dostawy',deliveries.map(x=>x.supplierName||'Bez dostawcy'),()=>deliverySheet(suppliers),'Nowa dostawa');
-  else if(tab==='orders') body=listBlock('Zamówienia',orders.map(x=>(x.supplierName||'Bez dostawcy')+' · '+x.status),()=>orderSheet(suppliers),'Nowe zamówienie');
-  else if(tab==='production') body=h('div',{class:'stack'},h('h3',null,'Produkcja półproduktów'),button('Nowa produkcja',{kind:'primary',onClick:()=>productionSheet()}),h('p',{class:'muted'},'Produkcja może korzystać z receptury wejściowej i automatycznie przyjąć wynik do Magazynu.'));
-  else if(tab==='planning') body=h('div',{class:'stack'},h('h3',null,'Planowanie'),...listRecipes().slice(0,30).map(r=>h('div',{class:'card'},h('div',{class:'row between'},h('strong',null,r.name),button('Sprawdź braki',{sm:true,onClick:async()=>{const x=await planRecipe(r,1);const m=x.filter(z=>z.missing>0);toast(m.length?'Braki: '+m.map(z=>z.name+' '+z.missing+' '+z.unit).join(', '):'Komplet składników');}})))));
-  else if(tab==='waste') body=await wasteView();
-  else if(tab==='automation') body=await automationView();
-  else body=h('div',{class:'stack'},h('h3',null,'Analityka'),stat('Ruchy',summary.movements),stat('Straty',summary.waste),stat('Dostawy',summary.deliveries),stat('Zamówienia',summary.orders),h('div',{class:'card'},h('strong',null,'Historia cen'),...summary.priceChanges.slice(0,12).map(x=>h('p',null,x.inventoryName+': '+money(x.price)+' zł/'+x.priceUnit))));
-  s.content.replaceChildren(menu,body);
+  s.content.replaceChildren(menu,h('p',{class:'muted'},'Ładuję dane…'));
+
+  if(tab==='waste'){
+    try{s.content.replaceChildren(menu,await wasteView());}catch(e){console.error(e);s.content.appendChild(h('p',{class:'muted'},'Nie udało się wczytać raportu strat.'));} 
+    return;
+  }
+  if(tab==='automation'){
+    try{s.content.replaceChildren(menu,await automationView());}catch(e){console.error(e);s.content.appendChild(h('p',{class:'muted'},'Nie udało się wczytać automatyzacji.'));} 
+    return;
+  }
+
+  try{
+    await loadInventory();
+    const summary=await analyticsSummary();
+    const inv=listInventory();
+    const [suppliers,orders,deliveries]=await Promise.all([listSuppliers(),listPurchaseOrders(),listDeliveries()]);
+    let body;
+    if(tab==='dashboard') body=h('div',{class:'stack'},
+      h('div',{class:'results-grid'},
+        stat('Produkty',summary.products),stat('Niskie stany',summary.low),stat('Wartość',money(summary.stockValue)+' zł'),stat('Straty',money(summary.wasteValue)+' zł'),
+        stat('Dostawy',summary.deliveries),stat('Zamówienia',summary.orders),stat('Ruchy',summary.movements),stat('Spisy',summary.stocktakes)),
+      h('div',{class:'card'},h('h3',null,'Operacje'),button('Nowa dostawa',{kind:'primary',onClick:()=>deliverySheet(suppliers)}),button('Strata',{onClick:()=>wasteSheet(inv)}),button('Korekta',{onClick:()=>adjustSheet(inv)}),button('Inwentaryzacja',{onClick:()=>stocktake()})));
+    else if(tab==='delivery') body=listBlock('Dostawy',deliveries.map(x=>x.supplierName||'Bez dostawcy'),()=>deliverySheet(suppliers),'Nowa dostawa');
+    else if(tab==='orders') body=listBlock('Zamówienia',orders.map(x=>(x.supplierName||'Bez dostawcy')+' · '+x.status),()=>orderSheet(suppliers),'Nowe zamówienie');
+    else if(tab==='production') body=h('div',{class:'stack'},h('h3',null,'Produkcja półproduktów'),button('Nowa produkcja',{kind:'primary',onClick:()=>productionSheet()}),h('p',{class:'muted'},'Produkcja może korzystać z receptury wejściowej i automatycznie przyjąć wynik do Magazynu.'));
+    else if(tab==='planning') body=h('div',{class:'stack'},h('h3',null,'Planowanie'),...listRecipes().slice(0,30).map(r=>h('div',{class:'card'},h('div',{class:'row between'},h('strong',null,r.name),button('Sprawdź braki',{sm:true,onClick:async()=>{const x=await planRecipe(r,1);const m=x.filter(z=>z.missing>0);toast(m.length?'Braki: '+m.map(z=>z.name+' '+z.missing+' '+z.unit).join(', '):'Komplet składników');}})))));
+    else body=h('div',{class:'stack'},h('h3',null,'Analityka'),stat('Ruchy',summary.movements),stat('Straty',summary.waste),stat('Dostawy',summary.deliveries),stat('Zamówienia',summary.orders),h('div',{class:'card'},h('strong',null,'Historia cen'),...summary.priceChanges.slice(0,12).map(x=>h('p',null,x.inventoryName+': '+money(x.price)+' zł/'+x.priceUnit))));
+    s.content.replaceChildren(menu,body);
+  }catch(e){
+    console.error(e);
+    s.content.replaceChildren(menu,h('div',{class:'card'},h('h3',null,'Nie udało się wczytać danych PRO'),h('p',{class:'muted'},String(e?.message||e))));
+  }
  }
  const stat=(k,v)=>h('div',{class:'result'},h('span',{class:'result-k'},k),h('strong',{class:'result-v'},String(v)));
  const listBlock=(title,rows,action,label)=>h('div',{class:'stack'},h('div',{class:'row between'},h('h3',null,title),button(label,{kind:'primary',onClick:action})),...rows.map(x=>h('div',{class:'card'},x)));

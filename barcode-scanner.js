@@ -46,7 +46,7 @@ export function openBarcodeScanner({ onDetected }) {
     if (stopped) return;
     if (code) {
       stopped=true;
-      setStatus('Kod odczytany','ok');
+      viewport.classList.add('barcode-success'); line.classList.add('barcode-scan-line-success'); setStatus('✓ Kod odczytany','ok');
       try { navigator.vibrate?.([35,45,70]); } catch (_) {}
       setTimeout(async()=>{ await onDetected(normalizeScannedEAN(code)); sheet.close('detected'); },120);
     } else {

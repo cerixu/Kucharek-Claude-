@@ -5,7 +5,7 @@ const DB_NAME = 'kucharzyna-claude-db';
 test.describe.configure({ mode: 'serial' });
 
 async function resetDb(page) {
-  await page.goto('about:blank');
+  await page.goto('/manifest.webmanifest');
   await page.evaluate(async (name) => {
     await new Promise((resolve, reject) => {
       const req = indexedDB.deleteDatabase(name);

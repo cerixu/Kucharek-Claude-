@@ -150,7 +150,7 @@ function fatal(err) {
   if (bootEl) bootEl.remove();
   $('#view').replaceChildren(h('div', { class: 'screen' }, h('div', { class: 'scroll' }, h('div', { class: 'content' },
     h('div', { class: 'empty' }, h('div', { class: 'empty-emoji' }, '⚠️'), h('h2', null, 'Nie mogę otworzyć bazy danych'),
-      h('p', { class: 'muted' }, 'Kucharzyna zapisuje dane lokalnie (IndexedDB). Sprawdź, czy przeglądarka nie działa w trybie prywatnym ani nie blokuje pamięci witryny, i uruchom ponownie.'),
+      h('p', { class: 'muted' }, 'Kucharek zapisuje dane lokalnie (IndexedDB). Sprawdź, czy przeglądarka nie działa w trybie prywatnym ani nie blokuje pamięci witryny, i uruchom ponownie.'),
       h('p', { class: 'muted small' }, String(err && err.message || err)))))));
 }
 

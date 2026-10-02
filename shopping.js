@@ -54,6 +54,24 @@ export async function markPurchased(item) {
   return { changed: true, received: true, stock };
 }
 
+export async function addLowStockToShopping() {
+  await loadInventory();
+  const missing = [];
+  for (const item of listInventory()) {
+    const min = Number(item.minQuantity || 0);
+    const target = Number(item.targetQuantity || 0);
+    const qty = Number(item.quantity || 0);
+    if (!(min > 0) || qty > min || !(target > qty)) continue;
+    missing.push({
+      name: item.name,
+      amount: unitFromBase(unitToBase(target - qty, item.unit), item.unit),
+      unit: item.unit,
+      recipeName: 'Magazyn · uzupełnienie stanu',
+    });
+  }
+  return missing.length ? { ...(await addItems(missing)), items: missing } : { count: 0, merged: 0, items: [] };
+}
+
 export async function addMissingFromRecipe(recipe, factor = 1) {
   await loadInventory();
   const missing = [];

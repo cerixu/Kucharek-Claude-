@@ -176,3 +176,37 @@ test('ETAP 24: Pizza kalkulator ma tryb Mam mąkę i liczy składniki od mąki',
   await expect(page.locator('.result').filter({hasText:'Sól'})).toContainText('225');
   await expect(page.locator('.result').filter({hasText:'Kulki'})).toContainText('50');
 });
+
+
+test('ETAP 25: wyszukiwarka receptur nie traci focusu po wpisaniu kolejnych znaków',async({page})=>{
+  await reset(page);
+  await page.goto('/#/recipes');
+  const input=page.getByLabel('Szukaj receptur');
+  await expect(input).toBeVisible();
+  await input.fill('pizza');
+  await expect(input).toHaveValue('pizza');
+  await expect(input).toBeFocused();
+});
+
+test('ETAP 25: wyszukiwarka magazynu nie traci focusu po wpisaniu kolejnych znaków',async({page})=>{
+  await reset(page);
+  await page.goto('/#/inventory');
+  const input=page.getByLabel('Szukaj produktu…');
+  await expect(input).toBeVisible();
+  await input.fill('mąka');
+  await expect(input).toHaveValue('mąka');
+  await expect(input).toBeFocused();
+});
+
+test('ETAP 25: pola temperatury i czasu w kalkulatorze pizzy zachowują focus po zmianie wartości',async({page})=>{
+  await reset(page);
+  await page.goto('/#/calc/pizza');
+  const temp=page.getByLabel('Temperatura fermentacji');
+  await temp.fill('20');
+  await expect(temp).toBeVisible();
+  await expect(temp).toBeFocused();
+  const hours=page.getByLabel('Czas fermentacji w godzinach');
+  await hours.fill('24');
+  await expect(hours).toBeVisible();
+  await expect(hours).toBeFocused();
+});

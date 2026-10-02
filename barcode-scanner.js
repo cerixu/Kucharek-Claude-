@@ -1,7 +1,7 @@
 /* ==========================================================================
    barcode-scanner.js — kamera + prawdziwa linia skanująca.
-   Dekoder dostaje WYŁĄCZNIE wąski pas obrazu przecinający linię.
-   Dzięki temu linia nie jest dekoracją: kod musi faktycznie przeciąć strefę skanu.
+   Dekoder analizuje cały aktualnie widoczny kadr kamery.
+   Linia pozostaje wizualnym prowadnikiem, ale NIE jest wymagana do odczytu.
    ========================================================================== */
 import { h, icon, button, iconBtn, openSheet, toast } from './ui.js';
 import { decodeEANImageData, normalizeScannedEAN, validScannedEAN } from './barcode-decoder.js';
@@ -22,13 +22,13 @@ export function openBarcodeScanner({ onDetected }) {
   video.playsInline = true;
   const canvas = document.createElement('canvas');
   const status = h('div',{class:'barcode-status','aria-live':'polite'},
-    h('span',{class:'barcode-status-dot'}), h('span',null,'Ustaw kod kreskowy na linii'));
+    h('span',{class:'barcode-status-dot'}), h('span',null,'Zbliż kod kreskowy do aparatu'));
   const line = h('div',{class:'barcode-scan-line','aria-hidden':'true'},h('span'));
   const viewport = h('div',{class:'barcode-viewport'},video,line,
-    h('div',{class:'barcode-hint'},icon('barcode',20),h('span',null,'Przesuń linię przez kod kreskowy')));
+    h('div',{class:'barcode-hint'},icon('barcode',20),h('span',null,'Skieruj aparat na kod kreskowy')));
   const help = h('div',{class:'barcode-help'},
     h('strong',null,'Skanowanie EAN'),
-    h('span',null,'Trzymaj kod poziomo i przesuń go tak, aby czarne kreski przecięły świecącą linię.'));
+    h('span',null,'Zbliż telefon do kodu. Skaner analizuje cały obraz i odczyta go automatycznie.'));
   const body = h('div',{class:'barcode-body'},viewport,status,help,
     h('div',{class:'barcode-actions'},button('Wpisz ręcznie',{kind:'ghost',icon:'edit',onClick:()=>finish(null)})));
   const sheet = openSheet({
@@ -64,19 +64,16 @@ export function openBarcodeScanner({ onDetected }) {
     } catch (_) { return null; }
   }
 
-  function drawScanBand() {
+  function captureFrame() {
     const vw=video.videoWidth, vh=video.videoHeight;
     if (!vw || !vh) return null;
-    // Wąski pas odpowiadający świecącej linii. To jedyny obszar przekazywany dekoderowi.
-    const bandH=Math.max(56,Math.round(vh*.075));
-    const cy=Math.round(vh*.52);
-    const sy=Math.max(0,Math.min(vh-bandH,cy-Math.round(bandH/2)));
-    const maxW=Math.min(vw,1600);
-    const sx=Math.max(0,Math.round((vw-maxW)/2));
-    const sw=maxW;
-    canvas.width=sw; canvas.height=bandH;
+    // Cały kadr: kod może znajdować się gdziekolwiek na ekranie.
+    // Ograniczamy rozdzielczość dla płynności, bez zawężania obszaru skanowania.
+    const scale=Math.min(1,1600/vw);
+    const w=Math.max(1,Math.round(vw*scale)), h=Math.max(1,Math.round(vh*scale));
+    canvas.width=w; canvas.height=h;
     const ctx=canvas.getContext('2d',{willReadFrequently:true});
-    ctx.drawImage(video,sx,sy,sw,bandH,0,0,sw,bandH);
+    ctx.drawImage(video,0,0,w,h);
     return ctx;
   }
 
@@ -109,14 +106,14 @@ export function openBarcodeScanner({ onDetected }) {
     else { lastCode=code; stable=1; }
     lastAt=now;
     if (stable>=2) finish(code);
-    else setStatus('Kod wykryty — utrzymaj go na linii…','near');
+    else setStatus('Kod wykryty — jeszcze moment…','near');
   }
 
   async function tick() {
     if (stopped) return;
     if (!busy && video.readyState>=2) {
       busy=true;
-      const ctx=drawScanBand();
+      const ctx=captureFrame();
       const nativeCode=await nativeDetect(ctx);
       const code=nativeCode || localDetect(ctx);
       acceptCandidate(code);
@@ -147,7 +144,7 @@ export function openBarcodeScanner({ onDetected }) {
       });
       video.srcObject=stream;
       await video.play();
-      setStatus('Ustaw kod kreskowy na linii');
+      setStatus('Zbliż kod kreskowy do aparatu');
       timer=setTimeout(tick,120);
     } catch (e) {
       console.error(e);
@@ -167,7 +164,7 @@ export function openBarcodeScanner({ onDetected }) {
   }
 
   sheet.panel.querySelector('.panel-head')?.appendChild(
-    iconBtn('info','Informacje o skanowaniu',()=>toast('Linia jest aktywną strefą skanowania — dekoder analizuje tylko obraz bezpośrednio pod nią.'))
+    iconBtn('info','Informacje o skanowaniu',()=>toast('Skaner analizuje cały obraz. Linia jest prowadnicą, ale kod nie musi jej przecinać.'))
   );
   start();
   return { close:()=>{sheet.close('api');}, stop };

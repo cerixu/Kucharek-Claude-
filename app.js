@@ -163,8 +163,10 @@ function fatal(err) {
 
 async function boot() {
   try {
-    await openDB();
-    await loadAll();
+    await Promise.race([
+      (async () => { await openDB(); await loadAll(); })(),
+      new Promise((_, reject) => setTimeout(() => reject(new Error('Start aplikacji trwa zbyt długo. IndexedDB może być zablokowane przez starą kartę aplikacji.')), 12000))
+    ]);
   } catch (e) { fatal(e); return; }
 
   applyAppearance();

@@ -59,7 +59,7 @@ test.describe('Historia gotowania', () => {
     await expect(page.getByRole('heading', { name: 'Historia gotowania' })).toBeVisible();
     await expect(page.getByText('E2E Historia Pizza', { exact: true })).toBeVisible();
     await expect(page.getByText('×2')).toBeVisible();
-    await expect(page.getByText('2 porcje')).toBeVisible();
+    await expect(page.getByText('2 porcji')).toBeVisible();
     await expect(page.getByText('Magazyn ✓')).toBeVisible();
     await expect(page.locator('.history-card')).toHaveCount(1);
 

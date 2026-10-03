@@ -43,7 +43,7 @@ export async function registerSW() {
   }
   const hadController = !!navigator.serviceWorker.controller;
 
-  if (registration.waiting && hadController) {
+  if (registration?.waiting && hadController) {
     // W tej aplikacji aktualizacje są bezpieczne do przeładowania:
     // dane robocze są w IndexedDB, a zmiana wersji ma być widoczna od razu.
     userAskedForUpdate = true;
@@ -81,7 +81,7 @@ export async function checkForUpdate() {
   try {
     await registration.update();
     if (registration.waiting || updateShown) {
-      if (registration.waiting) promptUpdate(registration.waiting);
+      if (registration?.waiting) promptUpdate(registration.waiting);
       return 'available';
     }
     if (registration.installing) {
@@ -90,7 +90,7 @@ export async function checkForUpdate() {
         w.addEventListener('statechange', () => { if (w.state === 'installed' || w.state === 'redundant') res(); });
         setTimeout(res, 8000);
       });
-      if (registration.waiting) { promptUpdate(registration.waiting); return 'available'; }
+      if (registration?.waiting) { promptUpdate(registration.waiting); return 'available'; }
     }
     return 'current';
   } catch (_) { return 'error'; }

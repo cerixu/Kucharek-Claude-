@@ -359,3 +359,45 @@ test('ETAP 28: sortowanie Najczęściej gotowane układa receptury po liczbie go
   });
   expect(out).toEqual(['Często','Rzadko']);
 });
+
+test('ETAP 29: zakończenie gotowania zapisuje trwały wpis historii',async({page})=>{
+  await reset(page);
+  const id=await page.evaluate(async()=>{
+    const{saveRecipe,blankRecipe}=await import('/recipes.js');
+    const r=blankRecipe({name:'Historia trwała test',category:'cat-pizza',servings:2,sections:[{id:'s1',name:'',ingredients:[{id:'i1',name:'Woda test',amount:100,unit:'g'}]}],steps:[]});
+    await saveRecipe(r);
+    return r.id;
+  });
+  await page.goto('/#/cook/'+id);
+  await page.getByRole('checkbox').filter({hasText:'Woda test'}).click();
+  await page.getByRole('button',{name:'Zakończ',exact:true}).click();
+  const out=await page.evaluate(async()=>{
+    const{db}=await import('/db.js');
+    const rows=await db.byIndex('cookHistory','recipeId',window.location.hash.split('/').pop());
+    return rows.map(x=>({recipeId:x.recipeId,name:x.recipeName,factor:x.factor,servings:x.servings,inventory:x.inventoryConsumed})).slice(-1)[0];
+  });
+  expect(out.recipeId).toBe(id);
+  expect(out.name).toBe('Historia trwała test');
+  expect(out.factor).toBe(1);
+  expect(out.servings).toBe(2);
+  expect(out.inventory).toBe(true);
+});
+
+test('ETAP 29: receptura pokazuje historię gotowania i szczegóły ostatniego gotowania',async({page})=>{
+  await reset(page);
+  const id=await page.evaluate(async()=>{
+    const{saveRecipe,blankRecipe,patchRecipe}=await import('/recipes.js');
+    const{db}=await import('/db.js');
+    const r=blankRecipe({name:'Karta historii test',category:'cat-pizza',servings:1,sections:[{id:'s1',name:'',ingredients:[]}],steps:[]});
+    await saveRecipe(r);
+    await db.put('cookHistory',{id:'cook-history-ui',recipeId:r.id,recipeName:r.name,at:Date.now(),factor:2,servings:2,inventoryConsumed:false});
+    await patchRecipe(r.id,{cookCount:1,lastCookedAt:Date.now()},{touch:true});
+    return r.id;
+  });
+  await page.goto('/#/recipe/'+id);
+  await expect(page.getByText('Historia gotowania',{exact:true})).toBeVisible();
+  await expect(page.getByText(/Gotowano 1×/)).toBeVisible();
+  await page.getByRole('button',{name:'Pokaż historię',exact:true}).click();
+  await expect(page.getByText(/Skala ×2/)).toBeVisible();
+  await expect(page.getByText(/Bez zmiany magazynu/)).toBeVisible();
+});

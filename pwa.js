@@ -39,6 +39,7 @@ export async function registerSW() {
     registration = await navigator.serviceWorker.register('sw.js', { updateViaCache: 'none' });
   } catch (e) {
     console.warn('Service worker nie został zarejestrowany:', e);
+    registration = null;
     return null;
   }
   const hadController = !!navigator.serviceWorker.controller;

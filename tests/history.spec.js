@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
 
 test.describe('Historia gotowania', () => {
-  test('zapisuje jedno zdarzenie po gotowaniu i pokazuje je na ekranie historii', async ({ page }) => {
+  test('ma szybki dostęp z Receptur i pokazuje zapisane gotowanie', async ({ page }) => {
     await page.goto('/');
     await page.waitForFunction(() => window.__kucharzyna?.ready === true);
 
@@ -37,7 +37,7 @@ test.describe('Historia gotowania', () => {
         inventoryConsumed: true,
       });
 
-      // Ten sam identyfikator nie może utworzyć drugiego wpisu.
+      // Ten sam identyfikator aktualizuje wpis, nie tworzy duplikatu.
       await recordCook({
         id: eventId,
         recipeId,
@@ -51,7 +51,11 @@ test.describe('Historia gotowania', () => {
       return { recipeId, eventId };
     });
 
-    await page.goto('/#/history');
+    await page.goto('/#/recipes');
+    await expect(page.getByRole('button', { name: 'Historia gotowania' })).toBeVisible();
+    await page.getByRole('button', { name: 'Historia gotowania' }).click();
+
+    await expect(page).toHaveURL(/#\/history$/);
     await expect(page.getByRole('heading', { name: 'Historia gotowania' })).toBeVisible();
     await expect(page.getByText('E2E Historia Pizza', { exact: true })).toBeVisible();
     await expect(page.getByText('×2')).toBeVisible();

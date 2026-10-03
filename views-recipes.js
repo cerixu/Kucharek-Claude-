@@ -51,7 +51,7 @@ export function recipesView(query) {
 
   const s = screen({
     title: 'Receptury',
-    right: h('div', { class: 'row' }, iconBtn('upload', 'Importuj recepturę', () => navigate('/import')), iconBtn('plus', 'Nowa receptura', () => navigate('/new'), 'primary')),
+    right: h('div', { class: 'row' }, iconBtn('history', 'Historia gotowania', () => navigate('/history')), iconBtn('upload', 'Importuj recepturę', () => navigate('/import')), iconBtn('plus', 'Nowa receptura', () => navigate('/new'), 'primary')),
     sub, cls: 'recipes',
   });
 

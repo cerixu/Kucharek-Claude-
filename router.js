@@ -67,7 +67,7 @@ async function render(keepScroll) {
   }
   if (!matched) { navigate('/', { replace: true }); return; }
   let view;
-  try { view = matched.render(params, currentQuery()); }
+  try { view = await matched.render(params, currentQuery()); }
   catch (e) {
     console.error(e);
     const d = document.createElement('div');

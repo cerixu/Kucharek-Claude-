@@ -373,8 +373,8 @@ test('ETAP 29: zakończenie gotowania zapisuje trwały wpis historii',async({pag
   await page.getByRole('button',{name:'Zakończ',exact:true}).click();
   const out=await page.evaluate(async()=>{
     const{db}=await import('/db.js');
-    const rows=await db.byIndex('cookHistory','recipeId',window.location.hash.split('/').pop());
-    return rows.map(x=>({recipeId:x.recipeId,name:x.recipeName,factor:x.factor,servings:x.servings,inventory:x.inventoryConsumed})).slice(-1)[0];
+    const rows=await db.getAll('cookHistory');
+    return rows.filter(x=>x.recipeName==='Historia trwała test').sort((a,b)=>(b.at||0)-(a.at||0)).map(x=>({recipeId:x.recipeId,name:x.recipeName,factor:x.factor,servings:x.servings,inventory:x.inventoryConsumed})).slice(-1)[0];
   });
   expect(out.recipeId).toBe(id);
   expect(out.name).toBe('Historia trwała test');

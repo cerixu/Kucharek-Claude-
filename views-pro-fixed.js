@@ -19,7 +19,12 @@ export function proView(){
     try{s.content.replaceChildren(menu,await wasteView());}catch(e){console.error(e);s.content.replaceChildren(menu,h('div',{class:'card'},h('h3',null,'Raport strat'),h('p',{class:'muted'},'Nie udało się wczytać raportu strat.')));}
     return;
   }
-  if(tab==='stocktakes'){\n    s.content.replaceChildren(menu,h('div',{class:'stack'},h('div',{class:'card'},h('h3',null,'Inwentaryzacje'),h('p',{class:'muted'},'Ładuję historię spisów…'))));\n    try{s.content.replaceChildren(menu,await stocktakesView());}catch(e){console.error(e);s.content.replaceChildren(menu,h('div',{class:'card'},h('h3',null,'Inwentaryzacje'),h('p',{class:'muted'},'Nie udało się wczytać historii inwentaryzacji.')));}\n    return;\n  }\n  if(tab==='automation'){
+  if(tab==='stocktakes'){
+    s.content.replaceChildren(menu,h('div',{class:'stack'},h('div',{class:'card'},h('h3',null,'Inwentaryzacje'),h('p',{class:'muted'},'Ładuję historię spisów…'))));
+    try{s.content.replaceChildren(menu,await stocktakesView());}catch(e){console.error(e);s.content.replaceChildren(menu,h('div',{class:'card'},h('h3',null,'Inwentaryzacje'),h('p',{class:'muted'},'Nie udało się wczytać historii inwentaryzacji.')));}
+    return;
+  }
+  if(tab==='automation'){
     s.content.replaceChildren(menu,h('div',{class:'stack'},h('div',{class:'card'},h('h3',null,'Autopilot magazynu'),h('p',{class:'muted'},'Ładuję automatyzacje…'))));
     try{s.content.replaceChildren(menu,await automationView());}catch(e){console.error(e);s.content.replaceChildren(menu,h('div',{class:'card'},h('h3',null,'Autopilot magazynu'),h('p',{class:'muted'},'Nie udało się wczytać automatyzacji.')));}
     return;
@@ -73,7 +78,33 @@ export function proView(){
     }}
   ]});
 }
- async function stocktakesView(){\n  const rows=await listStocktakes();\n  if(!rows.length) return h('div',{class:'stack'},\n    h('div',{class:'card'},h('h3',null,'Inwentaryzacje'),h('p',{class:'muted'},'Nie wykonano jeszcze żadnego spisu.')),\n    button('Nowa inwentaryzacja',{kind:'primary',onClick:()=>stocktake()}));\n  const cards=rows.map(t=>{\n    const closed=t.status==='closed';\n    const differences=(t.items||[]).filter(x=>num(x.difference)!==0);\n    const counted=(t.items||[]).filter(x=>x.countedQuantity!=null).length;\n    const total=t.items?.length||0;\n    const net=differences.reduce((s,x)=>s+num(x.difference),0);\n    return h('div',{class:'card'},\n      h('div',{class:'row between'},\n        h('div',null,h('strong',null,new Date(t.closedAt||t.createdAt).toLocaleDateString('pl-PL')),h('p',{class:'muted'},closed?'Zamknięta':'W toku')),\n        h('strong',null,closed?(differences.length+' różnic'):(counted+'/'+total+' policzonych'))\n      ),\n      h('p',{class:'muted'},closed?'Łączna różnica ilościowa: '+(net>0?'+':'')+money(net):'Spis można kontynuować z poziomu Magazynu.'),\n      t.note?h('p',{class:'muted'},'Notatka: '+t.note):null\n    );\n  });\n  return h('div',{class:'stack'},\n    h('div',{class:'row between'},h('div',null,h('h3',null,'Historia inwentaryzacji'),h('p',{class:'muted'},rows.length+' spis'+(rows.length===1?'':'y'))),button('Nowa inwentaryzacja',{kind:'primary',onClick:()=>stocktake()})),\n    ...cards\n  );\n }\n\n async function wasteView(){
+ async function stocktakesView(){
+  const rows=await listStocktakes();
+  if(!rows.length) return h('div',{class:'stack'},
+    h('div',{class:'card'},h('h3',null,'Inwentaryzacje'),h('p',{class:'muted'},'Nie wykonano jeszcze żadnego spisu.')),
+    button('Nowa inwentaryzacja',{kind:'primary',onClick:()=>stocktake()}));
+  const cards=rows.map(t=>{
+    const closed=t.status==='closed';
+    const differences=(t.items||[]).filter(x=>num(x.difference)!==0);
+    const counted=(t.items||[]).filter(x=>x.countedQuantity!=null).length;
+    const total=t.items?.length||0;
+    const net=differences.reduce((s,x)=>s+num(x.difference),0);
+    return h('div',{class:'card'},
+      h('div',{class:'row between'},
+        h('div',null,h('strong',null,new Date(t.closedAt||t.createdAt).toLocaleDateString('pl-PL')),h('p',{class:'muted'},closed?'Zamknięta':'W toku')),
+        h('strong',null,closed?(differences.length+' różnic'):(counted+'/'+total+' policzonych'))
+      ),
+      h('p',{class:'muted'},closed?'Łączna różnica ilościowa: '+(net>0?'+':'')+money(net):'Spis można kontynuować z poziomu Magazynu.'),
+      t.note?h('p',{class:'muted'},'Notatka: '+t.note):null
+    );
+  });
+  return h('div',{class:'stack'},
+    h('div',{class:'row between'},h('div',null,h('h3',null,'Historia inwentaryzacji'),h('p',{class:'muted'},rows.length+' spis'+(rows.length===1?'':'y'))),button('Nowa inwentaryzacja',{kind:'primary',onClick:()=>stocktake()})),
+    ...cards
+  );
+ }
+
+ async function wasteView(){
   const r=await wasteReport();
   const range=new Date(r.start).toLocaleDateString('pl-PL',{day:'2-digit',month:'2-digit'})+'–'+new Date(r.end).toLocaleDateString('pl-PL',{day:'2-digit',month:'2-digit'});
   const productRows=r.products.length

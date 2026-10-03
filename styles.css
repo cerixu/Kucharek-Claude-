@@ -1286,3 +1286,14 @@ body.kb-open .actionbar, body.kb-open .cookbar { padding-bottom: 10px; }
 .setting-toggle span{display:grid;gap:2px}.setting-toggle small{font-size:12px}
 .setting-toggle input{width:22px;height:22px;accent-color:var(--accent);flex:none}
 @media(max-width:420px){.stock-actions{justify-content:stretch}.stock-actions .btn{flex:1}.stock-actions .iconbtn{flex:none}}
+
+/* ETAP 29 · historia gotowania */
+.history-card{
+  width:100%;display:grid;grid-template-columns:58px minmax(0,1fr) 18px;align-items:center;gap:12px;
+  padding:10px 12px;border:1px solid var(--line);border-radius:18px;background:var(--surface);
+  color:var(--text);text-align:left;box-shadow:0 5px 16px rgba(0,0,0,.05);
+}
+.history-card:active{transform:scale(.99)}
+.history-thumb{width:58px;height:58px;border-radius:14px;object-fit:cover;background:var(--surface-2)}
+.history-main{display:grid;gap:4px;min-width:0}
+.history-main strong{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}

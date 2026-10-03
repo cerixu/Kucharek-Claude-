@@ -6,15 +6,8 @@ test('PWA: service worker rejestruje się i zgłasza wersję Kucharek', async ({
   await page.goto('/');
   await page.waitForFunction(() => window.__kucharzyna?.ready === true);
   await page.evaluate(async () => {
-    if (!navigator.serviceWorker.controller) {
-      await new Promise((resolve, reject) => {
-        const timeout = setTimeout(() => reject(new Error('Service worker nie przejął strony')), 10000);
-        navigator.serviceWorker.addEventListener('controllerchange', () => {
-          clearTimeout(timeout);
-          resolve();
-        }, { once: true });
-      });
-    }
+    const reg = await navigator.serviceWorker.ready;
+    if (!reg.active) throw new Error('Brak aktywnego service workera');
   });
   const out = await page.evaluate(async () => {
     const reg = await navigator.serviceWorker.getRegistration();
@@ -36,15 +29,8 @@ test('PWA: po zapisaniu cache aplikacja otwiera się offline', async ({ page, co
   await page.goto('/');
   await page.waitForFunction(() => window.__kucharzyna?.ready === true);
   await page.evaluate(async () => {
-    if (!navigator.serviceWorker.controller) {
-      await new Promise((resolve, reject) => {
-        const timeout = setTimeout(() => reject(new Error('Service worker nie przejął strony')), 10000);
-        navigator.serviceWorker.addEventListener('controllerchange', () => {
-          clearTimeout(timeout);
-          resolve();
-        }, { once: true });
-      });
-    }
+    const reg = await navigator.serviceWorker.ready;
+    if (!reg.active) throw new Error('Brak aktywnego service workera');
   });
 
   await expect(page.getByText('Kucharek', { exact: true }).first()).toBeVisible();

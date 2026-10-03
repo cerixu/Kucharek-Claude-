@@ -18,6 +18,7 @@ import { fmtAmount, fmtNum, fmtPct, fmtMoney, fmtMinutes, fmtDateTime, fmtDate, 
 import { heartBtn, tradMark, qtyParts, recipeToText, originOf, recipeVisual, ingredientIcon } from './components.js';
 import { openAddToShopping, addMissingFromRecipe } from './shopping.js';
 import { hostOf } from './importer.js';
+import { db } from './db.js';
 
 const KIND_LABEL = { flour: 'mąka', water: 'woda', salt: 'sól', yeast: 'drożdże', fat: 'tłuszcz', other: '' };
 const servingsText = (n) => Number(n) === 1 ? '1 porcja' : `${fmtNum(n, 1)} porcji`;
@@ -286,6 +287,45 @@ export function detailView({ id }) {
     const sheet = openSheet({ title: 'Historia zmian', variant: 'sheet', body, actions: [{ label: 'Zamknij', kind: 'ghost' }] });
   }
 
+  /* ----- Historia gotowania ----- */
+
+  async function openCookingHistory() {
+    const r = base();
+    const events = (await db.byIndex('cookHistory', 'recipeId', id).catch(() => []))
+      .filter((e) => e && e.recipeId === id)
+      .sort((a, b) => (b.at || 0) - (a.at || 0));
+    const body = h('div', { class: 'stack' });
+    if (!events.length) {
+      body.append(emptyState('🍳', 'Brak szczegółowej historii', Number(r.cookCount || 0) > 0
+        ? 'Licznik gotowań pochodzi z wcześniejszej wersji aplikacji. Szczegóły będą zapisywane od kolejnego zakończonego gotowania.'
+        : 'Po zakończeniu gotowania pojawi się tutaj data, skala i informacja o magazynie.'));
+    } else {
+      body.append(h('div', { class: 'stats' },
+        h('div', { class: 'stat' }, h('span', { class: 'stat-k' }, 'Gotowania'), h('span', { class: 'stat-v num' }, String(events.length))),
+        h('div', { class: 'stat' }, h('span', { class: 'stat-k' }, 'Ostatnio'), h('span', { class: 'stat-v' }, fmtDateTime(events[0].at)))));
+      events.forEach((e) => {
+        body.append(h('div', { class: 'hist-item' },
+          h('div', { class: 'hist-date' }, fmtDateTime(e.at)),
+          h('ul', { class: 'plain hist-changes' },
+            h('li', null, 'Skala ×' + fmtNum(Number(e.factor || 1), 3) + ' · ' + fmtNum(Number(e.servings || 1), 1) + ' porcji'),
+            h('li', null, e.inventoryConsumed ? 'Magazyn zaktualizowany' : 'Bez zmiany magazynu'))));
+      });
+    }
+    openSheet({ title: 'Historia gotowania', variant: 'sheet', body, actions: [{ label: 'Zamknij', kind: 'ghost' }] });
+  }
+
+  function cookingHistoryCard() {
+    const r = base();
+    const count = Number(r.cookCount || 0);
+    const last = Number(r.lastCookedAt || 0);
+    return h('section', { class: 'card cooking-history-card' },
+      h('div', { class: 'row between' },
+        h('div', null,
+          h('h2', { class: 'card-title' }, icon('history', 20), 'Historia gotowania'),
+          h('p', { class: 'muted small' }, count ? 'Gotowano ' + count + '×' + (last ? ' · ostatnio ' + fmtDateTime(last) : '') : 'Jeszcze nie gotowano')),
+        button('Pokaż historię', { icon: 'history', sm: true, onClick: openCookingHistory })));
+  }
+
   /* ----- Menu „więcej” ----- */
 
   function openMore() {
@@ -373,6 +413,8 @@ export function detailView({ id }) {
 
     kids.push(h('div', { class: 'actions-primary' },
       button('GOTUJĘ', { kind: 'primary', lg: true, block: true, icon: 'chef', onClick: () => navigate('/cook/' + id) })));
+    kids.push(cookingHistoryCard());
+
     kids.push(h('div', { class: 'actions-row' },
       button('Przelicz', { icon: 'swap', onClick: openScale }),
       button('Do zakupów', { icon: 'cart', onClick: () => openAddToShopping(r, 1) }), button('Dodaj braki', { icon: 'cart', onClick: async () => { const res = await addMissingFromRecipe(r, 1); toast(res.count ? 'Dodano braki do zakupów: ' + res.count : 'Magazyn pokrywa całą recepturę'); } }),

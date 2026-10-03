@@ -371,6 +371,7 @@ test('ETAP 29: zakończenie gotowania zapisuje trwały wpis historii',async({pag
   await page.goto('/#/cook/'+id);
   await page.getByRole('checkbox').filter({hasText:'Woda test'}).click();
   await page.getByRole('button',{name:'Zakończ',exact:true}).click();
+  await expect(page.getByText('Smacznego! 👨‍🍳',{exact:true})).toBeVisible();
   const out=await page.evaluate(async()=>{
     const{db}=await import('/db.js');
     const rows=await db.getAll('cookHistory');

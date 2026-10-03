@@ -84,7 +84,7 @@ async function readDb(page) {
   }, DB_NAME);
 }
 
-test('migracja IndexedDB v1 → v4 zachowuje dane i rozdziela stores', async ({ page }) => {
+test('migracja IndexedDB v1 → v5 zachowuje dane i rozdziela stores', async ({ page }) => {
   const pageErrors = [];
   page.on('pageerror', (error) => pageErrors.push(String(error?.stack || error)));
   await page.goto('about:blank');
@@ -99,7 +99,7 @@ test('migracja IndexedDB v1 → v4 zachowuje dane i rozdziela stores', async ({ 
 
   const db = await readDb(page);
 
-  expect(db.version).toBe(4);
+  expect(db.version).toBe(5);
   expect(db.stores).toEqual(expect.arrayContaining([
     'recipes',
     'ingredients',

@@ -123,6 +123,7 @@ export async function importBackup(backup, mode) {
       d.settings.forEach((r) => t.put('settings', r));
       d.history.forEach((r) => t.put('history', r));
       (d.cookSessions || []).forEach((r) => r?.recipeId && t.put('cookSessions', r));
+      (d.cookHistory || []).forEach((r) => r?.id && t.put('cookHistory', r));
       PRO_STORES.forEach((s) => d[s].forEach((r) => t.put(s, r)));
       t.put('settings', { key: 'seeded', value: true });
     });
@@ -134,7 +135,8 @@ export async function importBackup(backup, mode) {
     const catalog = new Map(state.catalog);
     const proExisting = Object.fromEntries(await Promise.all(PRO_STORES.map(async (s) => [s, new Map((await db.getAll(s)).map(x => [x.id, x]))])));
     const cookIds = new Set((await db.getAll('cookSessions')).map((x) => x.recipeId));
-    await db.tx(['recipes', 'ingredients', 'categories', 'shoppingItems', 'history', 'cookSessions', ...PRO_STORES], (t) => {
+    const cookHistoryIds = new Set((await db.getAll('cookHistory')).map((x) => x.id));
+    await db.tx(['recipes', 'ingredients', 'categories', 'shoppingItems', 'history', 'cookSessions', 'cookHistory', ...PRO_STORES], (t) => {
       recipes.forEach((r) => {
         const cur = existing.get(r.id);
         if (!cur || (r.updatedAt || 0) > (cur.updatedAt || 0)) t.put('recipes', r);
@@ -161,8 +163,8 @@ export async function importBackup(backup, mode) {
 
 /** Kasuje wszystko i przywraca stan początkowy (bez przykładowych receptur — zależnie od flagi). */
 export async function wipeAll({ keepSeeds = false } = {}) {
-  await db.tx(['recipes', 'ingredients', 'categories', 'shoppingItems', 'settings', 'history', ...PRO_STORES], (t) => {
-    ['recipes', 'ingredients', 'categories', 'shoppingItems', 'settings', 'history', ...PRO_STORES].forEach((s) => t.clear(s));
+  await db.tx(['recipes', 'ingredients', 'categories', 'shoppingItems', 'settings', 'history', 'cookSessions', 'cookHistory', ...PRO_STORES], (t) => {
+    ['recipes', 'ingredients', 'categories', 'shoppingItems', 'settings', 'history', 'cookSessions', 'cookHistory', ...PRO_STORES].forEach((s) => t.clear(s));
     if (!keepSeeds) t.put('settings', { key: 'seeded', value: true });
   });
   await loadAll();

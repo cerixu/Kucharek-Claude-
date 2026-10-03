@@ -1,7 +1,8 @@
 import { test, expect, devices } from '@playwright/test';
 
+test.use({ ...devices['iPhone 13'] });
+
 test.describe('Test użytkownika: iPhone', () => {
-  test.use({ ...devices['iPhone 13'] });
 
   test('start → receptury → historia → powrót działa jak użytkownik', async ({ page }) => {
     await page.goto('/');

@@ -287,9 +287,18 @@ export async function saveRecipe(input, opts = {}) {
 export async function patchRecipe(id, patch, { touch = false } = {}) {
   const cur = state.recipes.get(id);
   if (!cur) return null;
+  const cookHistory = patch && patch.__cookHistory;
   const next = { ...cur, ...patch };
+  delete next.__cookHistory;
   if (touch) next.updatedAt = Date.now();
   await db.put('recipes', next);
+  if (cookHistory && cookHistory.id) {
+    await db.put('cookHistory', {
+      ...cookHistory,
+      recipeId: id,
+      recipeName: next.name || cur.name || 'Receptura',
+    });
+  }
   state.recipes.set(id, next);
   emit('recipes');
   return next;

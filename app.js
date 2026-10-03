@@ -7,7 +7,6 @@ import { loadAll, state, subscribe, getSetting } from './recipes.js';
 import { h, icon, toast, $ } from './ui.js';
 import { route, startRouter, navigate } from './router.js';
 import { registerSW, requestPersist } from './pwa.js';
-import { proView } from './views-pro-fixed.js';
 
 import { startView } from './views-start.js';
 import { recipesView } from './views-recipes.js';
@@ -144,7 +143,10 @@ route('/calc', () => calcView({}), { tab: 'calc' });
 route('/calc/:kind', (p, q) => calcView(p, q), { tab: 'calc' });
 route('/shopping', () => shoppingView(), { tab: 'shopping' });
 route('/inventory', () => inventoryView(), { tab: 'inventory' });
-route('/pro', () => proView(), { tab: 'inventory' });
+route('/pro', async () => {
+  const { proView } = await loadProModule();
+  return proView();
+}, { tab: 'inventory' });
 route('/settings', () => settingsView(), { tab: 'settings' });
 
 /* ---------- Start ---------- */

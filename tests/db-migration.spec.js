@@ -415,8 +415,11 @@ test('Food Cost: cena zakupu z Magazynu zasila koszt receptury', async ({ page }
   }, DB_NAME);
 
   const result = await page.evaluate(async (name) => {
-    const { getRecipe } = await import('/recipes.js');
+    const { getRecipe, saveRecipe, blankRecipe } = await import('/recipes.js');
     const { recipeCost } = await import('/calculator.js');
+    if (!getRecipe('rcp_seed_pizza')) {
+      await saveRecipe(blankRecipe({id:'rcp_seed_pizza',name:'Pizza test',servings:1,category:'cat-pizza',sections:[{id:'s1',name:'',ingredients:[{id:'i1',name:'Mąka pszenna typ 00 (W 260–280)',amount:1000,unit:'g'}]}],steps:[]}));
+    }
     const { loadInventory, findInventoryByName } = await import('/inventory.js');
     await loadInventory();
     const recipe = getRecipe('rcp_seed_pizza');

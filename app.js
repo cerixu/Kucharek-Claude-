@@ -18,6 +18,7 @@ import { calcView } from './views-calc.js';
 import { shoppingView, pendingCount } from './shopping.js';
 import { importView } from './views-import.js';
 import { settingsView } from './views-settings.js';
+import { historyView } from './views-history.js';
 import { inventoryView } from './views-inventory.js';
 
 let proModulePromise;
@@ -133,6 +134,7 @@ function watchNetwork() {
 
 route('/', () => startView(), { tab: 'start' });
 route('/recipes', (p, q) => recipesView(q), { tab: 'recipes' });
+route('/history', () => historyView(), { tab: 'recipes' });
 route('/recipe/:id', (p) => detailView(p), { tab: 'recipes' });
 route('/edit/:id', (p) => editorView(p), { tab: 'recipes', tabs: false });
 route('/new', (p, q) => editorView({ id: null }, q), { tab: 'recipes', tabs: false });

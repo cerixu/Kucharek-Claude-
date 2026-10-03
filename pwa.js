@@ -40,8 +40,10 @@ export async function registerSW() {
   } catch (e) {
     console.warn('Service worker nie został zarejestrowany:', e);
     registration = null;
+    registration = null;
     return null;
   }
+  if (!registration) return null;
   const hadController = !!navigator.serviceWorker.controller;
 
   if (registration?.waiting && hadController) {

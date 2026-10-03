@@ -317,19 +317,17 @@ export function cookView({ id }) {
     if (all) {
       const cookedAt = Date.now();
       const cookEventId = prog.cookHistoryId || `cook:${id}:${cookedAt}`;
-      const existingEvent = await db.get('cookHistory', cookEventId).catch(() => null);
-      if (!existingEvent) {
-        await db.put('cookHistory', {
+      await patchRecipe(id, {
+        lastCookedAt: cookedAt,
+        cookCount: Number(base().cookCount || 0) + 1,
+        __cookHistory: {
           id: cookEventId,
-          recipeId: id,
-          recipeName: base().name || r0.name || 'Receptura',
           at: cookedAt,
           factor: Number(prog.factor || 1),
           servings: Number(view().servings || base().servings || 1),
           inventoryConsumed: !!prog.inventoryConsumedAt,
-        });
-      }
-      await patchRecipe(id, { lastCookedAt: cookedAt, cookCount: Number(base().cookCount || 0) + 1 }, { touch: true });
+        },
+      }, { touch: true });
       prog.ing = {}; prog.steps = {}; prog.tab = 'ing'; prog.inventoryConsumedAt = 0; prog.inventoryConsumptionId = ''; prog.cookHistoryId = ''; saveProg.flush(); toast('Smacznego! 👨‍🍳'); }
     goBack('/recipe/' + id);
   }

@@ -316,6 +316,7 @@ export const markOpened = (id) => {
 
 export async function deleteRecipe(id) {
   const hist = await db.byIndex('history', 'recipeId', id);
+  const cookHist = await db.byIndex('cookHistory', 'recipeId', id).catch(() => []);
   await db.tx(['recipes', 'history', 'settings', 'cookSessions', 'drafts', 'cookHistory'], (t) => {
     t.delete('recipes', id);
     hist.forEach((h) => t.delete('history', h.id));
@@ -324,7 +325,7 @@ export async function deleteRecipe(id) {
     t.delete('settings', 'draft:' + id);
     t.delete('cookSessions', id);
     t.delete('drafts', id);
-    hist.forEach((h) => { if (h && h.id) t.delete('cookHistory', h.id); });
+    cookHist.forEach((h) => { if (h && h.id) t.delete('cookHistory', h.id); });
   });
   state.recipes.delete(id);
   emit('recipes');

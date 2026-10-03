@@ -10,7 +10,7 @@ test.describe('Test użytkownika: iPhone', () => {
 
     await expect(page.getByText('Kucharek', { exact: true }).first()).toBeVisible();
 
-    await page.getByRole('link', { name: 'Receptury' }).click();
+    await page.getByRole('link', { name: 'Receptury', exact: true }).click();
     await expect(page).toHaveURL(/#\/recipes$/);
     await expect(page.getByRole('heading', { name: 'Receptury' })).toBeVisible();
 

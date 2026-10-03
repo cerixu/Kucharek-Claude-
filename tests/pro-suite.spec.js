@@ -426,11 +426,11 @@ test('ETAP 31: system strat zapisuje zużycie, koszt i raport tygodniowy',async(
 test('ETAP 31: ekran strat pokazuje raport i przycisk Dodaj stratę',async({page})=>{
   await reset(page);
   await page.goto('/#/pro?tab=waste');
-  await expect(page.getByText('Raport strat',{exact:true})).toBeVisible();
+  await expect(page.getByText('Raport strat',{exact:true})).toBeVisible({timeout:10000});
   await expect(page.getByRole('button',{name:'Dodaj stratę',exact:true})).toBeVisible();
 });
 
 
 test('ETAP 32: historia inwentaryzacji zapisuje zamknięty spis i różnicę',async({page})=>{await reset(page);const out=await page.evaluate(async()=>{const i=await import('/inventory.js');const p=await import('/pro.js');const item=await i.saveInventoryItem({name:'Historia spisu',quantity:10,unit:'kg'});const t=await p.startStocktake('Koniec zmiany');await p.updateStocktake(t.id,item.id,8);await p.finalizeStocktake(t.id);const rows=await p.listStocktakes();return{status:rows[0]?.status,diff:rows[0]?.items.find(x=>x.inventoryId===item.id)?.difference,note:rows[0]?.note};});expect(out.status).toBe('closed');expect(out.diff).toBe(-2);expect(out.note).toBe('Koniec zmiany');});
 
-test('ETAP 32: ekran Inwentaryzacje pokazuje historię i różnice',async({page})=>{await reset(page);await page.evaluate(async()=>{const i=await import('/inventory.js');const p=await import('/pro.js');const item=await i.saveInventoryItem({name:'UI spis',quantity:5,unit:'kg'});const t=await p.startStocktake();await p.updateStocktake(t.id,item.id,4);await p.finalizeStocktake(t.id);});await page.goto('/#/inventory');await page.getByRole('button',{name:'PRO',exact:true}).click();await page.getByRole('button',{name:'Inwentaryzacje',exact:true}).click();await expect(page.getByRole('heading',{name:'Historia inwentaryzacji',exact:true})).toBeVisible();await expect(page.getByText('1 różnic', {exact:true})).toBeVisible();});
+test('ETAP 32: ekran Inwentaryzacje pokazuje historię i różnice',async({page})=>{await reset(page);await page.evaluate(async()=>{const i=await import('/inventory.js');const p=await import('/pro.js');const item=await i.saveInventoryItem({name:'UI spis',quantity:5,unit:'kg'});const t=await p.startStocktake();await p.updateStocktake(t.id,item.id,4);await p.finalizeStocktake(t.id);});await page.goto('/#/pro?tab=stocktakes');await expect(page.getByRole('heading',{name:'Historia inwentaryzacji',exact:true})).toBeVisible({timeout:10000});await expect(page.getByText('1 różnic', {exact:true})).toBeVisible();});

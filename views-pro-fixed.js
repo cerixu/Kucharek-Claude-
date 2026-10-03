@@ -54,7 +54,25 @@ export function proView(){
  function deliverySheet(suppliers){let supplierId='',supplierName='',name='',qty='',unit='kg',price='',lot='',expiryAt='',documentNo='';const form=h('div',{class:'stack'},field('Dostawca',selectEl([['','Brak'],...suppliers.map(x=>[x.id,x.name])],'',v=>{supplierId=v;supplierName=suppliers.find(x=>x.id===v)?.name||''})),textInput({label:'Produkt',onInput:v=>name=v}),textInput({type:'number',label:'Ilość',onInput:v=>qty=v}),selectEl(units,unit,v=>unit=v),textInput({type:'number',label:'Cena zakupu',onInput:v=>price=v}),textInput({label:'Numer dokumentu',placeholder:'FV / WZ',onInput:v=>documentNo=v}),textInput({label:'Partia',onInput:v=>lot=v}),textInput({type:'date',label:'Termin ważności',onInput:v=>expiryAt=v}));openSheet({title:'Dostawa',variant:'sheet',body:form,actions:[{label:'Anuluj',kind:'ghost'},{label:'Przyjmij',kind:'primary',onClick:async()=>{const result=await receiveDelivery({supplierId,supplierName,documentNo,items:[{name,quantity:qty,unit,purchasePrice:price,priceUnit:unit,lot,expiryAt:expiryAt?new Date(expiryAt+'T23:59:59').getTime():null}]});toast('Dostawa przyjęta');render();}}]});}
  function bulkOrderSheet(suppliers,reorders){let supplierId='',supplierName='';const form=h('div',{class:'stack'},field('Dostawca',selectEl([['','Brak'],...suppliers.map(x=>[x.id,x.name])],'',v=>{supplierId=v;supplierName=suppliers.find(x=>x.id===v)?.name||''})),h('div',{class:'card'},h('strong',null,'Pozycje zamówienia'),...reorders.map(x=>h('p',null,x.name+' · '+money(x.orderQuantity)+' '+x.unit))));openSheet({title:'Zamówienie z sugestii',variant:'sheet',body:form,actions:[{label:'Anuluj',kind:'ghost'},{label:'Utwórz zamówienie',kind:'primary',onClick:async()=>{await createPurchaseOrder({supplierId,supplierName,status:'ordered',notes:'Utworzone z autopilota magazynu',items:reorders.map(x=>({id:'suggest_'+x.id,name:x.name,amount:x.orderQuantity,unit:x.unit}))});toast('Zamówienie utworzone 📦');render();}}]});}
  function orderSheet(suppliers){let supplierId='',supplierName='',name='',qty='',unit='kg';const form=h('div',{class:'stack'},field('Dostawca',selectEl([['','Brak'],...suppliers.map(x=>[x.id,x.name])],'',v=>{supplierId=v;supplierName=suppliers.find(x=>x.id===v)?.name||''})),textInput({label:'Produkt',onInput:v=>name=v}),textInput({type:'number',label:'Ilość',onInput:v=>qty=v}),selectEl(units,unit,v=>unit=v));openSheet({title:'Zamówienie',variant:'sheet',body:form,actions:[{label:'Anuluj',kind:'ghost'},{label:'Zapisz',kind:'primary',onClick:async()=>{await createPurchaseOrder({supplierId,supplierName,status:'ordered',items:[{name,amount:qty,unit}]});toast('Zamówienie zapisane');render();}}]});}
- function wasteSheet(inv){if(!inv.length)return toast('Magazyn jest pusty',{type:'error'});let id=inv[0].id,qty='',reason='zepsucie';const form=h('div',{class:'stack'},field('Produkt',selectEl(inv.map(x=>[x.id,x.name]),id,v=>id=v)),textInput({type:'number',label:'Ilość',onInput:v=>qty=v}),textInput({label:'Powód',value:reason,onInput:v=>reason=v}));openSheet({title:'Strata',variant:'sheet',body:form,actions:[{label:'Anuluj',kind:'ghost'},{label:'Zapisz',kind:'primary',onClick:async()=>{await recordWaste(id,qty,reason);toast('Strata zapisana');render();}}]});}
+ function wasteSheet(inv){
+  if(!inv.length)return toast('Magazyn jest pusty',{type:'error'});
+  let id=inv[0].id,qty='',reason='zepsucie',note='';
+  const reasons=[['zepsucie','Zepsucie'],['przeterminowanie','Przeterminowanie'],['błąd produkcji','Błąd produkcji'],['zwrot','Zwrot'],['inne','Inne']];
+  const form=h('div',{class:'stack'},
+    h('p',{class:'muted'},'Zapisz wyrzucony produkt. Stan magazynu zostanie pomniejszony automatycznie.'),
+    field('Produkt',selectEl(inv.map(x=>[x.id,x.name]),id,v=>id=v)),
+    textInput({type:'number',label:'Ilość',placeholder:'np. 0,5',onInput:v=>qty=v}),
+    field('Powód',selectEl(reasons,reason,v=>reason=v)),
+    textInput({label:'Notatka',placeholder:'np. uszkodzone opakowanie',onInput:v=>note=v})
+  );
+  openSheet({title:'Dodaj stratę',variant:'sheet',body:form,actions:[
+    {label:'Anuluj',kind:'ghost'},
+    {label:'Zapisz stratę',kind:'primary',icon:'check',onClick:async()=>{
+      try{const row=await recordWaste(id,qty,reason,note);toast('Strata zapisana · '+money(row.costValue||0)+' zł');render();}
+      catch(e){toast(e.message||'Nie udało się zapisać straty',{type:'error'});return false;}
+    }}
+  ]});
+}
  async function wasteView(){
   const r=await wasteReport();
   const range=new Date(r.start).toLocaleDateString('pl-PL',{day:'2-digit',month:'2-digit'})+'–'+new Date(r.end).toLocaleDateString('pl-PL',{day:'2-digit',month:'2-digit'});
@@ -68,7 +86,8 @@ export function proView(){
     h('div',{class:'card'},h('div',{class:'row between'},
       h('div',null,h('h3',null,'Raport strat'),h('p',{class:'muted'},'Bieżący tydzień · '+range)),
       h('strong',null,money(r.totalCost)+' zł')
-    ),h('p',{class:'muted'},r.totalEntries?'Koszt liczony według ceny z chwili wyrzucenia.':'Brak strat w tym tygodniu.')),
+    ),h('p',{class:'muted'},r.totalEntries?'Koszt liczony według ceny z chwili wyrzucenia.':'Brak strat w tym tygodniu.'),
+      button('Dodaj stratę',{kind:'primary',icon:'plus',onClick:()=>wasteSheet(listInventory())})),
     h('div',{class:'card'},h('h3',null,'Największe straty'),...productRows),
     h('div',{class:'card'},h('h3',null,'Według powodu'),...reasonRows)
   );

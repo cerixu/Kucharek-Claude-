@@ -402,3 +402,30 @@ test('ETAP 29: receptura pokazuje historię gotowania i szczegóły ostatniego g
   await expect(page.getByText(/Skala ×2/)).toBeVisible();
   await expect(page.getByText(/Bez zmiany magazynu/)).toBeVisible();
 });
+
+
+test('ETAP 31: system strat zapisuje zużycie, koszt i raport tygodniowy',async({page})=>{
+  await reset(page);
+  const out=await page.evaluate(async()=>{
+    const i=await import('/inventory.js'); const p=await import('/pro.js');
+    await i.saveInventoryItem({name:'Rukola strata test',quantity:2,unit:'kg',purchasePrice:20,priceUnit:'kg'});
+    const item=i.findInventoryByName('Rukola strata test');
+    const row=await p.recordWaste(item.id,0.5,'zepsucie','wyrzucone po zmianie');
+    const current=i.findInventoryByName('Rukola strata test');
+    const report=await p.wasteReport(Date.now()-7*24*60*60*1000,Date.now()+1000);
+    return {qty:current.quantity,cost:row.costValue,reason:row.reason,note:row.note,total:report.totalCost,entries:report.totalEntries};
+  });
+  expect(out.qty).toBeCloseTo(1.5,8);
+  expect(out.cost).toBeCloseTo(10,8);
+  expect(out.reason).toBe('zepsucie');
+  expect(out.note).toContain('wyrzucone');
+  expect(out.total).toBeGreaterThanOrEqual(10);
+  expect(out.entries).toBeGreaterThanOrEqual(1);
+});
+
+test('ETAP 31: ekran strat pokazuje raport i przycisk Dodaj stratę',async({page})=>{
+  await reset(page);
+  await page.goto('/#/pro?tab=waste');
+  await expect(page.getByText('Raport strat',{exact:true})).toBeVisible();
+  await expect(page.getByRole('button',{name:'Dodaj stratę',exact:true})).toBeVisible();
+});

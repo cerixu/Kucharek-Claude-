@@ -53,7 +53,7 @@ function leave() {
   current = null;
 }
 
-function render(keepScroll) {
+async function render(keepScroll) {
   const path = location.hash.replace(/^#/, '') || '/';   // razem z ?query
   if (current && current.path === path && keepScroll !== true) return;
   const prevScroll = keepScroll === true && mountEl.querySelector('.scroll') ? mountEl.querySelector('.scroll').scrollTop : null;

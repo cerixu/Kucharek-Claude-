@@ -128,7 +128,7 @@ export async function listWaste({start=null,end=null}={}) { const rows=await all
 export async function wasteReport(start=null,end=null) { if(start==null||end==null){const b=weekBounds();start=start==null?b.start:start;end=end==null?b.end:end;} const rows=await listWaste({start,end}); const byProduct=new Map(),byReason=new Map(); for(const row of rows){const cost=row.costValue==null?0:num(row.costValue);const p=byProduct.get(row.inventoryId)||{inventoryId:row.inventoryId,name:row.inventoryName,amount:0,unit:row.unit,cost:0,count:0};p.amount+=num(row.amount);p.cost+=cost;p.count++;byProduct.set(row.inventoryId,p);const reason=row.reason||'inne';const r=byReason.get(reason)||{reason,cost:0,count:0};r.cost+=cost;r.count++;byReason.set(reason,r);} const products=[...byProduct.values()].sort((a,b)=>b.cost-a.cost); const reasons=[...byReason.values()].sort((a,b)=>b.cost-a.cost); return {start,end,totalCost:rows.reduce((s,x)=>s+(x.costValue==null?0:num(x.costValue)),0),totalEntries:rows.length,products,reasons,topProduct:products[0]||null}; }
 export { weekBounds };
 
-export async function startStocktake(note='') {
+export async function listStocktakes() { return (await all('stocktakes')).sort((a,b)=>(b.closedAt||b.createdAt)-(a.closedAt||a.createdAt)); }\n\nexport async function startStocktake(note='') {
   await loadInventory();
   const items=listInventory().map(x=>({inventoryId:x.id,name:x.name,systemQuantity:num(x.quantity),countedQuantity:null,unit:x.unit,difference:null}));
   return put('stocktakes',{id:uid('take_'),status:'open',note,createdAt:now(),updatedAt:now(),items});

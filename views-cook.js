@@ -6,6 +6,7 @@
 import { h, icon, screen, button, iconBtn, toast, openSheet, confirmDialog, numInput, textArea, field, emptyState } from './ui.js';
 import { navigate, goBack } from './router.js';
 import { getRecipe, patchRecipe, getSetting } from './recipes.js';
+import { recordCook } from './history.js';
 import { db } from './db.js';
 import { scaleRecipe, factorFromServings } from './calculator.js';
 import { qtyParts, ingredientIcon } from './components.js';
@@ -317,16 +318,21 @@ export function cookView({ id }) {
     if (all) {
       const cookedAt = Date.now();
       const cookEventId = prog.cookHistoryId || `cook:${id}:${cookedAt}`;
+      const cookedRecipe = base();
+      const cookedServings = Number(view().servings || cookedRecipe.servings || 1);
+      const cookedFactor = Number(prog.factor || 1);
+      await recordCook({
+        id: cookEventId,
+        recipeId: id,
+        recipeName: cookedRecipe.name,
+        at: cookedAt,
+        factor: cookedFactor,
+        servings: cookedServings,
+        inventoryConsumed: !!prog.inventoryConsumedAt,
+      });
       await patchRecipe(id, {
         lastCookedAt: cookedAt,
-        cookCount: Number(base().cookCount || 0) + 1,
-        __cookHistory: {
-          id: cookEventId,
-          at: cookedAt,
-          factor: Number(prog.factor || 1),
-          servings: Number(view().servings || base().servings || 1),
-          inventoryConsumed: !!prog.inventoryConsumedAt,
-        },
+        cookCount: Number(cookedRecipe.cookCount || 0) + 1,
       }, { touch: true });
       prog.ing = {}; prog.steps = {}; prog.tab = 'ing'; prog.inventoryConsumedAt = 0; prog.inventoryConsumptionId = ''; prog.cookHistoryId = ''; saveProg.flush(); toast('Smacznego! 👨‍🍳'); }
     goBack('/recipe/' + id);

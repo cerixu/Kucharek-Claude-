@@ -5,7 +5,7 @@
    ========================================================================== */
 
 const DB_NAME = 'kucharzyna-claude-db';
-const DB_VERSION = 4;
+const DB_VERSION = 5;
 
 export const STORES = {
   recipes: 'id',
@@ -27,6 +27,7 @@ export const STORES = {
   stocktakes: 'id',
   waste: 'id',
   priceHistory: 'id',
+  cookHistory: 'id',
 };
 
 let dbPromise = null;
@@ -88,6 +89,13 @@ export function openDB() {
         addIndex(tx.objectStore('waste'), 'at', 'at');
         addIndex(tx.objectStore('priceHistory'), 'inventoryId', 'inventoryId');
         addIndex(tx.objectStore('priceHistory'), 'at', 'at');
+      }
+
+      // v5: historia zakończonych gotowań.
+      if (oldVersion < 5) {
+        const cookHistory = tx.objectStore('cookHistory');
+        addIndex(cookHistory, 'recipeId', 'recipeId');
+        addIndex(cookHistory, 'at', 'at');
       }
 
       // v2: dedykowane stores.

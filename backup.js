@@ -9,18 +9,18 @@ import { APP_VERSION } from './util.js';
 
 const FORMAT = 'Kucharzyna';
 const PRO_STORES = ['inventory','inventoryLog','deliveries','lots','stockMovements','suppliers','purchaseOrders','productionBatches','stocktakes','waste','priceHistory'];
-const CORE_STORES = ['recipes','ingredients','categories','shoppingItems','settings','history','cookSessions'];
+const CORE_STORES = ['recipes','ingredients','categories','shoppingItems','settings','history','cookSessions','cookHistory'];
 const BACKUP_DUE_DAYS = 14;
 
 /** Zbiera całą zawartość bazy. */
 export async function collectData() {
-  const [recipes, ingredients, categories, shoppingItems, settingsRaw, history, cookSessions, ...pro] = await Promise.all([
+  const [recipes, ingredients, categories, shoppingItems, settingsRaw, history, cookSessions, cookHistory, ...pro] = await Promise.all([
     db.getAll('recipes'), db.getAll('ingredients'), db.getAll('categories'), db.getAll('shoppingItems'),
-    db.getAll('settings'), db.getAll('history'), db.getAll('cookSessions'), ...PRO_STORES.map((s) => db.getAll(s)),
+    db.getAll('settings'), db.getAll('history'), db.getAll('cookSessions'), db.getAll('cookHistory'), ...PRO_STORES.map((s) => db.getAll(s)),
   ]);
   // Do kopii trafiają ustawienia i postęp gotowania/kalkulatory; szkice pomijamy.
   const settings = settingsRaw.filter((s) => !String(s.key).startsWith('draft:'));
-  return { recipes, ingredients, categories, shoppingItems, settings, history, cookSessions, ...Object.fromEntries(PRO_STORES.map((s,i)=>[s,pro[i]])) };
+  return { recipes, ingredients, categories, shoppingItems, settings, history, cookSessions, cookHistory, ...Object.fromEntries(PRO_STORES.map((s,i)=>[s,pro[i]])) };
 }
 
 export async function buildBackup() {

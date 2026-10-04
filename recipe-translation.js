@@ -276,7 +276,51 @@ const POLISH_FINAL_FIXES = [
 ["le veau et le mouton","cielęcina i baranina"],["faites la même chose","zrób to samo"],["que vous ne les faites point revenir","aby ich nie rumienić"],
 ];
 
-const ALL_TERMS = RAW_TERMS.concat(RESIDUAL_FINAL, POLISH_FINAL_FIXES).filter(([a]) => a.length >= 3 || SHORT_SAFE.has(a.toLowerCase())).sort((a,b)=>b[0].length-a[0].length);
+const CORPUS_FINISH = [
+["low heat","mały ogień"],["high heat","duży ogień"],["medium heat","średni ogień"],["very high heat","bardzo duży ogień"],["very low heat","bardzo mały ogień"],
+["to the brim","po sam brzeg"],["down the middle","wzdłuż środka"],["through the cooking","podczas gotowania"],["at this point","w tym momencie"],
+["mixed","wymieszany"],["stirring","mieszając"],["spoonfuls","łyżki"],["spoonful","łyżka"],["teaspoonfuls","łyżeczki"],["teaspoonful","łyżeczka"],
+["hard","twardy"],["color","kolor"],["little","mało"],["while","podczas gdy"],["knife","nóż"],["knives","noże"],["saucepan","rondel"],
+["lean","chudy"],["ginger","imbir"],["paper","papier"],["completely","całkowicie"],["much","dużo"],["herbs","zioła"],["herb","zioło"],["like","jak"],
+["only","tylko"],["adding","dodając"],["cloth","ściereczka"],["truffles","trufle"],["truffle","trufla"],["equal","równy"],["does","robi"],
+["than","niż"],["work","pracuj"],["spices","przyprawy"],["quarters","ćwiartki"],["bouquet","bukiet"],["once","gdy"],["dozen","tuzin"],
+["casserole","naczynie żaroodporne"],["recipe","przepis"],["jelly","galaretka"],["coat","obtocz"],["strong","mocny"],["moisten","zwilż"],
+["seasoning","przyprawa"],["sheet","arkusz"],["keep","zachowaj"],["adding","dodając"],["low","mały"],["high","duży"],["down","w dół"],["just","tuż"],
+["smoking","wędzenie"],["smoked","wędzony"],["minced","mielony"],["scalding","sparzanie"],["pouring","wlewanie"],["follows","następuje"],
+["sides","boki"],["brim","brzeg"],["moderately","umiarkowanie"],["densely","ściśle"],["ingredients","składniki"],["times","razy"],
+["rectangular","prostokątny"],["sides","boki"],["air pockets","pęcherzyki powietrza"],["prick","nakłuj"],["surface","powierzchnia"],
+["feathers","pióra"],["feather","pióro"],["damaging","uszkadzając"],["plucking","skubiąc"],["pluck","oskub"],["tuck","schowaj"],["rump","kuper"],
+["trussing","sznurowanie"],["trussing needle","igła do sznurowania"],["thread","nić"],["string","sznurek"],["secure","zabezpiecz"],["securing","zabezpieczając"],
+["swollen","spęczniały"],["folding","składanie"],["stretch","rozciągnij"],["stretched","rozciągnięty"],["wide","szeroki"],["witdh","szerokość"],
+["care","uwaga"],["depending","zależnie"],["depends","zależy"],["depending on","zależnie od"],["having","mając"],["having first","najpierw"],
+["prepared","przygotowany"],["prepare","przygotuj"],["select","wybierz"],["continue","kontynuuj"],["remaining","pozostały"],["nearly","prawie"],
+["separately","osobno"],["usually","zwykle"],["briefly","krótko"],["firmly","mocno"],["frequently","często"],["occasionally","od czasu do czasu"],
+["constantly","stale"],["smoothly","gładko"],["thoroughly","dokładnie"],["carefully","ostrożnie"],["slowly","powoli"],["quickly","szybko"],
+["according","według"],["customary","zwyczajowy"],["desired","pożądany"],["ready","gotowy"],["done","gotowy"],["salting","solenie"],["salted","solony"],
+["proper","właściwy"],["previously","wcześniej"],["preferably","najlepiej"],["optional","opcjonalny"],["optionally","opcjonalnie"],["instead","zamiast"],
+["following","następujący"],["various","różne"],["available","dostępny"],["natural","naturalny"],["freshly","świeżo"],["whole","cały"],
+["fine","drobny"],["coarse","gruby"],["crushed","rozgnieciony"],["pounded","utłuczony"],["sifted","przesiany"],["toasted","opiekany"],
+["browned","zrumieniony"],["heating","podgrzewanie"],["heated","podgrzany"],["blended","zmiksowany"],["strained","przecedzony"],["drained","odcedzony"],
+["soaked","namoczony"],["marinated","marynowany"],["cooled","schłodzony"],["dissolved","rozpuszczony"],["reduced","zredukowany"],["thickened","zagęszczony"],
+["boiling point","punkt wrzenia"],["preheat","rozgrzej"],["preheated","rozgrzany"],["baste","polewaj"],["basted","polany"],["skewer","szpikulec"],["skewers","szpikulce"],
+["tie","zwiąż"],["tied","związany"],["sew","zszyj"],["sewn","zszyty"],["wrap","zawiń"],["wrapped","zawinięty"],["fasten","przymocuj"],["fastened","przymocowany"],
+["fill","napełnij"],["filled","napełniony"],["stuff","nadziewaj"],["stuffed","nadziewany"],["combine","połącz"],["combined","połączony"],["incorporate","wmieszaj"],
+["incorporated","wmieszany"],["spread","rozsmaruj"],["spread out","rozłóż"],["layer","warstwa"],["layered","ułożony warstwami"],["arrange","ułóż"],["arranged","ułożony"],
+["turn","obróć"],["turned","obrócony"],["flip","odwróć"],["flipped","odwrócony"],["transfer","przełóż"],["transferred","przełożony"],["reserve","zachowaj"],
+["reserved","zachowany"],["save","zachowaj"],["saved","zachowany"],["discard","wyrzuć"],["discarded","wyrzucony"],["scoop","nabierz"],["scooped","nabrany"],
+["press","dociśnij"],["pressed","dociśnięty"],["squeeze","wyciśnij"],["squeezed","wyciśnięty"],["trim","przytnij"],["trimmed","przycięty"],
+["wash","umyj"],["clean","oczyść"],["cleaned","oczyszczony"],["bake","piecz"],["baked","pieczony"],["roast","piecz"],["roasted","pieczony"],["fry","smaż"],["fried","smażony"],
+["braise","duś"],["braised","duszony"],["simmer","duś"],["simmered","duszony"],["steam","gotuj na parze"],["steamed","gotowany na parze"],["blend","zmiksuj"],
+["puree","zmiksuj na puree"],["strain","przecedź"],["drain","odcedź"],["rinse","opłucz"],["soak","namocz"],["marinate","marynuj"],["refrigerate","schłodź w lodówce"],
+["chill","schłodź"],["dissolve","rozpuść"],["reduce","odparuj"],["thicken","zagęść"],["taste","spróbuj"],["serve","podawaj"],
+["cut","pokrój"],["chop","posiekaj"],["mince","posiekaj"],["grate","zetrzyj"],["peel","obierz"],["beat","ubij"],["whisk","ubij"],["melt","roztop"],
+["remove","usuń"],["season","dopraw"],["roll out","rozwałkuj"],["roll","wałkuj"],["knead","wyrób"],["fold","złóż"],["brush","posmaruj"],["sprinkle","posyp"],["drizzle","skrop"],
+["foreign","zagraniczny"],["serving","podanie"],["cooked","ugotowany"],["uncooked","nieugotowany"],["raw","surowy"],["fresh","świeży"],["dry","suchy"],["dried","suszony"],
+["whole wheat","pełnoziarnisty"],["wheat","pszenica"],["rye","żyto"],["barley","jęczmień"],["oat","owies"],["oats","płatki owsiane"],["cornmeal","mąka kukurydziana"],
+["clove","ząbek"],["cloves","ząbki"],["garlic clove","ząbek czosnku"],["bay","laurowy"],["bay leaves","liście laurowe"],["peppercorn","ziarno pieprzu"],["peppercorns","ziarna pieprzu"],
+];
+
+const ALL_TERMS = RAW_TERMS.concat(RESIDUAL_FINAL, POLISH_FINAL_FIXES, CORPUS_FINISH).filter(([a]) => a.length >= 3 || SHORT_SAFE.has(a.toLowerCase())).sort((a,b)=>b[0].length-a[0].length);
 const escapeRegex = (s) => String(s).replace(/[.*+?^$(){}|[\\]\\]/g, "\\$&");
 const TOKEN_RE = new RegExp("(?<!\\p{L})(" + ALL_TERMS.map(([a])=>escapeRegex(a)).join("|") + ")(?!\\p{L})","giu");
 const TERM_MAP = new Map(ALL_TERMS.map(([a,b])=>[a.toLowerCase(),b]));
@@ -298,7 +342,7 @@ function apply(text) {
 }
 
 function cleanRecipeName(text) {
-  let n=String(text ?? "").replace(/^["“”]+|["“”]+$/g,"").trim();
+  let n=String(text ?? "").replace(/\\?["“”]/g,"").trim();
   const colon=n.indexOf(":");
   if(colon>0) n=n.slice(0,colon).trim();
   const paren=n.indexOf("(");
@@ -325,6 +369,6 @@ export function translateRecipe(recipe) {
     steps,
     archiveCollectionName:C[recipe.archiveCollectionName]||recipe.archiveCollectionName,
     translationLanguage:"pl",
-    translationVersion:8
+    translationVersion:9
   };
 }

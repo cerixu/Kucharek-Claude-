@@ -10,7 +10,7 @@ import { translateRecipe } from './recipe-translation.js';
 
 export function recipeLibrary(now = Date.now()) {
   return ARCHIVE_RECIPES.map((r) => ({
-    ...translateRecipe(r),
+    ...(r.translationLanguage === 'pl' && Number(r.translationVersion || 0) >= 10 ? r : translateRecipe(r)),
     createdAt: now,
     updatedAt: now,
   }));

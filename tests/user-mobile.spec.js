@@ -113,7 +113,7 @@ test('Stage 34B: numer wersji jest widoczny w Ustawieniach', async ({ page }) =>
   await page.goto('/#/settings');
   await page.waitForFunction(() => window.__kucharzyna?.ready === true);
   await expect(page.getByText('Wersja aplikacji', { exact: true })).toBeVisible();
-  await expect(page.getByText('1.3.37', { exact: true })).toBeVisible();
+  await expect(page.getByText('1.3.38', { exact: true })).toBeVisible();
 });
 
 
@@ -179,14 +179,14 @@ test.describe('Stage 34C: wspólny system wizualny', () => {
     await page.goto('/#/settings');
     await page.waitForFunction(() => window.__kucharzyna?.ready === true);
     await expect(page.getByText('Wersja aplikacji', { exact: true })).toBeVisible();
-    await expect(page.getByText('1.3.37', { exact: true })).toBeVisible();
+    await expect(page.getByText('1.3.38', { exact: true })).toBeVisible();
   });
 
   test('zrzuty kontrolne głównych ekranów powstają w QA', async ({ page }, testInfo) => {
     for (const [name, path] of [['start','/'], ['recipes','/recipes'], ['inventory','/inventory'], ['settings','/settings']]) {
       await page.goto('/#' + path);
       await page.waitForFunction(() => window.__kucharzyna?.ready === true);
-      await page.screenshot({ path: testInfo.outputPath('visual-' + name + '-34C.png'), fullPage: true });
+      await page.screenshot({ path: testInfo.outputPath('visual-' + name + '-34C.png'), fullPage: false });
     }
   });
 });

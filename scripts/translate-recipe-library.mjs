@@ -10,10 +10,10 @@ import path from 'node:path';
 
 const ROOT = process.cwd();
 const PARTS = Array.from({length: 9}, (_, i) => path.join(ROOT, 'recipe-library-data', `part-${String(i + 1).padStart(2, '0')}.js`));
-const CONCURRENCY = 2;
+const CONCURRENCY = 1;
 const MAX_RETRIES = 8;
-const DELAY_MS = 450;
-const MAX_PAYLOAD_CHARS = 2800;
+const DELAY_MS = 900;
+const MAX_PAYLOAD_CHARS = 2400;
 
 const sleep = (ms) => new Promise(r => setTimeout(r, ms));
 
@@ -81,6 +81,7 @@ async function googleTranslate(text) {
 }
 
 async function translateRecipe(recipe, index) {
+  if (recipe.translationLanguage === 'pl' && Number(recipe.translationVersion || 0) >= 10) return recipe;
   const fields = [];
   const markers = [];
   const push = (marker, value) => {

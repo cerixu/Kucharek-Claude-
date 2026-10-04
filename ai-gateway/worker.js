@@ -57,7 +57,7 @@ const RECIPE_SCHEMA = {
               additionalProperties: false,
               properties: {
                 name: { type: "string" },
-                amount: { type: ["number","null"] },
+                amount: { anyOf: [{ type: "number" }, { type: "null" }] },
                 unit: { type: "string" }
               },
               required: ["name","amount","unit"]

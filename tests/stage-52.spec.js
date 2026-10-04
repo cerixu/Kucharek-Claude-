@@ -7,7 +7,7 @@ const BIGOS_ID = 'rcp_archive_aa342cc6ecae42afbac0';
 test.describe('Stage 52 — recipe quality gate', () => {
   test('recipe detail keeps one-portion reading order and polished mobile layout', async ({ page }) => {
     await page.goto('/#/recipe/' + BIGOS_ID);
-    await page.waitForFunction(() => window.__kucharzyna?.ready === true);
+    await page.waitForFunction(() => window.__kucharek?.ready === true);
 
     await expect(page.locator('.screen.detail')).toBeVisible();
     await expect(page.locator('.hero-photo.recipe-visual')).toBeVisible();
@@ -29,7 +29,7 @@ test.describe('Stage 52 — recipe quality gate', () => {
   test('recipe stays readable at narrow iPhone width without horizontal overflow', async ({ page }) => {
     await page.setViewportSize({ width: 375, height: 812 });
     await page.goto('/#/recipe/' + BIGOS_ID);
-    await page.waitForFunction(() => window.__kucharzyna?.ready === true);
+    await page.waitForFunction(() => window.__kucharek?.ready === true);
 
     const overflow = await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth + 1);
     expect(overflow).toBe(false);

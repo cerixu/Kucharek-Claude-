@@ -79,17 +79,29 @@ const EXTRA = [
 ];
 
 const C = {"Kuchnia Polska":"Kuchnia polska","Cucina Italiana":"Kuchnia włoska","Cocina Española":"Kuchnia hiszpańska","Cuisine Française":"Kuchnia francuska","Japanese Kitchen":"Kuchnia japońska","Chinese Kitchen":"Kuchnia chińska","Indian Kitchen":"Kuchnia indyjska","German Kitchen":"Kuchnia niemiecka","Česká kuchyně":"Kuchnia czeska"};
-const rx = s => new RegExp("(?<!\\p{L})"+String(s).replace(/[.*+?^$(){}|[\\]\\\\]/g,"\\\\$&")+"(?!\\p{L})","giu");
-const apply = (text, list) => {
-  let out=String(text??"");
-  for(const [a,b] of [...list].sort((x,y)=>y[0].length-x[0].length)) out=out.replace(rx(a),b);
-  return out.replace(/\\b(?:the|a|an)\\b/giu,"").replace(/\\s{2,}/g," ").replace(/\\s+([,.;:!?])/g,"$1").trim();
-};
+const REPLACERS = [...P, ...OTHER, ...EXTRA]
+  .sort((a,b) => b[0].length - a[0].length)
+  .map(([from,to]) => [new RegExp("(?<!\\\\p{L})" + String(from).replace(/[.*+?^$(){}|[\\\\]\\\\]/g,"\\\\\\\\$&") + "(?!\\\\p{L})","giu"), to]);
+
+const TEXT_CACHE = new Map();
+const CACHE_LIMIT = 16000;
+
+function apply(text) {
+  const key = String(text ?? "");
+  const hit = TEXT_CACHE.get(key);
+  if (hit !== undefined) return hit;
+  let out = key;
+  for (const [re,to] of REPLACERS) out = out.replace(re,to);
+  out = out.replace(/\\\\s{2,}/g," ").replace(/\\\\s+([,.;:!?])/g,"$1").trim();
+  if (TEXT_CACHE.size >= CACHE_LIMIT) TEXT_CACHE.clear();
+  TEXT_CACHE.set(key,out);
+  return out;
+}
+
 export function translateRecipe(recipe){
   const original=recipe.originalName||recipe.name||"";
-  const sections=Array.isArray(recipe.sections)?recipe.sections.map(s=>({...s,ingredients:Array.isArray(s.ingredients)?s.ingredients.map(i=>({...i,name:apply(i.name,[...P,...OTHER,...EXTRA])})):s.ingredients})):recipe.sections;
-  const steps=Array.isArray(recipe.steps)?recipe.steps.map(s=>({...s,text:apply(s.text,[...P,...OTHER,...EXTRA])})):recipe.steps;
-  let name=String(recipe.name||original);
-  for(const [a,b] of P) name=name.replace(new RegExp(String(a).replace(/[.*+?^$(){}|[\\]\\\\]/g,"\\\\$&"),"giu"),b);
-  return {...recipe,originalName:original,name:apply(name,[...P,...OTHER,...EXTRA]),description:apply(recipe.description||"",[...P,...OTHER,...EXTRA]),sections,steps,archiveCollectionName:C[recipe.archiveCollectionName]||recipe.archiveCollectionName,translationLanguage:"pl",translationVersion:1};
+  const sections=Array.isArray(recipe.sections)?recipe.sections.map(s=>({...s,ingredients:Array.isArray(s.ingredients)?s.ingredients.map(i=>({...i,name:apply(i.name)})):s.ingredients})):recipe.sections;
+  const steps=Array.isArray(recipe.steps)?recipe.steps.map(s=>({...s,text:apply(s.text)})):recipe.steps;
+  const name=apply(recipe.name||original);
+  return {...recipe,originalName:original,name,description:apply(recipe.description||""),sections,steps,archiveCollectionName:C[recipe.archiveCollectionName]||recipe.archiveCollectionName,translationLanguage:"pl",translationVersion:1};
 }

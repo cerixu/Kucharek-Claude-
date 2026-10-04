@@ -18,6 +18,8 @@ Zmienne:
 
 Sekretów nie wpisuj do GitHuba.
 
+Każdy użytkownik może mieć własny Worker i własny `OPENAI_API_KEY`. Wtedy inne osoby mające dostęp do kodu GitHub Pages nie dostają dostępu do Twojego klucza OpenAI.
+
 ## Endpointy
 
 - `GET /health`

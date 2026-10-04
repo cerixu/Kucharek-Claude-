@@ -208,7 +208,7 @@ export function settingsView() {
     } }));
 
   const about = group('Prywatność',
-    h('p', { class: 'muted' }, 'Kucharek nie ma konta, reklam, śledzenia ani analityki. Wszystkie dane są w pamięci tego urządzenia (IndexedDB) i nigdzie nie są wysyłane. Internet jest używany tylko wtedy, gdy sam otworzysz wyszukiwarkę Google lub Google Tłumacz.'));
+    h('p', { class: 'muted' }, 'Kucharek nie ma konta, reklam, śledzenia ani analityki. Receptury, magazyn i historia są przechowywane lokalnie. Gdy używasz AI, tylko potrzebny kontekst jest wysyłany przez Twój własny AI Gateway; Kucharek nie zapisuje tokenu gatewaya ani historii rozmowy.'));
 
   c.append(appearance, ai, recipes, backup, app, install, danger, about);
   void state;

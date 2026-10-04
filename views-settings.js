@@ -65,10 +65,18 @@ export function settingsView() {
   };
   aiToken.addEventListener('input', () => setAIGatewayToken(aiToken.value));
   aiGateway.addEventListener('change', async () => {
-    await setAIGatewayUrl(aiGateway.value);
-    clearAIGatewayToken();
-    aiToken.value = '';
-    aiStatus.replaceChildren(icon('info', 18), h('span', null, 'Adres zapisany. Wklej token sesji i sprawdź połączenie.'));
+    try {
+      await setAIGatewayUrl(aiGateway.value);
+      clearAIGatewayToken();
+      aiToken.value = '';
+      aiStatus.replaceChildren(icon('info', 18), h('span', null, 'Adres zapisany. Wklej token sesji i sprawdź połączenie.'));
+    } catch (e) {
+      aiGateway.value = getAIGatewayUrl();
+      clearAIGatewayToken();
+      aiToken.value = '';
+      aiStatus.replaceChildren(icon('x', 18), h('span', null, e?.message || 'Adres gatewaya jest niepoprawny.'));
+      toast(e?.message || 'Nie zapisano adresu gatewaya', { type: 'error', ms: 5000 });
+    }
   });
   const ai = group('Kucharek AI',
     switchEl(getSetting('aiEnabled') !== false, set('aiEnabled'), 'Kucharek AI', 'Włącza import URL i pomocnika podczas gotowania'),

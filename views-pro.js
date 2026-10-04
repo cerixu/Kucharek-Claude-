@@ -181,6 +181,24 @@ export function proView(){
     ]});
   }
 
+  function supplierSheet(){
+    let name='',contact='',phone='',email='',notes='';
+    const form=h('div',{class:'stack'},
+      textInput({label:'Nazwa dostawcy',onInput:v=>name=v}),
+      textInput({label:'Kontakt',onInput:v=>contact=v}),
+      textInput({label:'Telefon',onInput:v=>phone=v,inputmode:'tel'}),
+      textInput({label:'E-mail',onInput:v=>email=v,type:'email',inputmode:'email'}),
+      textInput({label:'Notatki',onInput:v=>notes=v})
+    );
+    openSheet({title:'Nowy dostawca',variant:'sheet',body:form,actions:[
+      {label:'Anuluj',kind:'ghost'},
+      {label:'Zapisz',kind:'primary',icon:'check',onClick:async()=>{
+        try{await addSupplier({name,contact,phone,email,notes});toast('Dostawca zapisany');paint();}
+        catch(e){toast(e?.message||'Nie udało się zapisać dostawcy',{type:'error'});return false;}
+      }}
+    ]});
+  }
+
   function deliverySheet(){
     let supplierId='',supplierName='',documentNo='';
     const item={name:'',quantity:'',unit:'kg',purchasePrice:'',priceUnit:'kg',lot:'',expiryAt:''};
@@ -280,6 +298,35 @@ export function proView(){
       await finalizeStocktake(take.id);
       toast('Inwentaryzacja zamknięta.');
       paint();
+    }catch(e){toast(e?.message||'Błąd inwentaryzacji',{type:'error'});}
+  }
+
+  function productionSheet(){
+    let productName='',quantity='',unit='kg',recipeId='',factor=1;
+    const recipes=listRecipes();
+    const form=h('div',{class:'stack'},
+      textInput({label:'Półprodukt',onInput:v=>productName=v}),
+      textInput({type:'number',label:'Ilość',onInput:v=>quantity=v}),
+      selectEl(units,unit,v=>unit=v),
+      field('Receptura wejściowa',selectEl(
+        [['','Bez receptury'],...recipes.map(r=>[r.id,r.name])],'',
+        v=>recipeId=v
+      )),
+      textInput({type:'number',label:'Mnożnik receptury',value:factor,onInput:v=>factor=v})
+    );
+    openSheet({title:'Nowa produkcja',variant:'sheet',body:form,actions:[
+      {label:'Anuluj',kind:'ghost'},
+      {label:'Zapisz i przyjmij',kind:'primary',icon:'check',onClick:async()=>{
+        try{
+          const row=await createProductionBatch({productName,quantity,unit,recipeId,factor});
+          await completeProductionBatch(row.id);
+          toast('Produkcja przyjęta do Magazynu');
+          paint();
+        }catch(e){toast(e?.message||'Nie udało się zapisać produkcji',{type:'error'});return false;}
+      }}
+    ]});
+  }
+  paint();
     }catch(e){toast(e?.message||'Błąd inwentaryzacji',{type:'error'});}
   }
 

@@ -496,7 +496,6 @@ export function seedRecipes() {
       ],
     }),
   ...extraSeedRecipes(now),
-    ...recipeLibrary(now),
   ];
 }
 

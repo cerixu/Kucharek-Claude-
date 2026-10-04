@@ -124,7 +124,45 @@ export function proView(){
       )
     );
   }
-  function analytics(){const p=summary.priceChanges.slice(0,12);return h('div',{class:'stack'},h('div',{class:'results-grid'},h('div',{class:'result'},h('span',{class:'result-k'},'Ruchy'),h('strong',{class:'result-v'},summary.movements)),h('div',{class:'result'},h('span',{class:'result-k'},'Straty'),h('strong',{class:'result-v'},summary.waste)),h('div',{class:'result'},h('span',{class:'result-k'},'Dostawy'),h('strong',{class:'result-v'},summary.deliveries)),h('div',{class:'result'},h('span',{class:'result-k'},'Zamówienia'),h('strong',{class:'result-v'},summary.orders))),h('div',{class:'card'},h('h3',null,'Historia cen'),p.length?h('div',{class:'stack'},...p.map(x=>h('div',{class:'row between'},h('span',null,x.inventoryName),h('span',{class:x.change>0?'warn':''},fmt(x.price)+' zł/'+x.priceUnit+(x.change?' · '+(x.change>0?'+':'')+fmt(x.change):'')))):h('p',{class:'muted'},'Brak danych cenowych.'))));}
+  function analytics() {
+    const p = summary.priceChanges.slice(0, 12);
+    const stats = h('div', { class: 'results-grid' },
+      h('div', { class: 'result' },
+        h('span', { class: 'result-k' }, 'Ruchy'),
+        h('strong', { class: 'result-v' }, summary.movements)
+      ),
+      h('div', { class: 'result' },
+        h('span', { class: 'result-k' }, 'Straty'),
+        h('strong', { class: 'result-v' }, summary.waste)
+      ),
+      h('div', { class: 'result' },
+        h('span', { class: 'result-k' }, 'Dostawy'),
+        h('strong', { class: 'result-v' }, summary.deliveries)
+      ),
+      h('div', { class: 'result' },
+        h('span', { class: 'result-k' }, 'Zamówienia'),
+        h('strong', { class: 'result-v' }, summary.orders)
+      )
+    );
+    const history = p.length
+      ? h('div', { class: 'stack' },
+        ...p.map((x) => h('div', { class: 'row between' },
+          h('span', null, x.inventoryName),
+          h('span', { class: x.change > 0 ? 'warn' : '' },
+            fmt(x.price) + ' zł/' + x.priceUnit +
+            (x.change ? ' · ' + (x.change > 0 ? '+' : '') + fmt(x.change) : '')
+          )
+        ))
+      )
+      : h('p', { class: 'muted' }, 'Brak danych cenowych.');
+    return h('div', { class: 'stack' },
+      stats,
+      h('div', { class: 'card' },
+        h('h3', null, 'Historia cen'),
+        history
+      )
+    );
+  }
   function deliverySheet(){let supplierId='',supplierName='',documentNo='',items=[{name:'',quantity:'',unit:'kg',purchasePrice:'',priceUnit:'kg',lot:'',expiryAt:''}];const form=h('div',{class:'stack'},field('Dostawca',selectEl([['','Bez dostawcy'],...suppliers.map(x=>[x.id,x.name])],'',v=>{supplierId=v;supplierName=suppliers.find(x=>x.id===v)?.name||''})),field('Numer dokumentu',textInput({label:'Numer dokumentu',onInput:v=>documentNo=v})),h('div',{class:'card'},h('strong',null,'Pozycja dostawy'),...items.map(it=>h('div',{class:'stack'},textInput({label:'Produkt',onInput:v=>it.name=v}),h('div',{class:'grid-2'},textInput({type:'number',label:'Ilość',onInput:v=>it.quantity=v}),selectEl(units,'kg',v=>it.unit=v)),h('div',{class:'grid-2'},textInput({type:'number',label:'Cena zakupu',onInput:v=>it.purchasePrice=v}),selectEl(units,it.priceUnit,v=>it.priceUnit=v)),textInput({label:'Partia',onInput:v=>it.lot=v}),textInput({type:'date',label:'Termin',onInput:v=>it.expiryAt=v?new Date(v).getTime():''}))));openSheet({title:'Nowa dostawa',variant:'sheet',body:form,actions:[{label:'Anuluj',kind:'ghost'},{label:'Przyjmij',kind:'primary',icon:'check',onClick:async()=>{try{await receiveDelivery({supplierId,supplierName,documentNo,items});toast('Dostawa przyjęta 📦');paint();}catch(e){toast(e.message||'Nie udało się przyjąć dostawy',{type:'error'});return false;}}}]});}
   function orderSheet(){let supplierId='',supplierName='',name='',amount='',unit='kg';const form=h('div',{class:'stack'},field('Dostawca',selectEl([['','Bez dostawcy'],...suppliers.map(x=>[x.id,x.name])],'',v=>{supplierId=v;supplierName=suppliers.find(x=>x.id===v)?.name||''})),textInput({label:'Produkt',onInput:v=>name=v}),h('div',{class:'grid-2'},textInput({type:'number',label:'Ilość',onInput:v=>amount=v}),selectEl(units,'kg',v=>unit=v)));openSheet({title:'Nowe zamówienie',variant:'sheet',body:form,actions:[{label:'Anuluj',kind:'ghost'},{label:'Zapisz',kind:'primary',onClick:async()=>{await createPurchaseOrder({supplierId,supplierName,status:'ordered',items:[{name,amount,unit}]});toast('Zamówienie zapisane');paint();}}]});}
   function wasteSheet(){if(!inv.length)return toast('Najpierw dodaj produkt do Magazynu',{type:'error'});let id=inv[0].id,amount='',reason='zepsucie';const form=h('div',{class:'stack'},field('Produkt',selectEl(inv.map(x=>[x.id,x.name]),id,v=>id=v)),textInput({type:'number',label:'Ilość straty',onInput:v=>amount=v}),field('Powód',selectEl([['zepsucie','Zepsucie'],['przeterminowanie','Przeterminowanie'],['uszkodzenie','Uszkodzenie'],['produkcja','Błąd produkcyjny'],['inne','Inne']],reason,v=>reason=v)));openSheet({title:'Zarejestruj stratę',variant:'sheet',body:form,actions:[{label:'Anuluj',kind:'ghost'},{label:'Zapisz',kind:'primary',onClick:async()=>{await recordWaste(id,amount,reason);toast('Strata zapisana');paint();}}]});}

@@ -1,4 +1,4 @@
-/* Offline Polish translation layer for archive recipe text. */
+/* Offline Polish culinary translation layer. Source fields stay intact. */
 const P = [
 ["Polish Hunter's Stew","polski gulasz myśliwski"],["Meat Pierogi","pierogi z mięsem"],["Belarusian Beet Soup","barszcz białoruski"],["Frog Legs","żabie udka"],
 ["English Apple Charlotte","angielska szarlotka z jabłek"],["English Muffins","muffiny angielskie"],["Noodle Squares with Cabbage","łazanki z kapustą"],
@@ -77,9 +77,6 @@ const EXTRA = [
 ["and then","a następnie"],["and immediately","i natychmiast"],["and add","i dodaj"],["then add","następnie dodaj"],["then mix","następnie wymieszaj"],
 ["add to","dodaj do"],["mix with","wymieszaj z"],["cook with","gotuj z"],["serve with","podawaj z"],["cover with","przykryj"],["pour with","polej"],
 ];
-
-
-
 const MORE = [
 ["walnut-sized","wielkości orzecha włoskiego"],["walnuts","orzechy włoskie"],["walnut","orzech włoski"],["almonds","migdały"],["almond","migdał"],
 ["hazelnuts","orzechy laskowe"],["hazelnut","orzech laskowy"],["cashews","nerkowce"],["cashew","orzech nerkowca"],["pecans","orzechy pekan"],["pecan","orzech pekan"],
@@ -121,7 +118,6 @@ const MORE = [
 ["bacon","boczek"],["sausage","kiełbasa"],["sausages","kiełbasy"],["herring","śledź"],["pheasant","bażant"],["capon","kapłon"],
 ["rutabaga","brukiew"],["beefsteak","befsztyk"],["steak","stek"],["garnish","dodatek"],["garnished","przybrany"],["mayonnaise","majonez"],
 ];
-
 const NAME_MAP = [
 ["Baking Powder Babka","Babka z proszkiem do pieczenia"],["Economy Babka","Babka oszczędna"],["Home Cake","Ciasto domowe"],["Brown Bread","Chleb brunatny"],
 ["Whole Wheat Bread","Chleb pełnoziarnisty"],["Brown chleb","Chleb brunatny"],["Herring Cake","Babka ze śledzi"],["Beefsteak","Befsztyk"],
@@ -136,6 +132,28 @@ const NAME_MAP = [
 ["Bananas with Orange Juice","Banany z pomarańczowym sokiem"],["Steak with Bananas","Befsztyk z bananami"],["Rye burak Soup","Barszcz żytni"],
 ["Baking Powder","proszek do pieczenia"],["English Muffins","muffiny angielskie"],["Muffins","muffiny"],["Bread","Chleb"],["Cake","Ciasto"],
 ];
+const C = {"Kuchnia Polska":"Kuchnia polska","Cucina Italiana":"Kuchnia włoska","Cocina Española":"Kuchnia hiszpańska","Cuisine Française":"Kuchnia francuska","Japanese Kitchen":"Kuchnia japońska","Chinese Kitchen":"Kuchnia chińska","Indian Kitchen":"Kuchnia indyjska","German Kitchen":"Kuchnia niemiecka","Česká kuchyně":"Kuchnia czeska"};
+
+const ALL_TERMS = [...P, ...OTHER, ...EXTRA, ...MORE].sort((a,b)=>b[0].length-a[0].length);
+const escapeRegex = (s) => String(s).replace(/[.*+?^$(){}|[\\]\\]/g, "\\$&");
+const TOKEN_RE = new RegExp("(?<!\\p{L})(" + ALL_TERMS.map(([a])=>escapeRegex(a)).join("|") + ")(?!\\p{L})","giu");
+const TERM_MAP = new Map(ALL_TERMS.map(([a,b])=>[a.toLowerCase(),b]));
+const TEXT_CACHE = new Map();
+
+function apply(text) {
+  const key=String(text ?? "");
+  const cached=TEXT_CACHE.get(key);
+  if(cached!==undefined) return cached;
+  let out=key;
+  out=out.replace(TOKEN_RE,(_,term)=>TERM_MAP.get(term.toLowerCase()) ?? term);
+  out=out.replace(/\\b(?:the|a|an)\\b\\s*/giu,"")
+    .replace(/\\s{2,}/g," ")
+    .replace(/\\s+([,.;:!?])/g,"$1")
+    .trim();
+  if(TEXT_CACHE.size>16000) TEXT_CACHE.clear();
+  TEXT_CACHE.set(key,out);
+  return out;
+}
 
 function cleanRecipeName(text) {
   let n=String(text ?? "").replace(/^["“”]+|["“”]+$/g,"").trim();
@@ -143,68 +161,28 @@ function cleanRecipeName(text) {
   if(colon>0) n=n.slice(0,colon).trim();
   const paren=n.indexOf("(");
   if(paren>0) n=n.slice(0,paren).trim();
-  for(const [a,b] of NAME_MAP) n=n.replace(new RegExp(a.replace(/[.*+?^$(){}|[\\]\\]/g,"\\\\$&"),"giu"),b);
-  n=apply(n).replace(/\s*[-–—]\s*$/,"").replace(/\s{2,}/g," ").trim();
+  for(const [a,b] of NAME_MAP) n=n.replace(new RegExp(escapeRegex(a),"giu"),b);
+  n=apply(n).replace(/\\s*[-–—]\\s*$/,"").replace(/\\s{2,}/g," ").trim();
   return n;
 }
 
-const C = {"),"giu"),b);
-  n=apply(n,MORE);
-  n=n.replace(/\s*[-–—]\s*$/,"").replace(/\s{2,}/g," ").trim();
-  return n;
-}
-
-const C = {"Kuchnia Polska":"Kuchnia polska","Cucina Italiana":"Kuchnia włoska","Cocina Española":"Kuchnia hiszpańska","Cuisine Française":"Kuchnia francuska","Japanese Kitchen":"Kuchnia japońska","Chinese Kitchen":"Kuchnia chińska","Indian Kitchen":"Kuchnia indyjska","German Kitchen":"Kuchnia niemiecka","Česká kuchyně":"Kuchnia czeska"};
-const SENTENCE = [
-  ["Shred the cabbage","Poszatkuj kapustę"],
-  ["salt it well","dobrze posól"],
-  ["press out the liquid","mocno odciśnij płyn"],
-  ["Mince the onions","Posiekaj cebulę"],
-  ["peel and chop the sour apples","obierz i pokrój kwaśne jabłka"],
-  ["remove the feet from the frog legs","usuń stopy z udek żabich"],
-  ["Dip in beaten egg","Zanurz w roztrzepanym jajku"],
-  ["then coat with grated bread","następnie obtocz w tartej bułce"],
-  ["Fry in butter or fat","Smaż na maśle lub tłuszczu"],
-  ["serve on a platter","podawaj na półmisku"],
-  ["Pour water over","Zalej wodą"],
-  ["add several peppercorns","dodaj kilka ziaren pieprzu"],
-  ["add a few bay leaves","dodaj kilka liści laurowych"],
-  ["cook for an hour and a half","gotuj przez półtorej godziny"],
-  ["cook further until","gotuj dalej, aż"],
-  ["season with","dopraw"],
-  ["bring to a boil and serve","doprowadź do wrzenia i podawaj"],
-  ["prepare beef broth","przygotuj bulion wołowy"],
-  ["cook until it is soft","gotuj, aż zmięknie"],
-  ["before serving","przed podaniem"],
-];
-const SENTENCE_REGEX = SENTENCE.map(([from,to]) => [new RegExp(from,"giu"),to]);
-const SORTED_TERMS = [...P, ...OTHER, ...EXTRA, ...MORE]
-  .sort((a,b) => b[0].length - a[0].length);
-const TERM_MAP = new Map(SORTED_TERMS.map(([from,to]) => [from.toLowerCase(),to]));
-const TOKEN_RE = new RegExp("(^|[^A-Za-zÀ-ž])(" + SORTED_TERMS.map(([from]) => from).join("|") + ")(?=$|[^A-Za-zÀ-ž])", "giu");
-const TEXT_CACHE = new Map();
-const CACHE_LIMIT = 16000;
-
-function apply(text) {
-  const key = String(text ?? "");
-  const hit = TEXT_CACHE.get(key);
-  if (hit !== undefined) return hit;
-  let out = key;
-  for (const [re,to] of SENTENCE_REGEX) out = out.replace(re,to);
-  out = out.replace(TOKEN_RE, (full, prefix, term) => prefix + (TERM_MAP.get(term.toLowerCase()) ?? term));
-  out = out.replace(/\b(?:the|a|an)\b\s*/giu,"")
-    .replace(/\s{2,}/g," ")
-    .replace(/\s+([,.;:!?])/g,"$1")
-    .trim();
-  if (TEXT_CACHE.size >= CACHE_LIMIT) TEXT_CACHE.clear();
-  TEXT_CACHE.set(key,out);
-  return out;
-}
-
-export function translateRecipe(recipe){
+export function translateRecipe(recipe) {
   const original=recipe.originalName||recipe.name||"";
-  const sections=Array.isArray(recipe.sections)?recipe.sections.map(s=>({...s,ingredients:Array.isArray(s.ingredients)?s.ingredients.map(i=>({...i,name:apply(i.name)})):s.ingredients})):recipe.sections;
-  const steps=Array.isArray(recipe.steps)?recipe.steps.map(s=>({...s,text:apply(s.text)})):recipe.steps;
-  const name=cleanRecipeName(recipe.name||original);
-  return {...recipe,originalName:original,name,description:apply(recipe.description||""),sections,steps,archiveCollectionName:C[recipe.archiveCollectionName]||recipe.archiveCollectionName,translationLanguage:"pl",translationVersion:3};
+  const sections=Array.isArray(recipe.sections)
+    ? recipe.sections.map(s=>({...s,ingredients:Array.isArray(s.ingredients)?s.ingredients.map(i=>({...i,name:apply(i.name)})):s.ingredients}))
+    : recipe.sections;
+  const steps=Array.isArray(recipe.steps)
+    ? recipe.steps.map(s=>({...s,text:apply(s.text)}))
+    : recipe.steps;
+  return {
+    ...recipe,
+    originalName:original,
+    name:cleanRecipeName(recipe.name||original),
+    description:apply(recipe.description||""),
+    sections,
+    steps,
+    archiveCollectionName:C[recipe.archiveCollectionName]||recipe.archiveCollectionName,
+    translationLanguage:"pl",
+    translationVersion:4
+  };
 }

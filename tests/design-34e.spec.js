@@ -10,12 +10,12 @@ test.describe('Stage 34E • visual system', () => {
   test('Auto respektuje jasny i ciemny motyw urządzenia', async ({ page }) => {
     await page.emulateMedia({ colorScheme: 'light' });
     await page.goto('/');
-    await page.waitForFunction(() => window.__kucharzyna?.ready === true);
+    await page.waitForFunction(() => window.__kucharek?.ready === true);
     const light = await page.evaluate(() => getComputedStyle(document.documentElement).getPropertyValue('--34e-bg').trim());
 
     await page.emulateMedia({ colorScheme: 'dark' });
     await page.reload();
-    await page.waitForFunction(() => window.__kucharzyna?.ready === true);
+    await page.waitForFunction(() => window.__kucharek?.ready === true);
     const dark = await page.evaluate(() => getComputedStyle(document.documentElement).getPropertyValue('--34e-bg').trim());
 
     expect(light).not.toBe('');

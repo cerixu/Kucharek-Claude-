@@ -467,3 +467,14 @@ textarea {
   .start-v2 .start-hero-recipe{min-height:36px;font-size:.87rem;padding-inline:10px}
   .start-v2 .start-cook-btn{min-height:50px}
 }
+
+
+/* 43A touch safety: every interactive control keeps a minimum 44px hit area. */
+button,
+a,
+.btn,
+.iconbtn,
+.chip,
+.seg button {
+  min-height: 44px;
+}

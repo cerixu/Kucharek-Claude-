@@ -113,7 +113,7 @@ test('Stage 34B: numer wersji jest widoczny w Ustawieniach', async ({ page }) =>
   await page.goto('/#/settings');
   await page.waitForFunction(() => window.__kucharzyna?.ready === true);
   await expect(page.getByText('Wersja aplikacji', { exact: true })).toBeVisible();
-  await expect(page.getByText('1.3.34', { exact: true })).toBeVisible();
+  await expect(page.getByText('1.3.36', { exact: true })).toBeVisible();
 });
 
 
@@ -128,19 +128,19 @@ test.describe('Stage 34C: wspólny system wizualny', () => {
       const metrics = await page.evaluate(() => {
         const button = document.querySelector('.btn');
         const input = document.querySelector('input');
-        const card = document.querySelector('.card, .rcard, .stock-row, .history-card, .bigcard');
-        const style = card ? getComputedStyle(card) : null;
+        const surface = document.querySelector('.card, .rcard, .stock-row, .history-card, .bigcard, .start-hero-card, .cook-hub-intro');
+        const style = surface ? getComputedStyle(surface) : null;
         const btnStyle = button ? getComputedStyle(button) : null;
         const inputStyle = input ? getComputedStyle(input) : null;
         return {
-          cardRadius: style ? parseFloat(style.borderTopLeftRadius) : 0,
+          surfaceRadius: style ? parseFloat(style.borderTopLeftRadius) : 0,
           buttonHeight: button ? button.getBoundingClientRect().height : 0,
           inputFontSize: inputStyle ? parseFloat(inputStyle.fontSize) : 0,
           buttonRadius: btnStyle ? parseFloat(btnStyle.borderTopLeftRadius) : 0,
         };
       });
 
-      expect(metrics.cardRadius).toBeGreaterThanOrEqual(14);
+      expect(metrics.surfaceRadius).toBeGreaterThanOrEqual(14);
       if (metrics.buttonHeight) expect(metrics.buttonHeight).toBeGreaterThanOrEqual(44);
       if (metrics.inputFontSize) expect(metrics.inputFontSize).toBeGreaterThanOrEqual(16);
       if (metrics.buttonRadius) expect(metrics.buttonRadius).toBeGreaterThanOrEqual(12);
@@ -164,7 +164,7 @@ test.describe('Stage 34C: wspólny system wizualny', () => {
     await page.goto('/#/settings');
     await page.waitForFunction(() => window.__kucharzyna?.ready === true);
     await expect(page.getByText('Wersja aplikacji', { exact: true })).toBeVisible();
-    await expect(page.getByText('1.3.35', { exact: true })).toBeVisible();
+    await expect(page.getByText('1.3.36', { exact: true })).toBeVisible();
   });
 
   test('zrzuty kontrolne głównych ekranów powstają w QA', async ({ page }, testInfo) => {

@@ -15,6 +15,7 @@ test.describe('Stage 54 — static Polish corpus gate', () => {
   test('all 1700 archive records are version 10 Polish translations with clean names', async ({ page }) => {
     await page.goto('/#/recipes');
     await page.waitForFunction(() => window.__kucharek?.ready === true);
+    await page.waitForFunction(() => [...window.__kucharek.state.recipes.values()].filter(r => String(r.id).startsWith('rcp_archive_')).length === 1700, null, { timeout: 60000 });
     const info = await page.evaluate(() => {
       const rs = [...window.__kucharek.state.recipes.values()].filter(r => String(r.id).startsWith('rcp_archive_'));
       return {
@@ -33,6 +34,7 @@ test.describe('Stage 54 — static Polish corpus gate', () => {
   test('no obvious untranslated English remains in visible recipe text', async ({ page }) => {
     await page.goto('/#/recipes');
     await page.waitForFunction(() => window.__kucharek?.ready === true);
+    await page.waitForFunction(() => [...window.__kucharek.state.recipes.values()].filter(r => String(r.id).startsWith('rcp_archive_')).length === 1700, null, { timeout: 60000 });
     const result = await page.evaluate((words) => {
       const re = new RegExp('(?<!\\p{L})(?:' + words.map(w => w.replace(/[.*+?^$(){}|[\\]\\]/g, '\\$&')).join('|') + ')(?!\\p{L})', 'iu');
       const rs = [...window.__kucharek.state.recipes.values()].filter(r => String(r.id).startsWith('rcp_archive_'));
@@ -49,6 +51,7 @@ test.describe('Stage 54 — static Polish corpus gate', () => {
   test('Bigos and detail view are Polish and source original is preserved', async ({ page }) => {
     await page.goto('/#/recipe/' + BIGOS_ID);
     await page.waitForFunction(() => window.__kucharek?.ready === true);
+    await page.waitForFunction((id) => Boolean(window.__kucharek.state.recipes.get(id)), BIGOS_ID, { timeout: 60000 });
     const data = await page.evaluate((id) => {
       const r = window.__kucharek.state.recipes.get(id);
       return {

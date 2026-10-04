@@ -3,7 +3,7 @@
    Liczby, jednostki, daty, formatowanie po polsku.
    ========================================================================== */
 
-export const APP_VERSION = '1.3.82';
+export const APP_VERSION = '1.3.83';
 
 /** Stabilne ID z prefiksem (rcp_, sec_, ing_, stp_, cat_, shp_, his_). */
 export function uid(prefix = '') {
@@ -23,12 +23,12 @@ export function parseNum(v) {
   if (v == null) return null;
   let s = String(v).trim();
   if (!s) return null;
-  s = s.replace(/[½⅓⅔¼¾⅛⅜⅝⅞]/g, (m) => ' ' + VULGAR[m]).replace(/s+/g, ' ').trim();
+  s = s.replace(/[½⅓⅔¼¾⅛⅜⅝⅞]/g, (m) => ' ' + VULGAR[m]).replace(/\s+/g, ' ').trim();
   let m;
   if ((m = s.match(/^(d+) (d+)/(d+)$/))) return m[3] === '0' ? null : +m[1] + m[2] / m[3];
   if ((m = s.match(/^(d+)/(d+)$/))) return m[2] === '0' ? null : m[1] / m[2];
-  s = s.replace(/s/g, '').replace(',', '.');
-  if (/^[-+]?(d+.?d*|.d+)$/.test(s)) return parseFloat(s);
+  s = s.replace(/\s/g, '').replace(',', '.');
+  if (/^[-+]?(\d+\.?\d*|\.\d+)$/.test(s)) return parseFloat(s);
   return null;
 }
 

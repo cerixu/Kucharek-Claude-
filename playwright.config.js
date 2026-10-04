@@ -21,8 +21,8 @@ export default defineConfig({
     timeout: 10000,
   },
   projects: [
-    { name: 'chromium', use: { ...devices['Desktop Chrome'], serviceWorkers: 'block' }, testIgnore: /(?:pwa|startup|design-34e|user-mobile)\.spec\.js/ },
-    { name: 'pwa', use: { ...devices['Desktop Chrome'], serviceWorkers: 'allow' }, testMatch: /pwa\.spec\.js/ },
+    { name: 'chromium', use: { ...devices['Desktop Chrome'], serviceWorkers: 'block' }, testIgnore: /(?:pwa|startup|design-34e|user-mobile|stage-44)\.spec\.js/ },
+    { name: 'pwa', use: { ...devices['Desktop Chrome'], serviceWorkers: 'allow' }, testMatch: /(?:pwa|stage-44)\.spec\.js/ },
     { name: 'webkit-mobile', use: { ...devices['iPhone 13'], serviceWorkers: 'allow' }, testMatch: /(?:startup|user-mobile)\.spec\.js/ },
     { name: 'design-mobile', use: { ...devices['iPhone 13'], serviceWorkers: 'allow' }, testMatch: /design-34e\.spec\.js/ },
   ],

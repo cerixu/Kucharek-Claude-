@@ -2,7 +2,7 @@
    app.js — start aplikacji: baza, ustawienia, motyw, nawigacja dolna,
    obsługa klawiatury iOS (visualViewport), trasy, service worker.
    ========================================================================== */
-import { openDB } from './db.js?v=20261004-54-1.3.86';
+import { openDB } from './db.js?v=20261004-54-1.3.87';
 import { loadAll, state, subscribe, getSetting } from './recipes.js';
 import { h, icon, toast, $, openSheet, button } from './ui.js';
 import { route, startRouter, navigate } from './router.js';
@@ -22,7 +22,7 @@ import { inventoryView } from './views-inventory.js';
 import { cookHubView } from './views-cook-hub.js';
 
 let proModulePromise;
-const loadProModule = () => proModulePromise ||= import('./views-pro-fixed.js?v=20261004-54-1.3.86');
+const loadProModule = () => proModulePromise ||= import('./views-pro-fixed.js?v=20261004-54-1.3.87');
 
 const root = document.documentElement;
 const bootStartedAt = performance.now();

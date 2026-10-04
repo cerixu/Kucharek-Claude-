@@ -1,0 +1,396 @@
+/* ==========================================================================
+   Stage 43A · Visual QA / iPhone 17 Pro Max glass refinement
+   Final visual layer loaded after 34F. Functional selectors are untouched.
+   ========================================================================== */
+
+:root {
+  --43a-glass-top: rgba(255,255,255,.105);
+  --43a-glass-mid: rgba(255,255,255,.065);
+  --43a-glass-low: rgba(255,255,255,.035);
+  --43a-hairline: rgba(255,255,255,.135);
+  --43a-highlight: rgba(255,255,255,.16);
+  --43a-shadow: 0 18px 46px rgba(0,0,0,.28);
+  --43a-blur: 24px;
+}
+
+:root:not([data-theme="dark"]) {
+  --43a-glass-top: rgba(255,255,255,.78);
+  --43a-glass-mid: rgba(255,255,255,.60);
+  --43a-glass-low: rgba(255,255,255,.42);
+  --43a-hairline: rgba(25,28,30,.11);
+  --43a-highlight: rgba(255,255,255,.88);
+  --43a-shadow: 0 18px 44px rgba(38,34,23,.11);
+}
+
+:root[data-mode="amateur"][data-theme="dark"] {
+  --43a-glass-top: rgba(255,255,255,.09);
+  --43a-glass-mid: rgba(255,255,255,.055);
+  --43a-glass-low: rgba(255,255,255,.03);
+  --43a-hairline: rgba(255,255,255,.12);
+  --43a-highlight: rgba(255,255,255,.13);
+}
+
+/* ---------- Material / canvas ---------- */
+
+html {
+  background: var(--34e-bg);
+}
+
+body {
+  background:
+    radial-gradient(110% 48% at 50% -8%, color-mix(in srgb, var(--34e-accent) 7%, transparent), transparent 68%),
+    radial-gradient(90% 40% at 15% 100%, rgba(255,255,255,.025), transparent 65%),
+    linear-gradient(180deg, var(--34e-bg-2), var(--34e-bg));
+}
+
+#app {
+  background: transparent;
+}
+
+/* ---------- Top navigation ---------- */
+
+.topbar {
+  position: relative;
+  background: color-mix(in srgb, var(--34e-bg-2) 64%, transparent);
+  border-bottom-color: var(--43a-hairline);
+  box-shadow: 0 1px 0 rgba(255,255,255,.025);
+  isolation: isolate;
+}
+
+.topbar::after {
+  content: "";
+  position: absolute;
+  left: 12px;
+  right: 12px;
+  top: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--43a-highlight), transparent);
+  opacity: .7;
+  pointer-events: none;
+}
+
+/* ---------- Bottom navigation ---------- */
+
+#tabbar {
+  background:
+    linear-gradient(180deg, var(--43a-glass-top), var(--43a-glass-mid));
+  border-color: var(--43a-hairline);
+  box-shadow: var(--43a-shadow), inset 0 1px 0 var(--43a-highlight);
+  isolation: isolate;
+}
+
+#tabbar::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background: linear-gradient(180deg, rgba(255,255,255,.045), transparent 28%);
+}
+
+.tab.on .tab-ico {
+  background: linear-gradient(180deg,
+    color-mix(in srgb, var(--34e-accent-2) 94%, white 6%),
+    var(--34e-accent));
+  box-shadow:
+    0 8px 18px color-mix(in srgb, var(--34e-accent) 25%, transparent),
+    inset 0 1px 0 rgba(255,255,255,.28);
+}
+
+.tab:active .tab-ico,
+.tab:focus-visible .tab-ico {
+  box-shadow:
+    0 6px 16px color-mix(in srgb, var(--34e-accent) 20%, transparent),
+    inset 0 1px 0 rgba(255,255,255,.22);
+}
+
+/* ---------- Glass surfaces ---------- */
+
+.card,
+.results-grid > *,
+.start-action,
+.start-recent-card,
+.inventory-item,
+.recipe-card,
+.import-cta,
+.stat-card,
+.more-grid > .btn {
+  background:
+    linear-gradient(180deg, var(--43a-glass-top), var(--43a-glass-mid));
+  border-color: var(--43a-hairline);
+  box-shadow:
+    0 12px 30px rgba(0,0,0,.10),
+    inset 0 1px 0 var(--43a-highlight);
+  backdrop-filter: blur(var(--43a-blur)) saturate(1.18);
+  -webkit-backdrop-filter: blur(var(--43a-blur)) saturate(1.18);
+}
+
+.card:focus-within,
+.card:has(.input:focus) {
+  border-color: color-mix(in srgb, var(--34e-accent) 38%, var(--43a-hairline));
+}
+
+.recipe-card,
+.start-action,
+.start-recent-card {
+  box-shadow:
+    0 14px 34px rgba(0,0,0,.12),
+    inset 0 1px 0 var(--43a-highlight);
+}
+
+.recipe-card .recipe-media,
+.start-recent-media {
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.045), transparent),
+    var(--34e-glass-soft);
+}
+
+/* ---------- Buttons / controls ---------- */
+
+.btn {
+  background: linear-gradient(180deg, var(--43a-glass-top), var(--43a-glass-mid));
+  border-color: var(--43a-hairline);
+  box-shadow: 0 9px 22px rgba(0,0,0,.08), inset 0 1px 0 var(--43a-highlight);
+}
+
+.btn.primary {
+  background:
+    linear-gradient(180deg, var(--34e-accent-2), var(--34e-accent));
+  box-shadow:
+    0 11px 24px color-mix(in srgb, var(--34e-accent) 24%, transparent),
+    inset 0 1px 0 rgba(255,255,255,.30);
+}
+
+.btn.ghost {
+  background: transparent;
+  border-color: transparent;
+  box-shadow: none;
+}
+
+.iconbtn {
+  border-color: transparent;
+  background: transparent;
+}
+
+.iconbtn:active,
+.iconbtn.active {
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.10);
+}
+
+.chip {
+  background: linear-gradient(180deg, var(--43a-glass-top), var(--43a-glass-mid));
+  border-color: var(--43a-hairline);
+  box-shadow: inset 0 1px 0 var(--43a-highlight);
+}
+
+.chip.on {
+  box-shadow: 0 7px 16px color-mix(in srgb, var(--34e-accent) 18%, transparent),
+              inset 0 1px 0 rgba(255,255,255,.28);
+}
+
+/* ---------- Inputs / segmented controls ---------- */
+
+.input {
+  background:
+    linear-gradient(180deg, var(--43a-glass-top), var(--43a-glass-low));
+  border-color: var(--43a-hairline);
+  box-shadow:
+    inset 0 1px 0 var(--43a-highlight),
+    inset 0 -1px 0 rgba(0,0,0,.08);
+  backdrop-filter: blur(18px) saturate(1.12);
+  -webkit-backdrop-filter: blur(18px) saturate(1.12);
+}
+
+.seg {
+  background: var(--43a-glass-low);
+  border-color: var(--43a-hairline);
+  box-shadow: inset 0 1px 0 var(--43a-highlight);
+}
+
+.seg button.on {
+  box-shadow:
+    0 5px 14px rgba(0,0,0,.08),
+    inset 0 1px 0 var(--43a-highlight);
+}
+
+/* ---------- Start hero ---------- */
+
+.start-hero-card {
+  border-color: var(--43a-hairline);
+  box-shadow:
+    0 26px 58px rgba(0,0,0,.29),
+    inset 0 1px 0 rgba(255,255,255,.13);
+}
+
+.start-hero-card::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,.035);
+}
+
+.start-hero-chip {
+  background: rgba(255,255,255,.095);
+  border-color: rgba(255,255,255,.20);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.16);
+}
+
+.start-cook-btn {
+  box-shadow:
+    0 12px 24px rgba(0,0,0,.20),
+    inset 0 1px 0 rgba(255,255,255,.32);
+}
+
+/* ---------- Inventory ---------- */
+
+.inventory-summary-v2 {
+  border: 1px solid var(--43a-hairline);
+  border-radius: 24px;
+  background: linear-gradient(180deg, var(--43a-glass-top), var(--43a-glass-low));
+  box-shadow: 0 14px 32px rgba(0,0,0,.10), inset 0 1px 0 var(--43a-highlight);
+  backdrop-filter: blur(24px) saturate(1.16);
+  -webkit-backdrop-filter: blur(24px) saturate(1.16);
+}
+
+.stock-row.inventory-product {
+  border: 1px solid var(--43a-hairline);
+  border-radius: 20px;
+  background: linear-gradient(180deg, var(--43a-glass-top), var(--43a-glass-mid));
+  box-shadow: 0 10px 24px rgba(0,0,0,.08), inset 0 1px 0 var(--43a-highlight);
+  overflow: hidden;
+}
+
+.inventory-product-visual {
+  background: color-mix(in srgb, var(--34e-accent) 10%, transparent);
+  border: 1px solid color-mix(in srgb, var(--34e-accent) 14%, transparent);
+  border-radius: 15px;
+}
+
+.inventory-product-actions .iconbtn {
+  background: transparent;
+}
+
+.inventory-filterbar {
+  padding: 4px;
+  border: 1px solid var(--43a-hairline);
+  border-radius: 18px;
+  background: var(--43a-glass-low);
+  box-shadow: inset 0 1px 0 var(--43a-highlight);
+}
+
+/* ---------- Cooking ---------- */
+
+.screen.cook .cook-sub,
+.screen.cook .timerbar,
+.screen.cook .cookbar {
+  border-color: var(--43a-hairline);
+  background: linear-gradient(180deg, var(--43a-glass-top), var(--43a-glass-mid));
+  box-shadow: 0 12px 28px rgba(0,0,0,.10), inset 0 1px 0 var(--43a-highlight);
+  backdrop-filter: blur(24px) saturate(1.14);
+  -webkit-backdrop-filter: blur(24px) saturate(1.14);
+}
+
+.screen.cook .cook-row {
+  border-color: var(--43a-hairline);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.055);
+}
+
+.screen.cook .cookbar {
+  padding-bottom: max(8px, env(safe-area-inset-bottom, 0px));
+}
+
+/* ---------- Sheets / dialogs ---------- */
+
+.overlay .backdrop {
+  background: rgba(4,5,7,.44);
+  -webkit-backdrop-filter: blur(22px) saturate(1.10);
+  backdrop-filter: blur(22px) saturate(1.10);
+}
+
+.overlay.sheet .panel,
+.sheet,
+.modal,
+.dialog {
+  border-color: var(--43a-hairline);
+  background:
+    linear-gradient(180deg, var(--43a-glass-top), var(--43a-glass-mid));
+  box-shadow:
+    0 -10px 40px rgba(0,0,0,.14),
+    0 30px 80px rgba(0,0,0,.30),
+    inset 0 1px 0 var(--43a-highlight);
+  -webkit-backdrop-filter: blur(34px) saturate(1.20);
+  backdrop-filter: blur(34px) saturate(1.20);
+}
+
+.overlay.sheet .panel-foot {
+  border-top-color: var(--43a-hairline);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.05);
+}
+
+.overlay.sheet .panel-head {
+  background: linear-gradient(180deg, rgba(255,255,255,.035), transparent);
+}
+
+.overlay.sheet .panel::before {
+  opacity: .25;
+  height: 5px;
+  width: 42px;
+}
+
+/* ---------- Toasts ---------- */
+
+.toast {
+  background: linear-gradient(180deg, var(--43a-glass-top), var(--43a-glass-mid));
+  border-color: var(--43a-hairline);
+  box-shadow: 0 18px 40px rgba(0,0,0,.26), inset 0 1px 0 var(--43a-highlight);
+}
+
+/* ---------- Touch / motion polish ---------- */
+
+button,
+a,
+input,
+select,
+textarea {
+  -webkit-tap-highlight-color: transparent;
+}
+
+@media (max-width: 380px) {
+  .topbar-title { font-size: 1.18rem; }
+  .card { padding: 15px; }
+  .start-hero-card { min-height: 300px; }
+  .inventory-summary-v2 { border-radius: 22px; }
+  .stock-row.inventory-product { border-radius: 18px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+  }
+}
+
+@supports not (backdrop-filter: blur(2px)) {
+  #tabbar,
+  .topbar,
+  .card,
+  .results-grid > *,
+  .start-action,
+  .start-recent-card,
+  .inventory-item,
+  .recipe-card,
+  .input,
+  .chip,
+  .inventory-summary-v2,
+  .stock-row.inventory-product,
+  .overlay.sheet .panel,
+  .sheet,
+  .modal,
+  .dialog,
+  .toast {
+    background: var(--surface);
+  }
+}

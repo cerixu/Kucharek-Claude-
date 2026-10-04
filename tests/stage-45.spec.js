@@ -7,7 +7,7 @@ test.use({ ...devices['iPhone 13'], browserName: 'chromium' });
 
 async function ready(page) {
   await page.goto('/');
-  await page.waitForFunction(() => window.__kucharzyna?.ready === true, { timeout: 30000 });
+  await page.waitForFunction(() => window.__kucharek?.ready === true, { timeout: 30000 });
 }
 
 test('Stage 45: CSP blokuje dynamiczny kod i trzyma zewnętrzne zasoby na smyczy', async ({ page }) => {

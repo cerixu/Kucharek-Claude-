@@ -37,3 +37,15 @@
 .ai-error { color: var(--34e-danger); }
 .ai-thinking { color: var(--34e-muted); display:inline-flex; align-items:center; gap:6px; }
 .cookbar .btn.ai-btn { border-color: color-mix(in srgb, var(--34e-accent) 35%, var(--34e-stroke)); }
+
+.ai-settings-status {
+  min-height: 42px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 11px;
+  border-radius: 15px;
+  border: 1px solid var(--34e-stroke-soft);
+  background: color-mix(in srgb, var(--34e-glass-soft) 90%, transparent);
+}
+.ai-settings-status svg { color: var(--34e-accent); flex: 0 0 auto; }

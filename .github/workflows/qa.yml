@@ -111,22 +111,23 @@ jobs:
             "Stage 52:"*) echo "test_file=tests/stage-52.spec.js" >> "$GITHUB_OUTPUT" ;;
             "Stage 53:"*) echo "test_file=tests/stage-53.spec.js" >> "$GITHUB_OUTPUT" ;;
             "Stage 54:"*) echo "test_file=tests/stage-54.spec.js" >> "$GITHUB_OUTPUT" ;;
-            "Wait for background archive before corpus assertions"*) echo "test_file=tests/startup.spec.js tests/stage-54.spec.js" >> "$GITHUB_OUTPUT" ;;
-            "Fix startup:"*) echo "test_file=tests/startup.spec.js" >> "$GITHUB_OUTPUT" ;;
-            "Bump app cache version"*) echo "test_file=tests/startup.spec.js tests/pwa.spec.js" >> "$GITHUB_OUTPUT" ;;
+            "Wait for background archive before corpus assertions"*) echo "test_files=tests/startup.spec.js tests/stage-54.spec.js" >> "$GITHUB_OUTPUT" ;;
+            "Fix startup:"*) echo "test_files=tests/startup.spec.js" >> "$GITHUB_OUTPUT" ;;
+            "Bump app cache version"*) echo "test_files=tests/startup.spec.js tests/pwa.spec.js" >> "$GITHUB_OUTPUT" ;;
             *) echo "test_file=tests/startup.spec.js tests/user-mobile.spec.js" >> "$GITHUB_OUTPUT" ;;
           esac
 
       - name: Run E2E
         env:
           CI: true
-          TEST_FILE: ${{ steps.qa_scope.outputs.test_file }}
+          TEST_FILES: ${{ steps.qa_scope.outputs.test_files }}
         shell: bash
         run: |
-          if [ "$TEST_FILE" = "__FULL__" ] || [ -z "$TEST_FILE" ]; then
+          if [ "$TEST_FILES" = "__FULL__" ]; then
             npm test -- --reporter=line
           else
-            npm test -- --reporter=line "$TEST_FILE"
+            read -r -a TEST_ARGS <<< "$TEST_FILES"
+            npm test -- --reporter=line "${TEST_ARGS[@]}"
           fi
 
       - name: Upload Playwright results

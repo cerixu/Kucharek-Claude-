@@ -100,6 +100,89 @@ export function normalizeRecipe(r) {
   return o;
 }
 
+/* ---------- Standard jakości receptur ---------- */
+
+export const RECIPE_STANDARD = Object.freeze({
+  schema: 1,
+  defaultServings: 1,
+  required: ['name', 'category', 'servings', 'sections', 'steps'],
+  traditionalRequiresOrigin: true,
+  photosOptionalUntilMediaStage: true,
+});
+
+export function validateRecipe(r, { strict = false } = {}) {
+  const errors = [];
+  const push = (code, message, path = '') => errors.push({ code, message, path });
+
+  if (!r || typeof r !== 'object') return [{ code: 'recipe.invalid', message: 'Receptura nie jest obiektem.', path: '' }];
+  if (!String(r.id || '').trim()) push('recipe.id', 'Brak identyfikatora.', 'id');
+  if (!String(r.name || '').trim()) push('recipe.name', 'Brak nazwy.', 'name');
+  if (!String(r.category || '').trim()) push('recipe.category', 'Brak kategorii.', 'category');
+  if (!Number.isFinite(Number(r.servings)) || Number(r.servings) <= 0) push('recipe.servings', 'Liczba porcji musi być > 0.', 'servings');
+
+  if (!Array.isArray(r.sections) || !r.sections.length) {
+    push('recipe.sections', 'Receptura musi mieć co najmniej jedną sekcję.', 'sections');
+  } else {
+    r.sections.forEach((section, si) => {
+      if (!section || typeof section !== 'object') {
+        push('section.invalid', 'Sekcja jest nieprawidłowa.', `sections[${si}]`);
+        return;
+      }
+      if (!Array.isArray(section.ingredients) || !section.ingredients.length) {
+        push('section.ingredients', 'Sekcja musi mieć co najmniej jeden składnik.', `sections[${si}].ingredients`);
+        return;
+      }
+      section.ingredients.forEach((ing, ii) => {
+        const path = `sections[${si}].ingredients[${ii}]`;
+        if (!String(ing?.id || '').trim()) push('ingredient.id', 'Brak identyfikatora składnika.', path + '.id');
+        if (!String(ing?.name || '').trim()) push('ingredient.name', 'Brak nazwy składnika.', path + '.name');
+        if (ing?.amount != null && (!Number.isFinite(Number(ing.amount)) || Number(ing.amount) < 0)) push('ingredient.amount', 'Ilość składnika musi być liczbą >= 0 lub pusta.', path + '.amount');
+        if (!String(ing?.unit || '').trim()) push('ingredient.unit', 'Brak jednostki składnika.', path + '.unit');
+        if (ing?.price != null && (!Number.isFinite(Number(ing.price)) || Number(ing.price) < 0)) push('ingredient.price', 'Cena składnika musi być liczbą >= 0.', path + '.price');
+      });
+    });
+  }
+
+  if (!Array.isArray(r.steps) || !r.steps.some((s) => String(s?.text || '').trim())) push('recipe.steps', 'Receptura musi mieć co najmniej jeden krok przygotowania.', 'steps');
+  for (const key of ['prepTime', 'cookTime', 'fermentTime']) if (r[key] != null && (!Number.isFinite(Number(r[key])) || Number(r[key]) < 0)) push('recipe.time', 'Czas musi być liczbą >= 0.', key);
+  if (r.yieldAmount != null && (!Number.isFinite(Number(r.yieldAmount)) || Number(r.yieldAmount) <= 0)) push('recipe.yield', 'Wydajność musi być > 0.', 'yieldAmount');
+
+  if (r.origin) {
+    const validOrigins = new Set(ORIGINS.map((o) => o.code));
+    if (!validOrigins.has(String(r.origin).toUpperCase())) push('recipe.origin', 'Nieznany kod kraju pochodzenia.', 'origin');
+  }
+  if (r.traditional && !String(r.origin || '').trim()) push('recipe.traditional.origin', 'Receptura tradycyjna musi mieć kraj pochodzenia.', 'origin');
+  if (strict && r.traditional && !String(r.source || '').trim() && !String(r.sourceUrl || '').trim()) push('recipe.traditional.source', 'Receptura tradycyjna powinna mieć źródło.', 'source');
+
+  for (const key of ['photo', 'thumb', 'sourceUrl']) {
+    const value = String(r[key] || '').trim();
+    if (!value) continue;
+    try {
+      const u = new URL(value, 'https://kucharek.invalid/');
+      const ok = key === 'sourceUrl'
+        ? (u.protocol === 'https:' || u.protocol === 'http:')
+        : (u.protocol === 'https:' || u.protocol === 'http:' || u.protocol === 'data:' || u.protocol === 'blob:');
+      if (!ok) push('recipe.url', 'Niedozwolony adres multimediów/źródła.', key);
+    } catch (_) { push('recipe.url', 'Nieprawidłowy adres.', key); }
+  }
+
+  return errors;
+}
+
+export function validateRecipeLibrary(recipes, { strict = false } = {}) {
+  const list = Array.isArray(recipes) ? recipes : [];
+  const seen = new Set();
+  const reports = [];
+  for (const recipe of list) {
+    const errors = validateRecipe(recipe, { strict }).slice();
+    const id = String(recipe?.id || '');
+    if (id && seen.has(id)) errors.push({ code: 'recipe.duplicate-id', message: 'Zduplikowany identyfikator receptury.', path: 'id' });
+    if (id) seen.add(id);
+    if (errors.length) reports.push({ id, name: recipe?.name || '', errors });
+  }
+  return { total: list.length, valid: list.length - reports.length, invalid: reports.length, reports };
+}
+
 export const allIngredients = (r) => r.sections.flatMap((s) => s.ingredients);
 export const cloneRecipe = (r) => ({
   ...r, tags: [...r.tags], steps: r.steps.map((s) => ({ ...s })),

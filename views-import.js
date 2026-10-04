@@ -163,6 +163,7 @@ export function importView(query) {
   }
 
   const c = s.content;
+  aiImportBtn = button('Importuj URL z AI', { kind: 'primary', lg: true, block: true, icon: 'sparkle', onClick: importUrlWithAI, aria: 'Importuj adres strony z AI' });
   c.append(
     h('section', { class: 'card stack' },
       h('h2', { class: 'card-title' }, icon('globe', 20), 'Znajdź przepis w internecie'),

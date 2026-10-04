@@ -2,13 +2,13 @@ import { test, expect } from '@playwright/test';
 const DB='kucharzyna-claude-db';
 async function reset(page){
   await page.goto('/');
-  await page.waitForFunction(()=>window.__kucharzyna?.ready===true);
+  await page.waitForFunction(()=>window.__kucharek?.ready===true);
   await page.evaluate(async()=>{
     const {db,STORES}=await import('/db.js');
     for(const store of Object.keys(STORES)) await db.clear(store);
   });
   await page.reload();
-  await page.waitForFunction(()=>window.__kucharzyna?.ready===true);
+  await page.waitForFunction(()=>window.__kucharek?.ready===true);
 }
 
 test('ETAP 5: dostawa aktualizuje stan, cenę, historię i partię',async({page})=>{await reset(page);const out=await page.evaluate(async()=>{const p=await import('/pro.js');const i=await import('/inventory.js');const d=await p.receiveDelivery({supplierName:'Dostawca E2E',documentNo:'FV/1',items:[{name:'Mąka PRO',quantity:25,unit:'kg',purchasePrice:9.5,priceUnit:'kg',lot:'L001',expiryAt:Date.now()+86400000*30}]});const item=i.findInventoryByName('Mąka PRO');const lots=await p.listLots();const prices=await p.listPriceHistory(item.id);const mov=await p.listMovements();return{qty:item.quantity,price:item.purchasePrice,lot:lots[0].lot,prices:prices.length,movement:mov.find(x=>x.sourceId===d.id)?.type};});expect(out.qty).toBe(25);expect(out.price).toBe(9.5);expect(out.lot).toBe('L001');expect(out.prices).toBe(1);expect(out.movement).toBe('delivery');});

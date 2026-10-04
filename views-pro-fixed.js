@@ -85,10 +85,10 @@ export function proView(){
     button('Nowa inwentaryzacja',{kind:'primary',onClick:()=>stocktake()}));
   const cards=rows.map(t=>{
     const closed=t.status==='closed';
-    const differences=(t.items||[]).filter(x=>num(x.difference)!==0);
+    const differences=(t.items||[]).filter(x=>n(x.difference)!==0);
     const counted=(t.items||[]).filter(x=>x.countedQuantity!=null).length;
     const total=t.items?.length||0;
-    const net=differences.reduce((s,x)=>s+num(x.difference),0);
+    const net=differences.reduce((s,x)=>s+n(x.difference),0);
     return h('div',{class:'card'},
       h('div',{class:'row between'},
         h('div',null,h('strong',null,new Date(t.closedAt||t.createdAt).toLocaleDateString('pl-PL')),h('p',{class:'muted'},closed?'Zamknięta':'W toku')),

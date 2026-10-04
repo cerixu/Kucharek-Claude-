@@ -510,6 +510,7 @@ test('Food Cost: koszt porcji skaluje się razem z recepturą', async ({ page })
 
 test('Food Cost UI: kalkulator pokazuje cenę z Magazynu', async ({ page }) => {
   await page.goto('/');
+  await page.evaluate(async () => { const { saveRecipe, blankRecipe } = await import('/recipes.js'); await saveRecipe(blankRecipe({id:'e2e-ui-cost-recipe',name:'UI koszt test',servings:1,category:'cat-pizza',sections:[{id:'s1',name:'',ingredients:[{id:'i1',name:'Mąka pszenna typ 00 (W 260–280)',amount:1000,unit:'g'}]}],steps:[]})); });
   await page.evaluate(async (name) => {
     const db = await new Promise((resolve, reject) => {
       const req = indexedDB.open(name);

@@ -54,14 +54,15 @@ function visualKind(r) {
   return 'dish';
 }
 
-export function recipeGraphicData(r) {
+export function recipeGraphicData(r, { hero = false } = {}) {
   const label = String(r.name || catName(r.category) || 'Receptura').slice(0, 34).replace(/[&<>]/g, '');
   const kind = visualKind(r);
   const title = kind === 'bakery' ? 'PIECZYWO' : kind === 'pasta' ? 'MAKARON' : kind === 'fresh' ? 'WARZYWA · SOSY' : 'RECEPTURA';
-  const svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 800"><defs><linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#17191c"/><stop offset="1" stop-color="#08090b"/></linearGradient><radialGradient id="gl"><stop stop-color="#ffffff" stop-opacity=".16"/><stop offset="1" stop-color="#ffffff" stop-opacity="0"/></radialGradient></defs><rect width="1200" height="800" fill="url(%23bg)"/><circle cx="980" cy="130" r="360" fill="url(%23gl)"/><circle cx="180" cy="700" r="300" fill="#fff" opacity=".035"/><ellipse cx="600" cy="440" rx="300" ry="190" fill="#0b0c0e" stroke="#3a3d42" stroke-width="5"/><ellipse cx="600" cy="430" rx="245" ry="145" fill="#111317" stroke="#292c31" stroke-width="3"/><path d="M420 410c55-75 120-95 180-58 48-48 126-25 168 34 36 51 24 101-28 127-86 42-254 35-319-12-35-25-35-57-1-91z" fill="#22262b"/><circle cx="515" cy="410" r="24" fill="#8d939b"/><circle cx="590" cy="370" r="18" fill="#666b73"/><circle cx="675" cy="423" r="28" fill="#9a9fa6"/><circle cx="720" cy="475" r="15" fill="#5e636a"/><text x="600" y="105" text-anchor="middle" fill="#aeb3ba" font-family="system-ui,sans-serif" font-size="20" font-weight="800" letter-spacing="6">' + title + '</text><text x="600" y="690" text-anchor="middle" fill="#f5f5f2" font-family="system-ui,sans-serif" font-size="48" font-weight="800">' + label + '</text><text x="600" y="735" text-anchor="middle" fill="#8f949c" font-family="system-ui,sans-serif" font-size="18" letter-spacing="3">KUCHAREK</text></svg>';
+  const footer = hero ? '' : \`<text x="600" y="690" text-anchor="middle" fill="#f5f5f2" font-family="system-ui,sans-serif" font-size="48" font-weight="800">\${label}</text><text x="600" y="735" text-anchor="middle" fill="#8f949c" font-family="system-ui,sans-serif" font-size="18" letter-spacing="3">KUCHAREK</text>\`;
+  const categoryLabel = hero ? '' : title;
+  const svg = \`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 800"><defs><linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#17191c"/><stop offset="1" stop-color="#08090b"/></linearGradient><radialGradient id="gl"><stop stop-color="#ffffff" stop-opacity=".16"/><stop offset="1" stop-color="#ffffff" stop-opacity="0"/></radialGradient></defs><rect width="1200" height="800" fill="url(%23bg)"/><circle cx="980" cy="130" r="360" fill="url(%23gl)"/><circle cx="180" cy="700" r="300" fill="#fff" opacity=".035"/><ellipse cx="600" cy="440" rx="300" ry="190" fill="#0b0c0e" stroke="#3a3d42" stroke-width="5"/><ellipse cx="600" cy="430" rx="245" ry="145" fill="#111317" stroke="#292c31" stroke-width="3"/><path d="M420 410c55-75 120-95 180-58 48-48 126-25 168 34 36 51 24 101-28 127-86 42-254 35-319-12-35-25-35-57-1-91z" fill="#22262b"/><circle cx="515" cy="410" r="24" fill="#8d939b"/><circle cx="590" cy="370" r="18" fill="#666b73"/><circle cx="675" cy="423" r="28" fill="#9a9fa6"/><circle cx="720" cy="475" r="15" fill="#5e636a"/><text x="600" y="105" text-anchor="middle" fill="#aeb3ba" font-family="system-ui,sans-serif" font-size="20" font-weight="800" letter-spacing="6">\${categoryLabel}</text>\${footer}</svg>\`;
   return 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
 }
-
 export function ingredientIcon(ing) {
   const n = String(ing?.name || '').toLowerCase();
   let kind = 'generic';

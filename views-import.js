@@ -169,30 +169,44 @@ export function importView(query) {
 
   const c = s.content;
   c.append(
-    h('section', { class: 'card stack' },
-      h('h2', { class: 'card-title' }, icon('globe', 20), 'Znajdź przepis w internecie'),
-      h('p', { class: 'muted' }, 'Otworzę wyszukiwarkę Google. Znajdź przepis, skopiuj jego tekst, wróć tutaj i wklej poniżej. Nic nie pobieram automatycznie.'),
+    h('section', { class: 'card stack import-search-card' },
+      h('h2', { class: 'card-title' }, icon('globe', 20), 'Znajdź przepis'),
+      h('p', { class: 'muted' }, 'Znajdź przepis, skopiuj URL albo tekst i wróć tutaj.'),
       h('div', { class: 'row gap' }, h('div', { class: 'grow' }, searchIn), button('Szukaj', { icon: 'search', kind: 'primary', onClick: doSearch })),
-      h('p', { class: 'muted small' }, 'Wyszukiwanie i tłumaczenie otwierają zewnętrzne strony (wymagają internetu). Sama aplikacja działa offline.')),
-    h('section', { class: 'card stack' },
-      h('h2', { class: 'card-title' }, icon('sparkle', 20), 'Import z URL przez AI'),
-      h('p', { class: 'muted' }, 'Wklej link do strony z przepisem. Kucharek pobierze stronę przez Twój AI Gateway, wyciągnie recepturę i przygotuje ją w formacie aplikacji.'),
-      field('Adres strony z przepisem', urlIn),
-      button('Importuj URL z AI', { kind: 'primary', lg: true, block: true, icon: 'sparkle', onClick: importUrlWithAI, aria: 'Importuj adres strony z AI' }),
-      aiStatus,
-      h('p', { class: 'muted small' }, 'Klucz OpenAI nie jest wpisywany do aplikacji. Gateway przechowuje go po swojej stronie jako sekret.'),
+      h('p', { class: 'muted small' }, 'Wyszukiwanie otwiera Google i wymaga internetu.')
     ),
-    h('section', { class: 'card stack' },
-      h('h2', { class: 'card-title' }, icon('upload', 20), 'Wklej przepis ręcznie'),
-      fileIn, textIn,
-      field('Adres strony (źródło)', manualUrlIn),
-      h('div', { class: 'row wrap gap' },
+    h('section', { class: 'card stack import-workflow-card' },
+      h('div', { class: 'import-flow-title' },
+        icon('sparkle', 20),
+        h('div', null,
+          h('h2', { class: 'card-title' }, 'Import receptury'),
+          h('p', { class: 'muted small' }, 'Jedna ścieżka: URL lub tekst, potem od razu rozpoznanie i podgląd.')
+        )
+      ),
+      h('div', { class: 'import-flow-steps' },
+        h('div', null, h('b', null, '1'), h('span', null, 'Skopiuj URL lub tekst')),
+        h('div', null, h('b', null, '2'), h('span', null, 'Wklej tutaj')),
+        h('div', null, h('b', null, '3'), h('span', null, 'Rozpoznaj i zapisz'))
+      ),
+      h('div', { class: 'import-url-block' },
+        field('URL strony (opcjonalnie)', urlIn),
+        button('Importuj URL przez AI', { kind: 'primary', lg: true, block: true, icon: 'sparkle', onClick: importUrlWithAI, aria: 'Importuj adres strony z AI' }),
+        aiStatus
+      ),
+      h('div', { class: 'import-divider' }, h('span', null, 'albo wklej tekst przepisu')),
+      fileIn,
+      textIn,
+      field('Adres źródła (opcjonalnie)', manualUrlIn),
+      h('div', { class: 'row wrap gap import-actions' },
         button('Wklej ze schowka', { icon: 'copy', onClick: pasteFromClipboard }),
         button('Wczytaj plik', { icon: 'upload', kind: 'ghost', onClick: () => fileIn.click() }),
-        button('Przetłumacz (Google)', { icon: 'globe', kind: 'ghost', onClick: translate })),
+        button('Przetłumacz', { icon: 'globe', kind: 'ghost', onClick: translate })
+      ),
       button('Rozpoznaj przepis', { kind: 'primary', lg: true, block: true, icon: 'sparkle', onClick: recognize }),
-      h('p', { class: 'muted small' }, 'Obce jednostki (cups, oz, lb, °F) i nazwy składników zamieniam na polskie i metryczne. Kroki w obcym języku przetłumaczysz przyciskiem „Przetłumacz”.')),
-    preview);
+      h('p', { class: 'muted small' }, 'Podgląd, poprawki i zapis są pod tym panelem, bez szukania pola na dole ekranu.')
+    ),
+    preview
+  );
   void emptyState; void hostOf;
   return { el: s.el };
 }

@@ -271,3 +271,42 @@ test.describe('Stage 34D: Magazyn UX', () => {
     if (metrics.mainAction) expect(metrics.mainAction).toBeGreaterThanOrEqual(44);
   });
 });
+
+
+test.describe('Stage 34F: redesign iPhone + real user flows', () => {
+  test('Gotuję renderuje prawdziwe karty i otwiera tryb gotowania', async ({ page }) => {
+    await page.goto('/#/cook');
+    await page.waitForFunction(() => window.__kucharzyna?.ready === true);
+    await expect(page.getByRole('heading', { name: 'Wybierz recepturę' })).toBeVisible();
+    await expect(page.locator('.cook-hub-list')).not.toContainText('[object Object]');
+    await expect(page.locator('.cook-hub-card')).not.toHaveCount(0);
+    await page.locator('.cook-hub-card').first().click();
+    await expect(page).toHaveURL(/#\/cook\//);
+  });
+
+  test('Magazyn ma ikonę składnika na każdym widocznym produkcie', async ({ page }) => {
+    await page.goto('/#/inventory');
+    await page.waitForFunction(() => window.__kucharzyna?.ready === true);
+    await expect(page.locator('.inventory-product').first()).toBeVisible();
+    expect(await page.locator('.inventory-product-visual .ingredient-icon svg').count()).toBeGreaterThan(0);
+  });
+
+  test('Więcej jest kompaktowym sheetem', async ({ page }) => {
+    await page.goto('/');
+    await page.waitForFunction(() => window.__kucharzyna?.ready === true);
+    await page.getByRole('button', { name: 'Więcej' }).click();
+    const panel=page.locator('.overlay.sheet .panel').last();
+    await expect(panel).toBeVisible();
+    const box=await panel.boundingBox();
+    expect(box).not.toBeNull();
+    expect(box.height).toBeLessThan(page.viewportSize().height*0.82);
+  });
+
+  test('Import łączy instrukcję i wklejanie w jednym panelu', async ({ page }) => {
+    await page.goto('/#/import');
+    await page.waitForFunction(() => window.__kucharzyna?.ready === true);
+    await expect(page.locator('.import-workflow-card')).toBeVisible();
+    await expect(page.getByLabel('Wklejony przepis', { exact: true })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Rozpoznaj przepis' })).toBeVisible();
+  });
+});

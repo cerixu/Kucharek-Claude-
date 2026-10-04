@@ -94,27 +94,27 @@ jobs:
           set -euo pipefail
           COMMIT_MESSAGE="$(git log -1 --pretty=%B)"
           case "$COMMIT_MESSAGE" in
-            "Stage 37:"*) echo "test_file=tests/stage-37.spec.js" >> "$GITHUB_OUTPUT" ;;
-            "Stage 38:"*) echo "test_file=tests/stage-38.spec.js" >> "$GITHUB_OUTPUT" ;;
-            "Stage 39:"*) echo "test_file=tests/stage-39.spec.js" >> "$GITHUB_OUTPUT" ;;
-            "Stage 40:"*) echo "test_file=tests/stage-40.spec.js" >> "$GITHUB_OUTPUT" ;;
-            "Stage 41:"*) echo "test_file=tests/stage-41.spec.js" >> "$GITHUB_OUTPUT" ;;
-            "Stage 42:"*) echo "test_file=tests/stage-42.spec.js" >> "$GITHUB_OUTPUT" ;;
-            "Stage 43:"*) echo "test_file=__FULL__" >> "$GITHUB_OUTPUT" ;;
-            "Stage 44:"*) echo "test_file=tests/stage-44.spec.js" >> "$GITHUB_OUTPUT" ;;
-            "Stage 45:"*) echo "test_file=tests/stage-45.spec.js" >> "$GITHUB_OUTPUT" ;;
-            "Stage 46:"*) echo "test_file=tests/stage-46.spec.js" >> "$GITHUB_OUTPUT" ;;
-            "Stage 47:"*) echo "test_file=__FULL__" >> "$GITHUB_OUTPUT" ;;
-            "Stage 48:"*) echo "test_file=__FULL__" >> "$GITHUB_OUTPUT" ;;
-            "Stage 50:"*) echo "test_file=__FULL__" >> "$GITHUB_OUTPUT" ;;
-            "Stage 51:"*) echo "test_file=tests/stage-51.spec.js" >> "$GITHUB_OUTPUT" ;;
-            "Stage 52:"*) echo "test_file=tests/stage-52.spec.js" >> "$GITHUB_OUTPUT" ;;
-            "Stage 53:"*) echo "test_file=tests/stage-53.spec.js" >> "$GITHUB_OUTPUT" ;;
-            "Stage 54:"*) echo "test_file=tests/stage-54.spec.js" >> "$GITHUB_OUTPUT" ;;
+            "Stage 37:"*) echo "test_files=tests/stage-37.spec.js" >> "$GITHUB_OUTPUT" ;;
+            "Stage 38:"*) echo "test_files=tests/stage-38.spec.js" >> "$GITHUB_OUTPUT" ;;
+            "Stage 39:"*) echo "test_files=tests/stage-39.spec.js" >> "$GITHUB_OUTPUT" ;;
+            "Stage 40:"*) echo "test_files=tests/stage-40.spec.js" >> "$GITHUB_OUTPUT" ;;
+            "Stage 41:"*) echo "test_files=tests/stage-41.spec.js" >> "$GITHUB_OUTPUT" ;;
+            "Stage 42:"*) echo "test_files=tests/stage-42.spec.js" >> "$GITHUB_OUTPUT" ;;
+            "Stage 43:"*) echo "test_files=__FULL__" >> "$GITHUB_OUTPUT" ;;
+            "Stage 44:"*) echo "test_files=tests/stage-44.spec.js" >> "$GITHUB_OUTPUT" ;;
+            "Stage 45:"*) echo "test_files=tests/stage-45.spec.js" >> "$GITHUB_OUTPUT" ;;
+            "Stage 46:"*) echo "test_files=tests/stage-46.spec.js" >> "$GITHUB_OUTPUT" ;;
+            "Stage 47:"*) echo "test_files=__FULL__" >> "$GITHUB_OUTPUT" ;;
+            "Stage 48:"*) echo "test_files=__FULL__" >> "$GITHUB_OUTPUT" ;;
+            "Stage 50:"*) echo "test_files=__FULL__" >> "$GITHUB_OUTPUT" ;;
+            "Stage 51:"*) echo "test_files=tests/stage-51.spec.js" >> "$GITHUB_OUTPUT" ;;
+            "Stage 52:"*) echo "test_files=tests/stage-52.spec.js" >> "$GITHUB_OUTPUT" ;;
+            "Stage 53:"*) echo "test_files=tests/stage-53.spec.js" >> "$GITHUB_OUTPUT" ;;
+            "Stage 54:"*) echo "test_files=tests/stage-54.spec.js" >> "$GITHUB_OUTPUT" ;;
             "Wait for background archive before corpus assertions"*) echo "test_files=tests/startup.spec.js tests/stage-54.spec.js" >> "$GITHUB_OUTPUT" ;;
             "Fix startup:"*) echo "test_files=tests/startup.spec.js" >> "$GITHUB_OUTPUT" ;;
             "Bump app cache version"*) echo "test_files=tests/startup.spec.js tests/pwa.spec.js" >> "$GITHUB_OUTPUT" ;;
-            *) echo "test_file=tests/startup.spec.js tests/user-mobile.spec.js" >> "$GITHUB_OUTPUT" ;;
+            *) echo "test_files=tests/startup.spec.js tests/user-mobile.spec.js" >> "$GITHUB_OUTPUT" ;;
           esac
 
       - name: Run E2E

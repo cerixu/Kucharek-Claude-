@@ -4,7 +4,7 @@ test.describe.configure({ mode: 'serial' });
 
 test('PWA: service worker rejestruje się i zgłasza wersję Kucharek', async ({ page }) => {
   await page.goto('/');
-  await page.waitForFunction(() => window.__kucharzyna?.ready === true);
+  await page.waitForFunction(() => window.__kucharek?.ready === true);
   await page.evaluate(async () => {
     const reg = await navigator.serviceWorker.ready;
     if (!reg.active) throw new Error('Brak aktywnego service workera');
@@ -27,7 +27,7 @@ test('PWA: service worker rejestruje się i zgłasza wersję Kucharek', async ({
 
 test('PWA: po zapisaniu cache aplikacja otwiera się offline', async ({ page, context }) => {
   await page.goto('/');
-  await page.waitForFunction(() => window.__kucharzyna?.ready === true);
+  await page.waitForFunction(() => window.__kucharek?.ready === true);
   await page.evaluate(async () => {
     const reg = await navigator.serviceWorker.ready;
     if (!reg.active) throw new Error('Brak aktywnego service workera');
@@ -36,7 +36,7 @@ test('PWA: po zapisaniu cache aplikacja otwiera się offline', async ({ page, co
   await expect(page.getByText('Kucharek', { exact: true }).first()).toBeVisible();
   await context.setOffline(true);
   await page.reload();
-  await page.waitForFunction(() => window.__kucharzyna?.ready === true);
+  await page.waitForFunction(() => window.__kucharek?.ready === true);
   await expect(page.getByText('Kucharek', { exact: true }).first()).toBeVisible();
   await expect(page.locator('#view')).toBeVisible();
   await context.setOffline(false);
@@ -44,7 +44,7 @@ test('PWA: po zapisaniu cache aplikacja otwiera się offline', async ({ page, co
 
 test('PWA: komunikaty użytkownika nie wracają do starej nazwy Kucharzyna', async ({ page }) => {
   await page.goto('/');
-  await page.waitForFunction(() => window.__kucharzyna?.ready === true);
+  await page.waitForFunction(() => window.__kucharek?.ready === true);
   const source = await page.evaluate(async () => {
     const files = ['app.js', 'pwa.js', 'views-settings.js'];
     const texts = await Promise.all(files.map(async (f) => await (await fetch(f, { cache: 'no-store' })).text()));

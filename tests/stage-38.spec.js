@@ -3,7 +3,7 @@ import { test, expect } from '@playwright/test';
 test.describe('Stage 38: Magazyn 2.0', () => {
   test('strata aktualizuje stan, koszt i ruch magazynowy', async ({ page }) => {
     await page.goto('/');
-    await page.waitForFunction(() => window.__kucharzyna?.ready === true);
+    await page.waitForFunction(() => window.__kucharek?.ready === true);
     const out = await page.evaluate(async () => {
       const i = await import('/inventory.js');
       const p = await import('/pro.js');
@@ -20,7 +20,7 @@ test.describe('Stage 38: Magazyn 2.0', () => {
 
   test('raport tygodniowy grupuje produkt i powód', async ({ page }) => {
     await page.goto('/');
-    await page.waitForFunction(() => window.__kucharzyna?.ready === true);
+    await page.waitForFunction(() => window.__kucharek?.ready === true);
     const out = await page.evaluate(async () => {
       const i = await import('/inventory.js');
       const p = await import('/pro.js');

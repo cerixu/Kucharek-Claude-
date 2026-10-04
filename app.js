@@ -231,9 +231,7 @@ async function boot() {
     recipeCount: state.recipes.size,
     readyAt: performance.now()
   });
-  const testHook = { state, ready: true };
-  window.__kucharzyna = testHook;
-  window.__kucharek = testHook;
+  window.__kucharek = { state, ready: true };
 }
 
 boot();

@@ -464,7 +464,7 @@ test('ETAP 33: ekran Partie i terminy pokazuje statusy i filtry',async({page})=>
   await expect(page.getByText('PRZETERMINOWANA',{exact:true})).toBeVisible();
   await expect(page.getByText('WKRÓTCE',{exact:true})).toBeVisible();
   await expect(page.getByText('BEZ TERMINU',{exact:true})).toBeVisible();
-  await expect(page.getByText('FV-TERM',{exact:true})).toBeVisible();
+  await expect(page.getByText(/Dostawa: FV-TERM/)).toBeVisible();
   await page.getByRole('button',{name:'Przeterminowane',exact:true}).click();
   await expect(page.getByText('Produkt przeterminowany',{exact:true})).toBeVisible();
   await expect(page.getByText('Produkt wkrótce',{exact:true})).toHaveCount(0);

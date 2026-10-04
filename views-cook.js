@@ -155,7 +155,7 @@ export function cookView({ id }) {
   }
 
   function checkRow(key, map, inner, cls = '') {
-    const row = h('div', { class: `cook-row ${cls} ${map[key] ? 'on' : ''}`, role: 'checkbox', tabindex: '0', 'aria-checked': !!map[key] },
+    const row = h('div', { class: `cook-row ${cls} ${map[key] ? 'on' : ''}`, role: 'checkbox', tabindex: '0', 'aria-checked': String(!!map[key]) },
       h('span', { class: 'cbox' }, icon('check', 22)), inner);
     row.addEventListener('click', (e) => { if (e.target.closest('.step-timer')) return; toggle(map, key, row); });
     row.addEventListener('keydown', (e) => { if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); toggle(map, key, row); } });

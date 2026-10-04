@@ -487,7 +487,9 @@ function extraSeedRecipes(now) {
 
 /** Dodaje przykładowe receptury, jeśli ich brakuje (nie nadpisuje edytowanych). */
 export async function restoreSeeds({ forceMedia = false } = {}) {
-  const seeds=[...seedRecipes(), ...recipeLibrary()];
+  // seedRecipes() już zawiera całą bibliotekę 1200+. Nie generuj jej drugi raz.
+  // Deduplikacja ID gwarantuje też pojedynczy zapis każdej receptury.
+  const seeds=[...new Map(seedRecipes().map((r) => [r.id, r])).values()];
   const missing=seeds.filter(r=>!state.recipes.has(r.id));
   const mediaUpdates=seeds.filter(r=>{
     if(!state.recipes.has(r.id)||!r.photo)return false;

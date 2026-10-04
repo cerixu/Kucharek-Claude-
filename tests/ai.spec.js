@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test';
 
 async function ready(page) {
   await page.goto('/');
-  await page.waitForFunction(() => window.__kucharzyna?.ready === true);
+  await page.waitForFunction(() => window.__kucharek?.ready === true);
 }
 
 async function configureMockGateway(page) {
@@ -17,7 +17,7 @@ test.describe('Kucharek AI', () => {
   test('ustawienia mają gateway, ale nie mają pola na klucz OpenAI', async ({ page }) => {
     await ready(page);
     await page.goto('/#/settings');
-    await page.waitForFunction(() => window.__kucharzyna?.ready === true);
+    await page.waitForFunction(() => window.__kucharek?.ready === true);
 
     await expect(page.getByLabel('Adres AI Gateway', { exact: true })).toBeVisible();
     await expect(page.getByLabel('Token gatewaya (tylko ta sesja)', { exact: true })).toBeVisible();

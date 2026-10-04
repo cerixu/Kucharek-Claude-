@@ -6,10 +6,11 @@
    ========================================================================== */
 
 import { ARCHIVE_RECIPES } from './recipe-library-data/index.js';
+import { translateRecipe } from './recipe-translation.js';
 
 export function recipeLibrary(now = Date.now()) {
   return ARCHIVE_RECIPES.map((r) => ({
-    ...r,
+    ...translateRecipe(r),
     createdAt: now,
     updatedAt: now,
   }));

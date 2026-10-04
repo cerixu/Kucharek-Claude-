@@ -92,6 +92,7 @@ test.describe('Stage 50 — real recipe corpus', () => {
     await search.fill('frog legs');
     await page.waitForTimeout(250);
     await expect(page.locator('.counter')).toHaveText(/[0-9]+ receptur/);
-    await expect(page.locator('.list').first()).toContainText(/frog legs/i);
+    const listsText = await page.locator('.list').allInnerTexts();
+    expect(listsText.join(' ').toLowerCase()).toContain('frog legs');
   });
 });

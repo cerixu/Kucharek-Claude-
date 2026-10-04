@@ -280,21 +280,19 @@ test('Gotuję: zakończenie receptury odejmuje składniki z Magazynu', async ({ 
 test('Magazyn: powtarzające się składniki są sumowane bez podwójnego odejmowania', async ({ page }) => {
   await page.goto('/');
   await page.waitForFunction(() => window.__kucharzyna?.ready === true);
-  const result = await page.evaluate(async (name) => {
-    const db = await new Promise((resolve, reject) => {
-      const req = indexedDB.open(name);
-      req.onsuccess = () => resolve(req.result);
-      req.onerror = () => reject(req.error);
-    });
-    const tx = db.transaction('inventory', 'readwrite');
-    tx.objectStore('inventory').put({
-      id: 'e2e-dup-flour', name: 'Mąka duplikat E2E', quantity: 1, unit: 'kg',
-      minQuantity: 0, purchasePrice: null, priceUnit: 'kg', ean: '', category: '',
-      createdAt: Date.now(), updatedAt: Date.now(),
-    });
-    await new Promise((resolve, reject) => { tx.oncomplete = resolve; tx.onerror = () => reject(tx.error); });
-    db.close();
+  const result = await page.evaluate(async () => {
     const mod = await import('/inventory.js');
+    const item = await mod.saveInventoryItem({
+      id: 'e2e-dup-flour',
+      name: 'Mąka duplikat E2E',
+      quantity: 1,
+      unit: 'kg',
+      minQuantity: 0,
+      purchasePrice: null,
+      priceUnit: 'kg',
+      ean: '',
+      category: ''
+    });
     const recipe = {
       id: 'e2e-dup-recipe',
       name: 'Test duplikatów',
@@ -304,12 +302,12 @@ test('Magazyn: powtarzające się składniki są sumowane bez podwójnego odejmo
       ] }],
     };
     const consumed = await mod.consumeRecipeIngredients(recipe, 1);
-    return { quantity: mod.listInventory().find((x) => x.id === 'e2e-dup-flour').quantity, shortages: consumed.shortages };
-  }, DB_NAME);
+    const current = mod.listInventory().find((x) => x.id === item.id);
+    return { quantity: current?.quantity, shortages: consumed.shortages };
+  });
   expect(result.quantity).toBeCloseTo(0.3, 10);
   expect(result.shortages).toHaveLength(0);
 });
-
 test('Gotuję: brakujące składniki trafiają do Zakupów', async ({ page }) => {
   await page.goto('/');
   await page.evaluate(async (name) => {

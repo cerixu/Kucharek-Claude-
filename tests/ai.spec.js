@@ -45,6 +45,7 @@ test.describe('Kucharek AI', () => {
 
   test('import z URL przechodzi przez gateway i pokazuje podgląd receptury', async ({ page }) => {
     await ready(page);
+    await page.goto('/#/import');
     await configureMockGateway(page);
 
     let receivedUrl = '';
@@ -81,7 +82,6 @@ test.describe('Kucharek AI', () => {
       });
     });
 
-    await page.goto('/#/import');
     await page.getByLabel('Adres strony z przepisem', { exact: true }).fill('https://example.com/carbonara');
     await page.getByRole('button', { name: 'Importuj adres strony z AI', exact: true }).click();
 

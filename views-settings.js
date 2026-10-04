@@ -50,7 +50,7 @@ export function settingsView() {
   });
   const aiToken = textInput({
     value: '',
-    label: 'Token gatewaya (sesja)',
+    label: 'Token gatewaya (tylko ta sesja)',
     placeholder: 'Wklej token tylko na tym urządzeniu',
     type: 'password',
     capitalize: 'none'

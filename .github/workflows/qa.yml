@@ -30,6 +30,9 @@ jobs:
       - name: Install dependencies
         run: npm install --no-audit --no-fund
 
+      - name: Syntax preflight
+        run: find . -name '*.js' -not -path './node_modules/*' -print0 | xargs -0 -n1 node --check
+
       - name: Install Chromium
         run: npx playwright install --with-deps chromium webkit
 

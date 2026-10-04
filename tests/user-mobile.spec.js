@@ -115,3 +115,63 @@ test('Stage 34B: numer wersji jest widoczny w Ustawieniach', async ({ page }) =>
   await expect(page.getByText('Wersja aplikacji', { exact: true })).toBeVisible();
   await expect(page.getByText('1.3.34', { exact: true })).toBeVisible();
 });
+
+
+test.describe('Stage 34C: wspólny system wizualny', () => {
+  test('główne ekrany używają wspólnej geometrii i iPhone tap targets', async ({ page }) => {
+    for (const path of ['/', '/recipes', '/inventory', '/settings']) {
+      await page.goto('/#' + path);
+      await page.waitForFunction(() => window.__kucharzyna?.ready === true);
+
+      await expect(page.locator('.screen .topbar')).toBeVisible();
+
+      const metrics = await page.evaluate(() => {
+        const button = document.querySelector('.btn');
+        const input = document.querySelector('input');
+        const card = document.querySelector('.card, .rcard, .stock-row, .history-card, .bigcard');
+        const style = card ? getComputedStyle(card) : null;
+        const btnStyle = button ? getComputedStyle(button) : null;
+        const inputStyle = input ? getComputedStyle(input) : null;
+        return {
+          cardRadius: style ? parseFloat(style.borderTopLeftRadius) : 0,
+          buttonHeight: button ? button.getBoundingClientRect().height : 0,
+          inputFontSize: inputStyle ? parseFloat(inputStyle.fontSize) : 0,
+          buttonRadius: btnStyle ? parseFloat(btnStyle.borderTopLeftRadius) : 0,
+        };
+      });
+
+      expect(metrics.cardRadius).toBeGreaterThanOrEqual(14);
+      if (metrics.buttonHeight) expect(metrics.buttonHeight).toBeGreaterThanOrEqual(44);
+      if (metrics.inputFontSize) expect(metrics.inputFontSize).toBeGreaterThanOrEqual(16);
+      if (metrics.buttonRadius) expect(metrics.buttonRadius).toBeGreaterThanOrEqual(12);
+    }
+  });
+
+  test('główne widoki mają zerowy poziomy overflow po finalnym stylowaniu', async ({ page }) => {
+    for (const path of ['/', '/recipes', '/cook', '/inventory', '/settings']) {
+      await page.goto('/#' + path);
+      await page.waitForFunction(() => window.__kucharzyna?.ready === true);
+      const metrics = await page.evaluate(() => ({
+        overflow: document.documentElement.scrollWidth - document.documentElement.clientWidth,
+        viewportWidth: window.innerWidth,
+      }));
+      expect(metrics.overflow).toBeLessThanOrEqual(1);
+      expect(metrics.viewportWidth).toBeGreaterThan(0);
+    }
+  });
+
+  test('ustawienia pokazują aktualną wersję 34C', async ({ page }) => {
+    await page.goto('/#/settings');
+    await page.waitForFunction(() => window.__kucharzyna?.ready === true);
+    await expect(page.getByText('Wersja aplikacji', { exact: true })).toBeVisible();
+    await expect(page.getByText('1.3.35', { exact: true })).toBeVisible();
+  });
+
+  test('zrzuty kontrolne głównych ekranów powstają w QA', async ({ page }, testInfo) => {
+    for (const [name, path] of [['start','/'], ['recipes','/recipes'], ['inventory','/inventory'], ['settings','/settings']]) {
+      await page.goto('/#' + path);
+      await page.waitForFunction(() => window.__kucharzyna?.ready === true);
+      await page.screenshot({ path: testInfo.outputPath('visual-' + name + '-34C.png'), fullPage: true });
+    }
+  });
+});

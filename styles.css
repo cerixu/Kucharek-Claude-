@@ -2070,3 +2070,241 @@ body.kb-open .actionbar, body.kb-open .cookbar { padding-bottom: 10px; }
   .start-recent-card,
   .start-cook-btn { transition: none !important; }
 }
+
+
+/* ==========================================================================
+   Stage 34C — wspólny system wizualny aplikacji
+   Jeden język: spokojne szkło, miękkie warstwy, spójna geometria.
+   iPhone-first, bez zmiany logiki ekranów.
+   ========================================================================== */
+:root {
+  --ui-radius-xs: 12px;
+  --ui-radius-sm: 16px;
+  --ui-radius-md: 20px;
+  --ui-radius-lg: 26px;
+  --ui-glass-bg: color-mix(in srgb, var(--glass-bg) 88%, transparent);
+  --ui-glass-border: color-mix(in srgb, var(--glass-line) 82%, transparent);
+  --ui-highlight: color-mix(in srgb, #fff 7%, transparent);
+  --ui-shadow-soft: 0 10px 30px rgba(0,0,0,.10);
+  --ui-shadow-deep: 0 18px 42px rgba(0,0,0,.16);
+}
+html, body {
+  background:
+    radial-gradient(circle at 50% -10%, rgba(255,194,26,.06), transparent 34%),
+    var(--bg);
+}
+#app {
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.018), transparent 24%),
+    transparent;
+}
+.screen {
+  background: transparent;
+}
+.topbar {
+  position: sticky;
+  top: 0;
+  border-bottom-color: transparent;
+  background: color-mix(in srgb, var(--bg) 78%, transparent);
+  -webkit-backdrop-filter: blur(20px) saturate(1.25);
+  backdrop-filter: blur(20px) saturate(1.25);
+}
+.topbar-row {
+  min-height: 58px;
+}
+.topbar-title {
+  font-weight: 830;
+  letter-spacing: -.03em;
+}
+.content {
+  width: 100%;
+  box-sizing: border-box;
+  padding-top: 12px;
+  padding-bottom: calc(30px + env(safe-area-inset-bottom, 0px));
+  gap: 16px;
+}
+.card,
+.stock-row,
+.history-card,
+.bigcard,
+.shop-item,
+.cook-row,
+.result,
+.banner,
+.preview-line {
+  border-color: var(--ui-glass-border);
+  background:
+    linear-gradient(145deg, var(--ui-highlight), transparent 52%),
+    var(--ui-glass-bg);
+  box-shadow: var(--ui-shadow-soft), inset 0 1px 0 var(--glass-hi);
+}
+.card,
+.bigcard,
+.result,
+.banner {
+  border-radius: var(--ui-radius-md);
+}
+.stock-row,
+.history-card,
+.shop-item,
+.cook-row,
+.preview-line {
+  border-radius: var(--ui-radius-sm);
+}
+.card {
+  padding: 17px;
+}
+.card-title {
+  font-size: 1.02rem;
+  letter-spacing: -.02em;
+}
+.sechead {
+  margin-top: 2px;
+}
+.sechead h2 {
+  font-size: 1.08rem;
+  letter-spacing: -.025em;
+}
+.btn {
+  min-height: 46px;
+  border-radius: var(--ui-radius-sm);
+  border-color: var(--ui-glass-border);
+  background:
+    linear-gradient(145deg, var(--ui-highlight), transparent 52%),
+    var(--ui-glass-bg);
+  box-shadow: inset 0 1px 0 var(--glass-hi);
+  font-weight: 720;
+}
+.btn.primary {
+  background: var(--accent);
+  box-shadow: 0 9px 26px rgba(0,0,0,.15);
+}
+.btn.ghost {
+  background: transparent;
+  box-shadow: none;
+}
+.iconbtn {
+  border-radius: 14px;
+}
+.input {
+  min-height: 46px;
+  border-radius: var(--ui-radius-sm);
+  border-color: var(--ui-glass-border);
+  background:
+    linear-gradient(145deg, var(--ui-highlight), transparent 52%),
+    var(--ui-glass-bg);
+  box-shadow: inset 0 1px 0 var(--glass-hi);
+}
+.search-input {
+  min-height: 48px;
+  border-radius: 999px;
+}
+.seg {
+  padding: 4px;
+  border-radius: var(--ui-radius-md);
+  background: color-mix(in srgb, var(--surface-2) 80%, transparent);
+  border: 1px solid var(--ui-glass-border);
+}
+.seg button.on {
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.08);
+}
+.chip {
+  min-height: 42px;
+  border-color: var(--ui-glass-border);
+  background:
+    linear-gradient(145deg, var(--ui-highlight), transparent 52%),
+    var(--ui-glass-bg);
+}
+.chip.on {
+  box-shadow: 0 7px 20px rgba(0,0,0,.10);
+}
+.pill {
+  border: 1px solid var(--ui-glass-border);
+}
+.panel {
+  border: 1px solid var(--ui-glass-border);
+  background:
+    linear-gradient(145deg, var(--ui-highlight), transparent 52%),
+    var(--surface);
+}
+.panel-head {
+  min-height: 58px;
+}
+.panel-head h2 {
+  letter-spacing: -.03em;
+}
+.panel-foot {
+  background: color-mix(in srgb, var(--surface) 88%, transparent);
+}
+.menu .btn,
+.more-grid .btn {
+  border-radius: var(--ui-radius-sm);
+}
+#toasts {
+  padding-left: max(12px, env(safe-area-inset-left, 0px));
+  padding-right: max(12px, env(safe-area-inset-right, 0px));
+}
+.toast {
+  border: 1px solid var(--ui-glass-border);
+  border-radius: 16px;
+  background:
+    linear-gradient(145deg, var(--ui-highlight), transparent 52%),
+    var(--glass-bg);
+  box-shadow: var(--ui-shadow-deep), inset 0 1px 0 var(--glass-hi);
+  -webkit-backdrop-filter: blur(20px) saturate(1.25);
+  backdrop-filter: blur(20px) saturate(1.25);
+}
+:focus-visible {
+  outline: 2px solid var(--accent-text);
+  outline-offset: 2px;
+}
+button, a, input, select, textarea {
+  -webkit-tap-highlight-color: transparent;
+}
+img {
+  image-rendering: auto;
+}
+.recipe-visual {
+  filter: saturate(.96) contrast(1.02);
+  transition: filter .2s ease, transform .2s ease;
+}
+.rthumb,
+.start-recent-media,
+.cook-hub-media {
+  border-radius: var(--ui-radius-sm);
+}
+.stock-main,
+.history-main,
+.shop-main,
+.cook-text {
+  min-width: 0;
+}
+.result-k,
+.stat-k,
+.fact,
+.stock-meta,
+.history-card .muted,
+.shop-from,
+.cook-sub {
+  letter-spacing: .01em;
+}
+@media (max-width: 430px) {
+  .content {
+    padding-top: 10px;
+    gap: 14px;
+  }
+  .card {
+    padding: 15px;
+  }
+  .btn {
+    min-height: 46px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .recipe-visual,
+  .btn,
+  .iconbtn,
+  .tab {
+    transition: none !important;
+  }
+}

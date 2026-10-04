@@ -10,7 +10,7 @@ import { state, getSetting, setSetting, restoreSeeds, listRecipes } from './reci
 import { openCategoryManager } from './views-recipes.js';
 import { exportBackup, readBackupFile, importBackup, wipeAll, daysSinceBackup } from './backup.js';
 import { checkForUpdate, swVersion, storageInfo, requestPersist, isStandalone, isIOS, swSupported } from './pwa.js';
-import { APP_VERSION, fmtDateTime } from './util.js';
+import { APP_VERSION, fmtDateTime, copyText } from './util.js';
 import { getAIGatewayUrl, setAIGatewayUrl, setAIGatewayToken, clearAIGatewayToken, testAIGateway } from './ai.js';
 
 const mb = (b) => (b == null ? '—' : b < 1048576 ? Math.max(1, Math.round(b / 1024)) + ' KB' : (b / 1048576).toFixed(1).replace('.', ',') + ' MB');
@@ -40,6 +40,8 @@ export function settingsView() {
     h('div', null, h('div', { class: 'row between' }, h('span', { class: 'field-label' }, 'Wielkość tekstu'), scaleVal), range));
 
   /* ----- Kucharek AI ----- */
+  const copyAISecret = (value) => button('Kopiuj', { sm: true, kind: 'ghost', onClick: async () => { const ok = await copyText(value); toast(ok ? 'Skopiowano: ' + value : 'Nie udało się skopiować'); } });
+
   const aiGateway = textInput({
     value: getAIGatewayUrl(),
     label: 'Adres AI Gateway',
@@ -71,6 +73,12 @@ export function settingsView() {
   const ai = group('Kucharek AI',
     switchEl(getSetting('aiEnabled') !== false, set('aiEnabled'), 'Kucharek AI', 'Włącza import URL i pomocnika podczas gotowania'),
 
+    h('div', { class: 'ai-quickstart' },
+      h('div', { class: 'ai-quickstep' }, h('b', null, '1'), h('span', null, 'Worker')),
+      h('div', { class: 'ai-quickstep' }, h('b', null, '2'), h('span', null, 'Sekrety')),
+      h('div', { class: 'ai-quickstep' }, h('b', null, '3'), h('span', null, 'Adres + token')),
+      h('p', { class: 'muted small' }, 'Potem w Importuj recepturę wklejasz URL lub tekst w jednym panelu.')
+    ),
     h('details', { class: 'ai-setup-guide' },
       h('summary', null, icon('sparkle', 18), h('strong', null, 'Jak uruchomić Kucharek AI?')),
       h('div', { class: 'ai-guide-body stack' },
@@ -90,19 +98,19 @@ export function settingsView() {
         h('div', { class: 'ai-step' },
           h('b', null, '4. Dodaj klucz OpenAI jako SECRET'),
           h('p', { class: 'muted' }, 'W Workerze wejdź w Settings → Variables and Secrets → Add secret. Nazwa:'),
-          h('code', null, 'OPENAI_API_KEY'),
+          h('div', { class: 'ai-code-row' }, h('code', null, 'OPENAI_API_KEY'), copyAISecret('OPENAI_API_KEY')),
           h('p', { class: 'muted' }, 'Wartość: Twój klucz API OpenAI. Nie wklejaj go do Kucharka, GitHuba ani żadnego pola w aplikacji.'),
         ),
         h('div', { class: 'ai-step' },
           h('b', null, '5. Dodaj drugi SECRET'),
           h('p', { class: 'muted' }, 'Dodaj kolejny sekret o nazwie:'),
-          h('code', null, 'KUCHAREK_GATEWAY_TOKEN'),
+          h('div', { class: 'ai-code-row' }, h('code', null, 'KUCHAREK_GATEWAY_TOKEN'), copyAISecret('KUCHAREK_GATEWAY_TOKEN')),
           h('p', { class: 'muted' }, 'Wartość wymyśl jako długi losowy token, np. wygenerowany menedżerem haseł. Ten sam token wkleisz niżej w Kucharku.'),
         ),
         h('div', { class: 'ai-step' },
           h('b', null, '6. Dodaj adres strony aplikacji'),
           h('p', { class: 'muted' }, 'W Variables dodaj:'),
-          h('code', null, 'ALLOWED_ORIGIN'),
+          h('div', { class: 'ai-code-row' }, h('code', null, 'ALLOWED_ORIGIN'), copyAISecret('ALLOWED_ORIGIN')),
           h('p', { class: 'muted' }, 'Wartość to dokładny adres, z którego działa Kucharek, np. https://cerixu.github.io. Bez ukośnika na końcu.'),
         ),
         h('div', { class: 'ai-step' },

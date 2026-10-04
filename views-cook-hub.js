@@ -26,16 +26,22 @@ export function cookHubView() {
     return { el: s.el };
   }
 
-  const rows = picks.map((r) => h('button', {
+  const source = picks.length
+    ? picks
+    : all.slice().sort((a, b) => (b.lastOpenedAt || 0) - (a.lastOpenedAt || 0)).slice(0, 8);
+
+  const rows = source.map((r) => h('button', {
     type: 'button',
     class: 'cook-hub-card',
     'aria-label': `Gotuj: ${r.name}`,
-    onClick: () => navigate('/recipe/' + encodeURIComponent(r.id)),
+    onClick: () => navigate('/cook/' + encodeURIComponent(r.id)),
   },
     h('div', { class: 'cook-hub-media' }, recipeVisual(r)),
     h('div', { class: 'cook-hub-copy' },
       h('strong', null, r.name || 'Bez nazwy'),
-      h('span', { class: 'muted small' }, r.favorite ? 'Ulubione' : 'Ostatnio używane')),
+      h('span', { class: 'muted small' }, picks.length
+        ? (r.favorite ? 'Ulubione' : 'Ostatnio używane')
+        : 'Uruchom gotowanie')),
     icon('right', 18)
   ));
 
@@ -46,7 +52,7 @@ export function cookHubView() {
       h('p', { class: 'muted' }, 'Po otwarciu receptury wystarczy stuknąć „Gotuję”, żeby przejść do pełnego trybu kucharskiego.'),
       button('Wszystkie receptury', { icon: 'book', onClick: () => navigate('/recipes') })
     ),
-    picks.length ? h('div', { class: 'cook-hub-list' }, picks) : h('p', { class: 'muted pad' }, 'Otwórz najpierw kilka receptur, żeby pojawiły się tutaj ostatnie wybory.')
+    source.length ? h('div', { class: 'cook-hub-list' }, rows) : h('p', { class: 'muted pad' }, 'Dodaj recepturę, żeby rozpocząć gotowanie.')
   );
 
   return { el: s.el };

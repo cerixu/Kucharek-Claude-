@@ -1,0 +1,123 @@
+/* ==========================================================================
+   Stage 34F · iPhone-first visual cleanup
+   ========================================================================== */
+.overlay .backdrop {
+  background: rgba(8,10,14,.18) !important;
+  -webkit-backdrop-filter: blur(18px) saturate(1.08);
+  backdrop-filter: blur(18px) saturate(1.08);
+}
+.overlay.sheet .panel {
+  width:min(100%,680px);
+  max-height:min(84dvh,760px);
+  border-radius:30px 30px 0 0 !important;
+  overflow:hidden;
+  background:color-mix(in srgb,var(--surface) 92%,transparent) !important;
+  border-color:color-mix(in srgb,var(--text) 10%,transparent) !important;
+  -webkit-backdrop-filter:blur(28px) saturate(1.16);
+  backdrop-filter:blur(28px) saturate(1.16);
+  box-shadow:0 -18px 60px rgba(0,0,0,.16),inset 0 1px 0 rgba(255,255,255,.12) !important;
+}
+.overlay.sheet .panel::before {
+  content:""; display:block; width:42px; height:5px; margin:9px auto 0;
+  border-radius:999px; background:currentColor; opacity:.18;
+}
+.overlay.sheet .panel-head { min-height:60px; padding-top:3px; }
+.overlay.sheet .panel-head h2 { font-size:1.18rem; letter-spacing:-.035em; }
+.overlay.sheet .panel-body { padding-top:8px; }
+.overlay.sheet .panel-foot {
+  background:color-mix(in srgb,var(--surface) 84%,transparent) !important;
+  -webkit-backdrop-filter:blur(24px); backdrop-filter:blur(24px);
+}
+.overlay.sheet:has(.more-grid) .panel { max-height:min(560px,74dvh); }
+.overlay.sheet:has(.inventory-detail) .panel { max-height:min(680px,84dvh); }
+.overlay.sheet:has(.ai-panel) .panel { max-height:min(740px,88dvh); }
+.more-grid { gap:10px; }
+.more-grid .btn { min-height:56px; justify-content:flex-start; padding-inline:16px; border-radius:18px; text-align:left; }
+
+.start-v2 .start-hero-card {
+  min-height:310px; border-radius:30px; background:#101215;
+  border-color:rgba(255,255,255,.13);
+  box-shadow:0 24px 58px rgba(0,0,0,.20),inset 0 1px 0 rgba(255,255,255,.08);
+}
+.start-v2 .start-hero-content { min-height:310px; padding:22px; }
+.start-v2 .start-hero-copy { max-width:80%; gap:8px; }
+.start-v2 .start-hero-card h2 { max-width:12ch; font-size:clamp(2rem,8.7vw,2.62rem); line-height:.98; }
+.start-v2 .start-hero-sub { max-width:29ch; color:rgba(255,255,255,.82); }
+.start-v2 .start-hero-image img { opacity:.55; }
+.start-v2 .start-hero-scrim {
+  background:linear-gradient(90deg,rgba(8,9,10,.96) 0%,rgba(8,9,10,.78) 44%,rgba(8,9,10,.28) 84%,rgba(8,9,10,.22) 100%),
+             linear-gradient(180deg,rgba(8,9,10,.04) 0%,rgba(8,9,10,.18) 54%,rgba(8,9,10,.72) 100%);
+}
+:root[data-theme="light"] .start-v2,
+:root[data-theme="auto"] .start-v2 { background:var(--bg); }
+:root[data-theme="light"] .start-v2 .start-action,
+:root[data-theme="auto"] .start-v2 .start-action {
+  background:var(--surface); border-color:var(--line);
+  box-shadow:0 8px 24px rgba(20,20,20,.07),inset 0 1px 0 rgba(255,255,255,.55);
+}
+
+.tape,
+.screen:has(.hero-photo) .tape {
+  align-self:flex-start !important; display:inline-flex; align-items:center;
+  min-height:34px; max-width:100%; padding:6px 12px !important; margin:12px 0 8px !important;
+  border-radius:999px !important;
+  background:color-mix(in srgb,var(--accent-soft) 84%,var(--surface)) !important;
+  color:var(--accent-text) !important;
+  border:1px solid color-mix(in srgb,var(--accent-text) 30%,transparent) !important;
+  font-size:.74rem !important; font-weight:850 !important; letter-spacing:.10em;
+  line-height:1; text-transform:uppercase; box-shadow:none !important;
+}
+.screen:has(.hero-photo) { background:var(--bg) !important; }
+:root[data-theme="light"] .screen:has(.hero-photo) .card,
+:root[data-theme="auto"] .screen:has(.hero-photo) .card {
+  background:var(--surface) !important; border-color:var(--line) !important; box-shadow:var(--shadow) !important;
+}
+
+.inventory-product-visual,
+.inventory-detail-icon { color:var(--accent-text); }
+.inventory-product-visual .ingredient-icon,
+.inventory-detail-icon .ingredient-icon {
+  width:100% !important; height:100% !important; display:grid; place-items:center;
+  background:transparent !important; border:0 !important; box-shadow:none !important;
+}
+.inventory-product-visual .ingredient-icon svg { width:30px !important; height:30px !important; }
+.inventory-detail-icon .ingredient-icon svg { width:34px !important; height:34px !important; }
+
+.cook-hub .content { gap:14px; }
+.cook-hub-intro { padding:19px !important; border-radius:24px !important; }
+.cook-hub-list { gap:9px; }
+.cook-hub-card { min-height:82px; border-radius:20px !important; padding:9px; }
+
+.import-workflow-card { gap:14px; }
+.import-flow-title { display:flex; align-items:flex-start; gap:10px; }
+.import-flow-title > .ico { color:var(--accent-text); margin-top:2px; }
+.import-flow-steps { display:grid; grid-template-columns:repeat(3,1fr); gap:7px; }
+.import-flow-steps>div {
+  min-width:0; display:flex; flex-direction:column; gap:5px; padding:10px; border-radius:16px;
+  background:var(--surface-2); border:1px solid var(--line);
+}
+.import-flow-steps b {
+  display:grid; place-items:center; width:24px; height:24px; border-radius:50%;
+  background:var(--accent); color:var(--on-accent); font-size:.74rem;
+}
+.import-flow-steps span { font-size:.72rem; line-height:1.2; font-weight:700; }
+.import-url-block {
+  display:grid; gap:8px; padding:12px; border-radius:19px;
+  background:color-mix(in srgb,var(--surface-2) 78%,transparent); border:1px solid var(--line);
+}
+.import-divider { display:flex; align-items:center; gap:8px; color:var(--muted); font-size:.72rem; font-weight:800; letter-spacing:.10em; text-transform:uppercase; }
+.import-divider::before,.import-divider::after { content:""; height:1px; flex:1; background:var(--line); }
+.import-actions .btn { flex:1 1 auto; }
+
+.ai-quickstart { display:grid; grid-template-columns:repeat(3,1fr); gap:7px; padding:11px; border-radius:17px; background:var(--surface-2); border:1px solid var(--line); }
+.ai-quickstep { display:flex; align-items:center; gap:7px; min-width:0; }
+.ai-quickstep b { flex:0 0 22px; width:22px; height:22px; display:grid; place-items:center; border-radius:50%; background:var(--accent); color:var(--on-accent); font-size:.72rem; }
+.ai-quickstep span { font-size:.70rem; font-weight:750; }
+.ai-quickstart p { grid-column:1/-1; margin-top:2px; }
+.ai-code-row { display:flex; align-items:center; gap:8px; }
+.ai-code-row code { flex:1; min-width:0; overflow:auto; }
+@media (max-width:380px) {
+  .start-v2 .start-hero-copy { max-width:84%; }
+  .import-flow-steps span { font-size:.67rem; }
+  .ai-quickstep span { font-size:.66rem; }
+}

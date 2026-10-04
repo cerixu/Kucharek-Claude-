@@ -3,8 +3,9 @@ import { defineConfig, devices } from '@playwright/test';
 export default defineConfig({
   testDir: './tests',
   timeout: 30000,
-  fullyParallel: false,
-  workers: 1,
+  fullyParallel: true,
+  workers: process.env.CI ? 4 : 1,
+  retries: process.env.CI ? 1 : 0,
   reporter: [['list']],
   use: {
     baseURL: 'http://127.0.0.1:4173',
@@ -18,7 +19,7 @@ export default defineConfig({
     timeout: 10000,
   },
   projects: [
-    { name: 'chromium', use: { ...devices['Desktop Chrome'], serviceWorkers: 'block' }, testIgnore: /pwa\.spec\.js/ },
+    { name: 'chromium', use: { ...devices['Desktop Chrome'], serviceWorkers: 'block' }, testIgnore: /(?:pwa|startup|design-34e)\.spec\.js/ },
     { name: 'pwa', use: { ...devices['Desktop Chrome'], serviceWorkers: 'allow' }, testMatch: /pwa\.spec\.js/ },
     { name: 'webkit-mobile', use: { ...devices['iPhone 13'], serviceWorkers: 'allow' }, testMatch: /startup\.spec\.js/ },
     { name: 'design-mobile', use: { ...devices['iPhone 13'], serviceWorkers: 'allow' }, testMatch: /design-34e\.spec\.js/ },

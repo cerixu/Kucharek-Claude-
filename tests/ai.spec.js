@@ -117,7 +117,7 @@ test.describe('Kucharek AI', () => {
     await page.getByLabel('Pytanie do Kucharek AI', { exact: true }).fill('Mam boczek zamiast guanciale. Mogę?');
     await page.getByRole('button', { name: 'Zapytaj', exact: true }).click();
 
-    await expect(page.getByText(/Tak. Boczek może zastąpić guanciale/)).toBeVisible();
+    await expect(page.locator('.ai-answer .ai-live')).toContainText('Tak. Boczek może zastąpić guanciale');
     expect(received?.question).toContain('boczek');
     expect(received?.recipe?.name).toBeTruthy();
     expect(typeof received?.currentStep).toBe('string');

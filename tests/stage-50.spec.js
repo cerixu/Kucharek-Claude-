@@ -26,6 +26,11 @@ test.describe('Stage 50 — real recipe corpus', () => {
       const sourced = rows.filter((r) => r.archiveLicense === 'public-domain' && r.sourceRepository);
       const noArtificialProfile = rows.filter((r) => !/\\s•\\s/.test(r.name) && !/^Kucharek — biblioteka/i.test(r.source || '')).length;
       const categories = new Set(rows.map((r) => r.category));
+      const archiveIds = rows.filter((r) => /^rcp_archive_[a-z0-9]+$/.test(r.id)).length;
+      const rawIngredients = rows.filter((r) => r.sections?.some((s) => s.ingredients?.every((i) => i.raw))).length;
+      const numericAmounts = rows.filter((r) => r.sections?.some((s) => s.ingredients?.some((i) => typeof i.amount === 'number'))).length;
+      const frog = rows.find((r) => /frog legs/i.test(r.name));
+      const mixed = rows.flatMap((r) => r.sections || []).flatMap((s) => s.ingredients || []).find((i) => /one and one half cupfuls/i.test(i.raw || ''));
       return {
         count: rows.length,
         uniqueIds: ids.size,
@@ -36,6 +41,12 @@ test.describe('Stage 50 — real recipe corpus', () => {
         withSteps,
         sourced: sourced.length,
         noArtificialProfile,
+        archiveIds,
+        rawIngredients,
+        numericAmounts,
+        frogCategory: frog?.category || '',
+        mixedAmount: mixed?.amount ?? null,
+        mixedUnit: mixed?.unit || '',
         categories: categories.size,
         categoryValues: [...categories],
       };
@@ -50,6 +61,12 @@ test.describe('Stage 50 — real recipe corpus', () => {
     expect(meta.withSteps).toBeGreaterThan(1200);
     expect(meta.sourced).toBe(meta.count);
     expect(meta.noArtificialProfile).toBe(meta.count);
+    expect(meta.archiveIds).toBe(meta.count);
+    expect(meta.rawIngredients).toBe(meta.count);
+    expect(meta.numericAmounts).toBeGreaterThan(500);
+    expect(meta.frogCategory).toBe('cat-mieso');
+    expect(meta.mixedAmount).toBe(1.5);
+    expect(meta.mixedUnit).toBe('szkl.');
     expect(meta.categories).toBeGreaterThanOrEqual(10);
 
     await page.goto('/#/recipes');

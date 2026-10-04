@@ -4,7 +4,7 @@ test.use({ ...devices['iPhone 13'] });
 
 async function ready(page, path = '/') {
   await page.goto('/#' + path);
-  await page.waitForFunction(() => window.__kucharzyna?.ready === true, null, { timeout: 30000 });
+  await page.waitForFunction(() => window.__kucharek?.ready === true, null, { timeout: 30000 });
 }
 
 test.describe('Etapy 36–43: kontrakt funkcjonalny iPhone', () => {

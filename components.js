@@ -332,9 +332,9 @@ function fallbackVisual(r) { return recipeGraphicData(r); }
 export function recipeVisual(r, cls = '', { hero = false } = {}) {
   const imageSrc = hero ? (r.photo || r.thumb) : (r.thumb || r.photo);
   const legacyVisual = !Array.isArray(r.sections) && !r.servings && !r.photo && !r.thumb && r.category === 'cat-pizza' ? ['assets','start','pizza.svg'].join('/') : '';
-  if (legacyVisual) return h('img', { class: (hero ? 'hero-photo ' : 'rthumb-img ') + cls + ' recipe-visual', src: legacyVisual, alt: '' });
-  if (imageSrc) return h('img', { class: (hero ? 'hero-photo ' : 'rthumb-img ') + cls + ' recipe-visual', src: imageSrc, alt: hero ? ('Zdjęcie: ' + (r.name || 'receptura')) : '', loading: hero ? 'eager' : 'lazy', decoding: 'async', onError: (e) => { e.currentTarget.onerror = null; e.currentTarget.src = fallbackVisual(r); } });
-  return h('img', { class: (hero ? 'hero-photo ' : 'rthumb-img ') + cls + ' recipe-visual', src: fallbackVisual(r), alt: hero ? ('Grafika receptury: ' + (r.name || 'receptura')) : '', loading: hero ? 'eager' : 'lazy', decoding: 'async' });
+  if (legacyVisual) return h('img', { class: (hero ? 'hero-photo ' : 'rthumb-img ') + cls + ' recipe-visual', src: legacyVisual, alt: '', referrerPolicy: 'no-referrer' });
+  if (imageSrc) return h('img', { class: (hero ? 'hero-photo ' : 'rthumb-img ') + cls + ' recipe-visual', src: imageSrc, alt: hero ? ('Zdjęcie: ' + (r.name || 'receptura')) : '', referrerPolicy: 'no-referrer', loading: hero ? 'eager' : 'lazy', decoding: 'async', onError: (e) => { e.currentTarget.onerror = null; e.currentTarget.src = fallbackVisual(r); } });
+  return h('img', { class: (hero ? 'hero-photo ' : 'rthumb-img ') + cls + ' recipe-visual', src: fallbackVisual(r), alt: hero ? ('Grafika receptury: ' + (r.name || 'receptura')) : '', referrerPolicy: 'no-referrer', loading: hero ? 'eager' : 'lazy', decoding: 'async' });
 }
 function thumbEl(r, cls = '') {
   return h('div', { class: 'rthumb' }, recipeVisual(r, cls));

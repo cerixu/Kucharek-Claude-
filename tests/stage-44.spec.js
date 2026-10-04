@@ -1,6 +1,6 @@
 import { test, expect, devices } from '@playwright/test';
 
-test.use({ ...devices['iPhone 13'] });
+test.use({ ...devices['iPhone 13'], browserName: 'chromium' });
 test.describe.configure({ mode: 'serial' });
 
 async function waitReady(page) {

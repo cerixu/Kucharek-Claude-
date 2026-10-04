@@ -190,7 +190,7 @@ export function inventoryView(){
           h('strong',null,String(counts.empty)),h('span',null,'Brak')),
         h('button',{type:'button',class:'inventory-health-chip low '+(filter==='low'?'active':''),'aria-label':'Filtr: Mało',onClick:()=>{filter=filter==='low'?'all':'low';paint();}},
           h('strong',null,String(counts.low)),h('span',null,'Mało')),
-        h('button',{type:'button',class:'inventory-health-chip ok '+(filter==='all'?'active':'')} ,'aria-label':'Filtr: Wszystkie',onClick:()=>{filter='all';paint();}},
+        h('button',{type:'button',class:'inventory-health-chip ok '+(filter==='all'?'active':''),'aria-label':'Filtr: Wszystkie',onClick:()=>{filter='all';paint();}},
           h('strong',null,String(counts.ok)),h('span',null,'OK'))
       )
     );

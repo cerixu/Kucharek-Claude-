@@ -24,6 +24,16 @@ const KIND_LABEL = { flour: 'mąka', water: 'woda', salt: 'sól', yeast: 'drożd
 const servingsText = (n) => Number(n) === 1 ? '1 porcja' : `${fmtNum(n, 1)} porcji`;
 const ingGlyph = (i) => ingredientIcon(i);
 
+function safeSourceUrl(raw) {
+  if (!raw) return '';
+  try {
+    const u = new URL(String(raw).trim(), location.origin);
+    return (u.protocol === 'https:' || u.protocol === 'http:') ? u.href : '';
+  } catch (_) {
+    return '';
+  }
+}
+
 export function detailView({ id }) {
   const base0 = getRecipe(id);
   if (!base0) {
@@ -445,7 +455,8 @@ export function detailView({ id }) {
 
     const src = [];
     if (base().source) src.push(h('div', null, 'Źródło: ', base().source));
-    if (base().sourceUrl) src.push(h('div', null, h('a', { class: 'ext', href: base().sourceUrl, target: '_blank', rel: 'noopener noreferrer' }, icon('link', 16), hostOf(base().sourceUrl) || base().sourceUrl)));
+    const sourceUrl = safeSourceUrl(base().sourceUrl);
+    if (sourceUrl) src.push(h('div', null, h('a', { class: 'ext', href: sourceUrl, target: '_blank', rel: 'noopener noreferrer' }, icon('link', 16), hostOf(sourceUrl) || sourceUrl)));
     src.push(h('div', null, `Dodano ${fmtDate(base().createdAt, true)} · zmieniono ${fmtDateTime(base().updatedAt)}`));
     kids.push(h('div', { class: 'meta-foot muted small' }, src));
     if (!amateur()) kids.push(h('div', { class: 'row center' }, button('Historia zmian', { icon: 'history', kind: 'ghost', onClick: openHistory })));

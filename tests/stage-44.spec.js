@@ -36,6 +36,7 @@ test('Stage 44: manifest spełnia kontrakt instalowalnego PWA', async ({ page })
   const html = await page.request.get('/');
   expect(html.ok()).toBeTruthy();
 
+  await page.goto('/');
   const manifestLink = await page.locator('link[rel="manifest"]').getAttribute('href');
   expect(manifestLink).toBe('manifest.webmanifest');
 

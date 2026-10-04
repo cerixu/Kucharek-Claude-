@@ -21,7 +21,7 @@ test.describe('Security & privacy', () => {
     const csp = await page.locator('meta[http-equiv="Content-Security-Policy"]').getAttribute('content');
     expect(csp).toContain("default-src 'self'");
     expect(csp).toContain("script-src 'self'");
-    expect(csp).toContain("connect-src 'self'");
+    expect(csp).toContain("connect-src 'self' https:");
     expect(csp).toContain("object-src 'none'");
 
     expect(await page.locator('meta[name="referrer"]').getAttribute('content')).toBe('no-referrer');
@@ -89,7 +89,7 @@ test.describe('Security & privacy', () => {
     await page.goto('/');
     await page.waitForFunction(() => window.__kucharzyna?.ready === true);
     const sw = await (await page.request.get('/sw.js')).text();
-    expect(sw).toContain("kucharek-claude-1.3.44");
+    expect(sw).toContain("kucharek-claude-1.3.45");
     expect(sw).toContain("'theme-init.js'");
   });
 });

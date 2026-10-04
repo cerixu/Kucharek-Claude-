@@ -141,6 +141,7 @@ export async function loadAll() {
     await setSetting('seeded', true);
   }
   if (getSetting('seedLibraryVersion') !== SEED_MEDIA_VERSION) {
+    await removeLegacyLibrarySeeds();
     await restoreSeeds();
     await setSetting('seedLibraryVersion', SEED_MEDIA_VERSION);
   }
@@ -383,7 +384,7 @@ export function allTags() {
 
 
 /* ---------- Biblioteka zdjęć startowych ---------- */
-const SEED_MEDIA_VERSION = 8;
+const SEED_MEDIA_VERSION = 9;
 const PHOTO = Object.freeze({
   pizza:'https://photoshop-api.adobe.io/v2/short-url/urn:aaid:ps:US:19d098c7-f308-4416-951d-4d5bb6ed6cc4',
   carbonara:'https://photoshop-api.adobe.io/v2/short-url/urn:aaid:ps:US:995b5785-cd24-4bff-b5c2-ba36d567a827',
@@ -486,6 +487,22 @@ function extraSeedRecipes(now) {
 }
 
 /** Dodaje przykładowe receptury, jeśli ich brakuje (nie nadpisuje edytowanych). */
+/** Usuwa stare, automatycznie wygenerowane rekordy biblioteki przed zmianą corpusu. */
+async function removeLegacyLibrarySeeds() {
+  const legacy=[...state.recipes.values()].filter((r)=>String(r.id||'').startsWith('rcp_lib_')||r.source==='Kucharek — biblioteka startowa');
+  if(!legacy.length)return 0;
+  const hist=(await Promise.all(legacy.map((r)=>db.byIndex('history','recipeId',r.id).catch(()=>[])))).flat();
+  const cookHist=(await Promise.all(legacy.map((r)=>db.byIndex('cookHistory','recipeId',r.id).catch(()=>[])))).flat();
+  await db.tx(['recipes','history','cookSessions','drafts','cookHistory'],(t)=>{
+    legacy.forEach((r)=>{t.delete('recipes',r.id);t.delete('cookSessions',r.id);t.delete('drafts',r.id);});
+    hist.forEach((h)=>{if(h&&h.id)t.delete('history',h.id);});
+    cookHist.forEach((h)=>{if(h&&h.id)t.delete('cookHistory',h.id);});
+  });
+  legacy.forEach((r)=>state.recipes.delete(r.id));
+  emit('recipes');
+  return legacy.length;
+}
+
 export async function restoreSeeds({ forceMedia = false } = {}) {
   // seedRecipes() już zawiera całą bibliotekę 1200+. Nie generuj jej drugi raz.
   // Deduplikacja ID gwarantuje też pojedynczy zapis każdej receptury.

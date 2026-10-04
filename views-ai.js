@@ -87,10 +87,7 @@ export function openRecipeAiSheet({ openSheet, recipe, currentStep = '' }) {
     ]
   });
   const send = sheet.panel.querySelector('.panel-foot button:last-child');
-  if (send) {
-    send.dataset.aiSend = '1';
-    send.addEventListener('click', (e) => { e.preventDefault(); void ask(); });
-  }
+  if (send) send.dataset.aiSend = '1';
   input.addEventListener('keydown', (e) => {
     if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') { e.preventDefault(); void ask(); }
   });

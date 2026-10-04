@@ -55,7 +55,7 @@ test.describe('Stage 34A: nowy UX iPhone', () => {
     await expect(page.locator('.start-hero-card')).toBeVisible();
     await expect(page.getByRole('button', { name: 'Zacznij gotować' })).toBeVisible();
     await expect(page.getByRole('link', { name: 'Przepisy' }).first()).toBeVisible();
-    await expect(page.getByRole('link', { name: 'Magazyn' }).first()).toBeVisible();
+    await expect(page.getByRole('link', { name: /Magazyn/ }).first()).toBeVisible();
     await expect(page.locator('.tiles')).toHaveCount(0);
   });
 

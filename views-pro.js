@@ -41,7 +41,42 @@ export function proView(){
     return h('div',{class:'stack'},header,list);
   }
   function production(){return h('div',{class:'stack'},h('div',{class:'row between'},h('div',null,h('h3',null,'Produkcja półproduktów'),h('p',{class:'muted'},'Twórz półprodukty i zwiększaj ich stan w Magazynie.')),button('Nowa produkcja',{kind:'primary',icon:'plus',onClick:()=>productionSheet()})),h('div',{class:'card'},h('strong',null,'Przykład'),h('p',{class:'muted'},'Sos pomidorowy 7,5 kg → przyjęcie do Magazynu jako półprodukt.')));}
-  function planning(){const recipes=listRecipes().slice(0,30);return h('div',{class:'stack'},h('div',null,h('h3',null,'Planowanie produkcji'),h('p',{class:'muted'},'Sprawdź zapotrzebowanie receptury względem aktualnego Magazynu.')),recipes.length?h('div',{class:'stack'},...recipes.map(r=>h('div',{class:'card'},h('div',{class:'row between'},h('strong',null,r.name),button('Sprawdź braki',{sm:true,onClick:async()=>{const lines=await planRecipe(r,1);const miss=lines.filter(x=>x.missing>0);toast(miss.length?'Braki: '+miss.map(x=>x.name+' '+fmt(x.missing)+' '+x.unit).join(', '):'Komplet składników na 1×',{type:miss.length?'error':'success'});}})))):emptyState('📐','Brak receptur','Dodaj recepturę, aby planować produkcję.')));}
+  function planning() {
+    const recipes = listRecipes().slice(0, 30);
+    const cards = recipes.map((r) => h('div', { class: 'card' },
+      h('div', { class: 'row between' },
+        h('strong', null, r.name),
+        button('Sprawdź braki', {
+          sm: true,
+          onClick: async () => {
+            try {
+              const lines = await planRecipe(r, 1);
+              const miss = lines.filter((x) => x.missing > 0);
+              toast(
+                miss.length
+                  ? 'Braki: ' + miss.map((x) => x.name + ' ' + fmt(x.missing) + ' ' + x.unit).join(', ')
+                  : 'Komplet składników na 1×',
+                { type: miss.length ? 'error' : 'success' }
+              );
+            } catch (e) {
+              toast(e?.message || 'Nie udało się sprawdzić braków', { type: 'error' });
+            }
+          }
+        })
+      )
+    ));
+    return h(
+      'div',
+      { class: 'stack' },
+      h('div', null,
+        h('h3', null, 'Planowanie produkcji'),
+        h('p', { class: 'muted' }, 'Sprawdź zapotrzebowanie receptury względem aktualnego Magazynu.')
+      ),
+      recipes.length
+        ? h('div', { class: 'stack' }, ...cards)
+        : emptyState('📐', 'Brak receptur', 'Dodaj recepturę, aby planować produkcję.')
+    );
+  }
   function calculators(){
     let input='10',output='7.5',target='15';
     const yieldCard=()=>{

@@ -50,6 +50,11 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          mkdir -p /tmp/kucharek-translated
+          cp recipe-library-data/part-*.js /tmp/kucharek-translated/
+          git fetch origin main
+          git reset --hard origin/main
+          cp /tmp/kucharek-translated/part-*.js recipe-library-data/
           git add recipe-library-data/part-*.js
           if git diff --cached --quiet; then
             echo "No generated changes."

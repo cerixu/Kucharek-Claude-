@@ -146,9 +146,9 @@ function apply(text) {
   if(cached!==undefined) return cached;
   let out=key;
   out=out.replace(TOKEN_RE,(_,term)=>TERM_MAP.get(term.toLowerCase()) ?? term);
-  out=out.replace(/\\b(?:the|a|an)\\b\\s*/giu,"")
-    .replace(/\\s{2,}/g," ")
-    .replace(/\\s+([,.;:!?])/g,"$1")
+  out=out.replace(/\b(?:the|a|an)\b\s*/giu,"")
+    .replace(/\s{2,}/g," ")
+    .replace(/\s+([,.;:!?])/g,"$1")
     .trim();
   if(TEXT_CACHE.size>16000) TEXT_CACHE.clear();
   TEXT_CACHE.set(key,out);

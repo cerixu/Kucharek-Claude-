@@ -15,7 +15,7 @@ const NETWORK_TIMEOUT = 3500;
 const CORE = [
   './',
   'index.html',
-  'styles.css',
+  'styles.css', 'styles-34e.css',
   'manifest.webmanifest',
   'app.js', 'router.js', 'pwa.js', 'ui.js', 'util.js', 'db.js', 'recipes.js', 'calculator.js', 'importer.js', 'backup.js',
   'components.js', 'shopping.js', 'inventory.js', 'barcode-decoder.js', 'barcode-scanner.js', 'pro.js', 'pro-calculators.js',

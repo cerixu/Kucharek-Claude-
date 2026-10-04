@@ -1,0 +1,1 @@
+Stage 54 translation resume checkpoint. This file exists only to trigger the translator after checkpoint commits; do not delete until the corpus reaches translationVersion 20 on all 1700 archive records.

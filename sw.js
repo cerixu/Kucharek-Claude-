@@ -22,7 +22,7 @@ const CORE = [
   'history.js', 'views-history.js', 'views-start.js', 'views-cook-hub.js', 'views-recipes.js', 'views-detail.js', 'views-editor.js', 'views-cook.js', 'views-calc.js', 'views-import.js', 'views-settings.js', 'views-inventory.js', 'views-pro-fixed.js',
   'assets/apple-touch-icon.png', 'assets/icon-192.png', 'assets/icon-512.png', 'assets/icon-maskable-512.png',
   'assets/start/pizza.svg', 'assets/start/pasta.svg', 'assets/start/bakery.svg', 'assets/start/veg.svg', 'assets/ingredient-icons.svg',
-      'recipe-library.js', 'recipe-library-data/index.js', 'theme-init.js',
+      'recipe-library.js', 'recipe-library-data/index.js', 'recipe-library-data/part-01.js', 'recipe-library-data/part-02.js', 'recipe-library-data/part-03.js', 'recipe-library-data/part-04.js', 'recipe-library-data/part-05.js', 'recipe-library-data/part-06.js', 'recipe-library-data/part-07.js', 'recipe-library-data/part-08.js', 'recipe-library-data/part-09.js', 'theme-init.js',
 ];
 
 

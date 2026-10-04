@@ -25,6 +25,7 @@ let proModulePromise;
 const loadProModule = () => proModulePromise ||= import('./views-pro-fixed.js?v=20261002-20');
 
 const root = document.documentElement;
+const bootStartedAt = performance.now();
 
 /* ---------- Motyw, tryb, rozmiary ---------- */
 
@@ -214,10 +215,22 @@ async function boot() {
   const bootEl = $('#boot');
   if (bootEl) { bootEl.classList.add('gone'); setTimeout(() => bootEl.remove(), 350); }
 
-  requestPersist();
+  // Pamięć trwała i cięższy moduł PRO nie konkurują z pierwszym renderem.
+  setTimeout(() => requestPersist().catch(() => {}), 1200);
   registerSW();
-  // Preload PRO after the main app is ready. A failed PRO module must never block startup.
-  setTimeout(() => loadProModule().catch(() => {}), 0);
+  const deferPro = (cb) => {
+    if (typeof window.requestIdleCallback === 'function') {
+      window.requestIdleCallback(cb, { timeout: 2500 });
+    } else {
+      setTimeout(cb, 1200);
+    }
+  };
+  deferPro(() => loadProModule().catch(() => {}));
+  window.__kucharekPerf = Object.freeze({
+    bootMs: Math.round(performance.now() - bootStartedAt),
+    recipeCount: state.recipes.size,
+    readyAt: performance.now()
+  });
   window.__kucharzyna = { state, ready: true };
 }
 

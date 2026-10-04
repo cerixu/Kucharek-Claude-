@@ -8,7 +8,7 @@ on:
   push:
     branches: [main]
     paths:
-      - 'scripts/translate-recipe-library.mjs'
+      - 'scripts/translate-recipe-library-v2.mjs'
       - 'recipe-library-data/**'
       - '.github/workflows/translate-recipes.yml'
   workflow_dispatch:
@@ -38,11 +38,11 @@ jobs:
       - name: Translate 1700 records
         id: translate
         continue-on-error: true
-        run: node scripts/translate-recipe-library.mjs
+        run: node scripts/translate-recipe-library-v2.mjs
 
       - name: Validate generated corpus
         run: |
-          node --check scripts/translate-recipe-library.mjs
+          node --check scripts/translate-recipe-library-v2.mjs
           node -e "const fs=require('fs'); const files=fs.readdirSync('recipe-library-data').filter(x=>/^part-\\d\\d\\.js$/.test(x)); const n=files.reduce((a,f)=>a+(fs.readFileSync('recipe-library-data/'+f,'utf8').match(/rcp_archive_/g)||[]).length,0); if(n!==1700) throw new Error('Recipe count '+n); console.log('1700 records OK')"
 
       - name: Commit translation checkpoint

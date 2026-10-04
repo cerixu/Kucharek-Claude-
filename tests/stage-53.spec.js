@@ -13,9 +13,9 @@ const FOREIGN = [
 test.describe('Stage 53 — Polish recipe translation gate', () => {
   test('keeps exactly 1700 stable recipe records and translates every record', async ({ page }) => {
     await page.goto('/#/recipes');
-    await page.waitForFunction(() => window.__kucharzyna?.ready === true);
+    await page.waitForFunction(() => window.__kucharek?.ready === true);
     const info = await page.evaluate(() => {
-      const values = [...window.__kucharzyna.state.recipes.values()];
+      const values = [...window.__kucharek.state.recipes.values()];
       const archive = values.filter((r) => String(r.id).startsWith('rcp_archive_'));
       return {
         total: values.length,
@@ -34,9 +34,9 @@ test.describe('Stage 53 — Polish recipe translation gate', () => {
 
   test('translates Bigos visibly and preserves source-language originalName', async ({ page }) => {
     await page.goto('/#/recipe/' + BIGOS_ID);
-    await page.waitForFunction(() => window.__kucharzyna?.ready === true);
+    await page.waitForFunction(() => window.__kucharek?.ready === true);
     const data = await page.evaluate((id) => {
-      const r = window.__kucharzyna.state.recipes.get(id);
+      const r = window.__kucharek.state.recipes.get(id);
       return {
         name: r?.name,
         originalName: r?.originalName,
@@ -53,9 +53,9 @@ test.describe('Stage 53 — Polish recipe translation gate', () => {
 
   test('keeps foreign-language residue low across all visible recipe text', async ({ page }) => {
     await page.goto('/#/recipes');
-    await page.waitForFunction(() => window.__kucharzyna?.ready === true);
+    await page.waitForFunction(() => window.__kucharek?.ready === true);
     const result = await page.evaluate((markers) => {
-      const recipes = [...window.__kucharzyna.state.recipes.values()];
+      const recipes = [...window.__kucharek.state.recipes.values()];
       let hits = 0;
       let fields = 0;
       for (const r of recipes) {
@@ -77,7 +77,7 @@ test.describe('Stage 53 — Polish recipe translation gate', () => {
 
   test('detail view renders translated ingredients and preparation', async ({ page }) => {
     await page.goto('/#/recipe/' + BIGOS_ID);
-    await page.waitForFunction(() => window.__kucharzyna?.ready === true);
+    await page.waitForFunction(() => window.__kucharek?.ready === true);
     await expect(page.locator('.screen.detail')).toBeVisible();
     await expect(page.locator('.ingredients .ing').first()).toContainText('kapusta');
     await expect(page.getByRole('heading', { name: 'Przygotowanie' })).toBeVisible();

@@ -19,7 +19,12 @@ export async function collectData() {
     db.getAll('settings'), db.getAll('history'), db.getAll('cookSessions'), db.getAll('cookHistory'), ...PRO_STORES.map((s) => db.getAll(s)),
   ]);
   // Do kopii trafiają ustawienia i postęp gotowania/kalkulatory; szkice pomijamy.
-  const settings = settingsRaw.filter((s) => !String(s.key).startsWith('draft:'));
+  // Endpoint AI jest konfiguracją zaufania, nie danymi receptury. Nie przenosimy go
+  // przez backup, żeby obca kopia nie mogła podmienić celu dla sesyjnego tokenu.
+  const settings = settingsRaw.filter((s) => {
+    const key = String(s.key || '');
+    return !key.startsWith('draft:') && key !== 'aiGatewayUrl';
+  });
   return { recipes, ingredients, categories, shoppingItems, settings, history, cookSessions, cookHistory, ...Object.fromEntries(PRO_STORES.map((s,i)=>[s,pro[i]])) };
 }
 

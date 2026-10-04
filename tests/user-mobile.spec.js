@@ -127,7 +127,7 @@ test('Stage 34B: numer wersji jest widoczny w Ustawieniach', async ({ page }) =>
   await page.goto('/#/settings');
   await page.waitForFunction(() => window.__kucharzyna?.ready === true);
   await expect(page.getByText('Wersja aplikacji', { exact: true })).toBeVisible();
-  await expect(page.getByText('1.3.46', { exact: true })).toBeVisible();
+  await expect(page.getByText('1.3.48', { exact: true })).toBeVisible();
 });
 
 
@@ -193,7 +193,7 @@ test.describe('Stage 34C: wspólny system wizualny', () => {
     await page.goto('/#/settings');
     await page.waitForFunction(() => window.__kucharzyna?.ready === true);
     await expect(page.getByText('Wersja aplikacji', { exact: true })).toBeVisible();
-    await expect(page.getByText('1.3.46', { exact: true })).toBeVisible();
+    await expect(page.getByText('1.3.48', { exact: true })).toBeVisible();
   });
 
   test('zrzuty kontrolne głównych ekranów powstają w QA', async ({ page }, testInfo) => {
@@ -286,6 +286,12 @@ test.describe('Stage 34F: redesign iPhone + real user flows', () => {
 
   test('Magazyn ma ikonę składnika na każdym widocznym produkcie', async ({ page }) => {
     await page.goto('/#/inventory');
+    await page.waitForFunction(() => window.__kucharzyna?.ready === true);
+    await page.evaluate(async () => {
+      const { saveInventoryItem } = await import('/inventory.js');
+      await saveInventoryItem({ id:'e2e-34f-icon', name:'Pecorino Romano UI', quantity:2, unit:'kg', minQuantity:0, targetQuantity:3, purchasePrice:55, priceUnit:'kg', ean:'', category:'Nabiał', aliases:[] });
+    });
+    await page.reload();
     await page.waitForFunction(() => window.__kucharzyna?.ready === true);
     await expect(page.locator('.inventory-product').first()).toBeVisible();
     expect(await page.locator('.inventory-product-visual .ingredient-icon svg').count()).toBeGreaterThan(0);

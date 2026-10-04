@@ -43,7 +43,7 @@ export const DEFAULT_SETTINGS = {
   inventoryAlerts: true,
   inventoryAutoShopping: true,
   inventoryAutoConsumption: true,
-  seedLibraryVersion: 0,
+  seedLibraryVersion: 1,
   aiEnabled: true,
   aiGatewayUrl: '',
 };
@@ -487,7 +487,7 @@ function extraSeedRecipes(now) {
 
 /** Dodaje przykładowe receptury, jeśli ich brakuje (nie nadpisuje edytowanych). */
 export async function restoreSeeds({ forceMedia = false } = {}) {
-  const seeds=seedRecipes();
+  const seeds=[...seedRecipes(), ...recipeLibrary()];
   const missing=seeds.filter(r=>!state.recipes.has(r.id));
   const mediaUpdates=seeds.filter(r=>{
     if(!state.recipes.has(r.id)||!r.photo)return false;

@@ -5,7 +5,7 @@ test.use({ ...devices['iPhone 13'], browserName: 'chromium', serviceWorkers: 'al
 async function ready(page) {
   const started = await page.evaluate(() => performance.now());
   await page.goto('/');
-  await page.waitForFunction(() => window.__kucharzyna?.ready === true, { timeout: 30000 });
+  await page.waitForFunction(() => window.__kucharek?.ready === true, { timeout: 30000 });
   return page.evaluate((started) => ({
     wallMs: Math.round(performance.now() - started),
     ...window.__kucharekPerf

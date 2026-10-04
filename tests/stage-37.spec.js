@@ -8,6 +8,11 @@ test.describe('Stage 37: GOTUJĘ', () => {
     await expect(row).toBeVisible();
     await row.click();
     await expect(row).toHaveAttribute('aria-checked', 'true');
+    await expect.poll(() => page.evaluate(async () => {
+      const { db } = await import('/db.js');
+      const session = await db.get('cookSessions', 'rcp_seed_pizza');
+      return Object.keys(session?.ing || {}).length;
+    })).toBeGreaterThan(0);
     await page.reload();
     await expect(page.getByRole('checkbox').first()).toHaveAttribute('aria-checked', 'true');
   });

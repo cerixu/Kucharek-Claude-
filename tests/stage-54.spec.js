@@ -43,7 +43,7 @@ test('Stage 54 — static Polish corpus gate', async ({ page }) => {
     { timeout: 90000 }
   );
 
-  const info = await page.evaluate((words, bigosId) => {
+  const info = await page.evaluate(({ words, bigosId }) => {
     const rs = [...window.__kucharek.state.recipes.values()]
       .filter(r => String(r.id).startsWith('rcp_archive_'));
 
@@ -86,7 +86,7 @@ test('Stage 54 — static Polish corpus gate', async ({ page }) => {
         step: bigos?.steps?.[0]?.text
       }
     };
-  }, OBVIOUS_ENGLISH, BIGOS_ID);
+  }, { words: OBVIOUS_ENGLISH, bigosId: BIGOS_ID });
 
   expect(info.count).toBe(1700);
   expect(info.ids).toBe(1700);

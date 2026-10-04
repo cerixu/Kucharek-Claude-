@@ -71,14 +71,14 @@ test.describe('Stage 50 — real recipe corpus', () => {
     expect(meta.categories).toBeGreaterThanOrEqual(10);
 
     await page.goto('/#/recipes');
-    await page.waitForFunction(() => window.__kucharzyna?.ready === true);
+    await page.waitForFunction(() => window.__kucharek?.ready === true);
     await expect(page.getByRole('heading', { name: 'Receptury' })).toBeVisible();
     await expect(page.locator('.counter')).toHaveText(/[0-9]{4,} receptur/);
   });
 
   test('recipe search works against the real archive corpus', async ({ page }) => {
     await page.goto('/#/recipes');
-    await page.waitForFunction(() => window.__kucharzyna?.ready === true && /[0-9]{4,} receptur/.test(document.querySelector('.counter')?.textContent || ''));
+    await page.waitForFunction(() => window.__kucharek?.ready === true && /[0-9]{4,} receptur/.test(document.querySelector('.counter')?.textContent || ''));
     const known = await page.evaluate(async () => {
       const { listRecipes, searchText } = await import('/recipes.js');
       const row = listRecipes().find(r => /frog legs/i.test(r.name));

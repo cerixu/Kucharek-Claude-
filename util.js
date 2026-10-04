@@ -33,7 +33,7 @@ export function parseNum(v) {
 }
 
 function trimZeros(s) {
-  if (s.includes('.')) s = s.replace(/0+$/, '').replace(/.$/, '');
+  if (s.includes('.')) { s = s.replace(/0+$/, ''); if (s.endsWith('.')) s = s.slice(0, -1); }
   return s.replace('.', ',');
 }
 

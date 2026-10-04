@@ -250,7 +250,33 @@ const RESIDUAL_FINAL = [
 ["jártra","wątróbka"],["Játra","wątróbka"],["jiné","inne"],["jiné drůbeže","innego drobiu"],["drůbeže","drobiu"],["dle potřeby","według potrzeby"],["potřeby","potrzeby"],["rozkrájej","pokrój"],["husí","gęsi"],["husí játra","wątróbka gęsia"],["knitting needle","drut dziewiarski"],["trussing needle","igła do sznurowania"],
 ["Chinese","chiński"],["Japanese","japoński"],["Italian","włoski"],["French","francuski"],["German","niemiecki"],["Spanish","hiszpański"],["Czech","czeski"],["Polish","polski"],
 ];
-const ALL_TERMS = RAW_TERMS.concat(RESIDUAL_FINAL).filter(([a]) => a.length >= 3 || SHORT_SAFE.has(a.toLowerCase())).sort((a,b)=>b[0].length-a[0].length);
+const POLISH_FINAL_FIXES = [
+["all the","całość"],["all ingredients","wszystkie składniki"],["the ingredients","składniki"],["the following ingredients","następujące składniki"],
+["minced","mielony"],["mince","posiekaj"],["smoked","wędzony"],["smoke","dym"],["scalding","sparzanie"],["scald","sparz"],["pouring","wlewanie"],["pouring off","odlewanie"],
+["sides","boki"],["side","bok"],["brim","brzeg"],["moderately","umiarkowanie"],["densely","ściśle"],["follows","następuje"],["following","następujący"],["ingredients","składniki"],
+["dilute","rozcieńcz"],["diluted","rozcieńczony"],["tightly","ściśle"],["careful","ostrożny"],["cautiously","ostrożnie"],["sure","pewny"],["sticking","przywieraniu"],
+["scant","niewielki"],["scanty","niewielki"],["plenty","dużo"],["amount","ilość"],["quantity","ilość"],["piece","kawałek"],["pieces","kawałki"],
+["times","razy"],["time","raz"],["length","długość"],["wide","szeroki"],["width","szerokość"],["shape","kształt"],["air","powietrze"],["pockets","pęcherzyki"],
+["prick","nakłuj"],["knitting","dziewiarski"],["thread","nić"],["string","sznurek"],["trussing","sznurowanie"],["weave","utkaj"],["threading","nawlekanie"],
+["serving","podanie"],["traditionally","tradycyjnie"],["traditional","tradycyjny"],["paste","masa"],["set","ustaw"],["pass","przepuść"],["up","w górę"],["off","z"],["too","zbyt"],["also","również"],
+["Chinese","chiński"],["chinese","chiński"],["good","dobry"],["one","jeden"],["this","to"],["it","to"],["that","to"],["to","do"],["as","jako"],["at","w"],
+["cloves","goździki"],["whites","białka"],["yolks","żółtka"],["form","forma"],["mixture","masa"],["size","rozmiar"],
+["Ox Tail","ogon wołowy"],["Ox Tail Soup","zupa z ogona wołowego"],["Bisque","bisque"],["Sooy","sojowy"],
+["Atún Asado al Natural","tuńczyk pieczony naturalnie"],["Compota de Castañas á la Vainilla","kompot z kasztanów waniliowych"],["Judías á la Carmen","fasola po Carmen"],
+["Sopa de Puré de Guisantes, Lentejas, Judías, Habas, etc.","zupa z puree z groszku, soczewicy, fasoli i bobu"],
+["Chinese Kidney with Mushrooms","nerki wołowe z grzybami po chińsku"],["Chicken Liver Paste","pasztet z wątróbki kurczaka"],["Chinese Fried Peas","smażony groszek po chińsku"],
+["Chinese Pickled Yellow Turnips","marynowana żółta rzepa po chińsku"],["Chinese Scrambled Eggs","jajka po chińsku"],["Giblet Paste","pasztet z podrobów"],
+["Chinese Chopped Sooy","posiekany sos sojowy"],["Chinese Cured Pork Cake and Chinese Vegetables","peklowana wieprzowina z chińskimi warzywami"],
+["Chinese Frankfurter","chińska parówka"],["Chinese Frankfurters with Vegetables","chińskie parówki z warzywami"],["Chinese Ginger Salad","chińska sałatka imbirowa"],
+["Chinese Meat Biscuit","chińskie ciasteczka z mięsem"],["Chinese Red Cheese","chiński czerwony ser"],["Chinese Roasted Pig","pieczona świnia po chińsku"],
+["Chinese Sponge Cake","chiński biszkopt"],["Chinese White Cheese","chiński biały ser"],["Alternative Good Cake","alternatywne dobre ciasto"],
+["Celery as Entremets","seler jako przystawka"],["Cream with Cloves","śmietanka z goździkami"],["Fowl la Cardinal","drób po kardynalsku"],
+["Puff Paste","ciasto francuskie"],["To Cook Cauliflowers","gotowany kalafior"],["To Brown Potatoes under Meat while Baking","ziemniaki zrumieniane pod mięsem podczas pieczenia"],
+["To Bake Onion","pieczona cebula"],["Gefüllter Hammelsbug w Form einer Gans","nadziewana łopatka barania w kształcie gęsi"],["Potápka zadělávaná","potápka duszona"],
+["le veau et le mouton","cielęcina i baranina"],["faites la même chose","zrób to samo"],["que vous ne les faites point revenir","aby ich nie rumienić"],
+];
+
+const ALL_TERMS = RAW_TERMS.concat(RESIDUAL_FINAL, POLISH_FINAL_FIXES).filter(([a]) => a.length >= 3 || SHORT_SAFE.has(a.toLowerCase())).sort((a,b)=>b[0].length-a[0].length);
 const escapeRegex = (s) => String(s).replace(/[.*+?^$(){}|[\\]\\]/g, "\\$&");
 const TOKEN_RE = new RegExp("(?<!\\p{L})(" + ALL_TERMS.map(([a])=>escapeRegex(a)).join("|") + ")(?!\\p{L})","giu");
 const TERM_MAP = new Map(ALL_TERMS.map(([a,b])=>[a.toLowerCase(),b]));
@@ -299,6 +325,6 @@ export function translateRecipe(recipe) {
     steps,
     archiveCollectionName:C[recipe.archiveCollectionName]||recipe.archiveCollectionName,
     translationLanguage:"pl",
-    translationVersion:7
+    translationVersion:8
   };
 }

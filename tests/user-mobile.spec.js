@@ -210,7 +210,7 @@ test.describe('Stage 34D: Magazyn UX', () => {
   test('Magazyn pokazuje stan, filtry, listę produktów i automatykę', async ({ page }) => {
     await page.goto('/#/inventory');
     await page.waitForFunction(() => window.__kucharzyna?.ready === true);
-    await page.evaluate(async () => {
+    await stableEvaluate(page, async () => {
       const { seedTestInventory } = await import('/inventory.js');
       await seedTestInventory();
     });
@@ -228,7 +228,7 @@ test.describe('Stage 34D: Magazyn UX', () => {
   test('filtr Niskie i wejście w produkt działają jednym tapnięciem', async ({ page }) => {
     await page.goto('/#/inventory');
     await page.waitForFunction(() => window.__kucharzyna?.ready === true);
-    await page.evaluate(async () => {
+    await stableEvaluate(page, async () => {
       const { seedTestInventory } = await import('/inventory.js');
       await seedTestInventory();
     });
@@ -287,7 +287,7 @@ test.describe('Stage 34F: redesign iPhone + real user flows', () => {
   test('Magazyn ma ikonę składnika na każdym widocznym produkcie', async ({ page }) => {
     await page.goto('/#/inventory');
     await page.waitForFunction(() => window.__kucharzyna?.ready === true);
-    await page.evaluate(async () => {
+    await stableEvaluate(page, async () => {
       const { saveInventoryItem } = await import('/inventory.js');
       await saveInventoryItem({ id:'e2e-34f-icon', name:'Pecorino Romano UI', quantity:2, unit:'kg', minQuantity:0, targetQuantity:3, purchasePrice:55, priceUnit:'kg', ean:'', category:'Nabiał', aliases:[] });
     });

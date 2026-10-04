@@ -20,7 +20,7 @@ test.describe('Stage 54 — static Polish corpus gate', () => {
       return {
         count: rs.length,
         ids: new Set(rs.map(r => r.id)).size,
-        pl: rs.filter(r => r.translationLanguage === 'pl' && Number(r.translationVersion) >= 10).length,
+        pl: rs.filter(r => r.translationLanguage === 'pl' && Number(r.translationVersion) >= 21).length,
         dirtyNames: rs.filter(r => /[():\[\]"]/u.test(r.name)).length,
       };
     });

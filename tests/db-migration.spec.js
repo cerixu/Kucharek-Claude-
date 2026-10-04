@@ -279,6 +279,7 @@ test('Gotuję: zakończenie receptury odejmuje składniki z Magazynu', async ({ 
 
 test('Magazyn: powtarzające się składniki są sumowane bez podwójnego odejmowania', async ({ page }) => {
   await page.goto('/');
+  await page.waitForFunction(() => window.__kucharzyna?.ready === true);
   const result = await page.evaluate(async (name) => {
     const db = await new Promise((resolve, reject) => {
       const req = indexedDB.open(name);

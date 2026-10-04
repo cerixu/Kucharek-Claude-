@@ -396,38 +396,121 @@ textarea {
 }
 
 
-/* ---------- 43A correction: active tab is one complete material ---------- */
-#tabbar{gap:4px;padding:5px}
+/* ---------- 48A · final iPhone dock material ---------- */
+/* Jeden materiał na cały dock i jeden materiał na aktywną zakładkę.
+   Ikona nie dostaje już własnego tła, więc nie powstaje efekt „koloru w środku”.
+   Układ jest gridem o stałych wierszach, dzięki czemu ikona i podpis mają wspólną oś. */
+#tabbar{
+  gap:3px;
+  padding:5px;
+  min-height:68px;
+  background:
+    linear-gradient(180deg,rgba(255,255,255,.075),rgba(255,255,255,.032)),
+    var(--glass-bg);
+  border:1px solid var(--43a-hairline);
+  border-radius:24px;
+  box-shadow:
+    0 12px 34px rgba(0,0,0,.25),
+    inset 0 1px 0 rgba(255,255,255,.075);
+  -webkit-backdrop-filter:blur(28px) saturate(1.45);
+  backdrop-filter:blur(28px) saturate(1.45);
+}
+
 #tabbar .tab{
   position:relative;
-  min-height:58px;height:58px;padding:5px 8px;
-  border-radius:18px;
-  justify-content:center;align-items:center;gap:2px;
-  background:transparent;box-shadow:none;
+  flex:1 1 0;
+  min-width:0;
+  height:58px;
+  min-height:58px;
+  padding:4px 5px;
   border:1px solid transparent;
+  border-radius:18px;
+  display:grid;
+  grid-template-rows:24px minmax(11px,auto);
+  align-content:center;
+  justify-items:center;
+  gap:3px;
+  background:transparent;
+  box-shadow:none;
+  color:var(--muted);
+  text-align:center;
+  transform:translateZ(0);
 }
-#tabbar .tab.on{
-  background:linear-gradient(180deg,
-    color-mix(in srgb,var(--34e-accent) 24%,var(--34e-glass-strong)),
-    color-mix(in srgb,var(--34e-accent) 11%,var(--34e-glass-mid)));
-  border-color:color-mix(in srgb,var(--34e-accent) 28%,var(--43a-hairline));
-  box-shadow:0 9px 22px color-mix(in srgb,var(--34e-accent) 13%,transparent),
-             inset 0 1px 0 rgba(255,255,255,.20);
-  color:var(--34e-text);
-}
+
 #tabbar .tab-ico,
 #tabbar .tab.on .tab-ico{
-  width:26px;height:24px;border-radius:8px;
-  background:transparent;box-shadow:none;
+  width:24px;
+  height:24px;
+  display:grid;
+  place-items:center;
+  margin:0;
+  border-radius:7px;
+  background:transparent;
+  box-shadow:none;
   color:currentColor;
 }
-#tabbar .tab.on .tab-ico{color:var(--34e-accent)}
-#tabbar .tab-label{line-height:1.05}
-#tabbar .tab:active{transform:scale(.975)}
+
+#tabbar .tab-ico .ico{
+  width:23px;
+  height:23px;
+}
+
+#tabbar .tab.on{
+  color:var(--text);
+  background:
+    linear-gradient(180deg,
+      color-mix(in srgb,var(--34e-accent) 18%,var(--glass-hi)),
+      color-mix(in srgb,var(--34e-accent) 7%,transparent));
+  border-color:color-mix(in srgb,var(--34e-accent) 28%,var(--43a-hairline));
+  box-shadow:
+    0 7px 18px color-mix(in srgb,var(--34e-accent) 10%,transparent),
+    inset 0 1px 0 rgba(255,255,255,.13);
+}
+
+#tabbar .tab.on .tab-ico{
+  color:var(--34e-accent);
+}
+
+#tabbar .tab-label{
+  min-width:0;
+  max-width:100%;
+  margin:0;
+  line-height:11px;
+  font-size:10.5px;
+  font-weight:760;
+  letter-spacing:.005em;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+
+#tabbar .tab.on .tab-label{
+  color:var(--text);
+  font-weight:800;
+}
+
+#tabbar .tab:active{
+  transform:scale(.975);
+}
 
 @media(max-width:380px){
-  #tabbar{gap:2px;padding:4px}
-  #tabbar .tab{min-height:56px;height:56px;padding-inline:5px;border-radius:17px}
+  #tabbar{
+    gap:2px;
+    padding:4px;
+    min-height:64px;
+    border-radius:22px;
+  }
+  #tabbar .tab{
+    height:56px;
+    min-height:56px;
+    padding-inline:4px;
+    border-radius:16px;
+    grid-template-rows:23px minmax(10px,auto);
+  }
+  #tabbar .tab-label{
+    font-size:10px;
+    line-height:10px;
+  }
 }
 
 /* ---------- 43A correction: hero hierarchy ---------- */

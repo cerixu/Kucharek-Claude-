@@ -179,8 +179,8 @@ test('Recipe UX: własne uwagi zapisują się i wracają po odświeżeniu', asyn
 
 test('Etap 14: biblioteka startowa ma prawdziwe zdjęcia',async({page})=>{
   await reset(page);
-  const r=await page.evaluate(async()=>{const {listRecipes}=await import('/recipes.js');const all=listRecipes();return {total:all.length,photos:all.filter(x=>/^https:\/\//.test(x.photo||'')).length,missing:all.filter(x=>!x.photo).map(x=>x.name)}});
-  expect(r.total).toBeGreaterThanOrEqual(13);expect(r.photos).toBeGreaterThanOrEqual(13);expect(r.missing).toEqual([]);
+  const r=await page.evaluate(async()=>{const {listRecipes}=await import('/recipes.js');const all=listRecipes();const seeded=all.filter(x=>String(x.id||'').startsWith('rcp_seed_'));return {total:all.length,seeded:seeded.length,photos:seeded.filter(x=>/^https:\/\//.test(x.photo||'')).length,missing:seeded.filter(x=>!x.photo).map(x=>x.name)}});
+  expect(r.total).toBeGreaterThanOrEqual(r.seeded);expect(r.seeded).toBeGreaterThanOrEqual(13);expect(r.photos).toBe(r.seeded);expect(r.missing).toEqual([]);
 });
 test('Etap 14: składniki używają ilustracji SVG zamiast kolorowych kółek',async({page})=>{
   await reset(page);await page.goto('/#/recipe/rcp_seed_pizza');
@@ -226,7 +226,7 @@ test('Etap 14: migracja mediów działa po zmianie wersji biblioteki', async ({ 
     const next = listRecipes().find(x => x.id === 'rcp_seed_pizza');
     return { photo: next?.photo || '', version: (await db.get('settings', 'seedLibraryVersion'))?.value };
   });
-  expect(out.version).toBe(8);
+  expect(out.version).toBe(10);
   expect(out.photo).toMatch(/^https:\/\/photoshop-api\.adobe\.io\/v2\/short-url\//);
 });
 

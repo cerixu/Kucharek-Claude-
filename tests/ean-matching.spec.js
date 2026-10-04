@@ -4,13 +4,13 @@ const DB_NAME = 'kucharzyna-claude-db';
 
 async function reset(page) {
   await page.goto('/');
-  await page.waitForFunction(()=>window.__kucharzyna?.ready===true);
+  await page.waitForFunction(()=>window.__kucharek?.ready===true);
   await page.evaluate(async()=>{
     const {db,STORES}=await import('/db.js');
     for(const store of Object.keys(STORES)) await db.clear(store);
   });
   await page.reload();
-  await page.waitForFunction(()=>window.__kucharzyna?.ready===true);
+  await page.waitForFunction(()=>window.__kucharek?.ready===true);
 }
 
 test('EAN: normalizacja i dopasowanie wskazuje istniejący produkt', async ({ page }) => {
@@ -103,7 +103,7 @@ test('Skaner EAN: otwiera kamerę i aktywną linię skanującą', async ({ page 
     };
   });
   await page.goto('/');
-  await page.waitForFunction(()=>window.__kucharzyna?.ready===true);
+  await page.waitForFunction(()=>window.__kucharek?.ready===true);
   await page.goto('/#/inventory');
   await page.getByRole('button', { name:'Skanuj kod kreskowy' }).click();
   await expect(page.getByRole('heading', { name:'Skanuj kod kreskowy' })).toBeVisible();

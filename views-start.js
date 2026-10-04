@@ -23,7 +23,7 @@ export function startView() {
     h('a', {
       class: `start-action ${cls}`.trim(),
       href: '#' + path,
-      'aria-label': label,
+      'aria-label': badge ? `${badge} ${label}` : label,
       onClick: (e) => { e.preventDefault(); navigate(path); },
     },
       h('span', { class: 'start-action-ico' }, icon(ico, 23),

@@ -38,6 +38,16 @@ jobs:
           restore-keys: |
             playwright-${{ runner.os }}-
 
+      - name: Ensure generated real recipe corpus
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ ! -f recipe-library-data/BUILD-META.json ]; then
+            node scripts/build-recipe-library.mjs
+          else
+            echo "Generated recipe corpus is present."
+          fi
+
       - name: Syntax preflight
         run: find . -name '*.js' -not -path './node_modules/*' -print0 | xargs -0 -n1 node --check
 

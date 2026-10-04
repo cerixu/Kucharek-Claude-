@@ -36,7 +36,7 @@ export function proView(){
           h('div',{class:'row between'},
             h('strong',null,o.supplierName||'Bez dostawcy'),
             h('span',{class:'tag'},o.status)),
-          h('p',{class:'muted'},date(o.createdAt)+' · '+(o.items?.length||0)+' pozycji')))
+          h('p',{class:'muted'},date(o.createdAt)+' · '+(o.items?.length||0)+' pozycji'))))
       : emptyState('🛒','Brak zamówień','Zbuduj pierwsze zamówienie do dostawcy.');
     return h('div',{class:'stack'},header,list);
   }

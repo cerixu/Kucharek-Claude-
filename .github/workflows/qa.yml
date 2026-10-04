@@ -1,5 +1,9 @@
 name: Kucharek QA
 
+concurrency:
+  group: kucharek-qa-${{ github.ref }}
+  cancel-in-progress: true
+
 on:
   push:
     branches: [main]

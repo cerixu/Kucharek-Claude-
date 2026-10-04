@@ -223,7 +223,34 @@ const FINAL_CLEANUP = [
 ];
 const SHORT_SAFE = new Set(["a","an","i","of","in","for","on","to","and","or","it","is","be","by","if","as","at","the","up","off","out","not","no"]);
 const RAW_TERMS = [...P, ...OTHER, ...EXTRA, ...MORE, ...FINAL_CLEANUP];
-const ALL_TERMS = RAW_TERMS.filter(([a]) => a.length >= 3 || SHORT_SAFE.has(a.toLowerCase())).sort((a,b)=>b[0].length-a[0].length);
+const RESIDUAL_FINAL = [
+["make sure to","upewnij się, że"],["be sure to","upewnij się, że"],["make sure","upewnij się"],["air pockets","pęcherzyki powietrza"],["on spit","na rożnie"],["to size","do rozmiaru"],["halfway through cooking","w połowie gotowania"],["pouring off","odlewając"],["poured off","odlany"],["cooked halfway","ugotowany do połowy"],["just before serving","tuż przed podaniem"],["before serving","przed podaniem"],["for serving","do podania"],["at least","co najmniej"],["as follows","w następujący sposób"],["as needed","w razie potrzeby"],["this soup","ta zupa"],["this mixture","ta masa"],["this sauce","ten sos"],["this way","w ten sposób"],["the following","następujący"],["following day","następnego dnia"],["same day","tego samego dnia"],
+["it","to"],["this","to"],["that","to"],["these","te"],["those","tamte"],["they","one"],["them","je"],["their","ich"],["its","jego"],["your","twój"],["you","ty"],["we","my"],["our","nasz"],
+["to","do"],["as","jako"],["at","w"],["is","jest"],["are","są"],["was","był"],["were","były"],["be","być"],["been","był"],["being","będąc"],["have","mieć"],["has","ma"],["had","miał"],["can","można"],["could","można by"],["should","powinien"],["may","może"],["must","musi"],["will","będzie"],["would","byłoby"],["not","nie"],["no","nie"],["yes","tak"],
+["good","dobry"],["one","jeden"],["two","dwa"],["three","trzy"],["four","cztery"],["five","pięć"],["six","sześć"],["seven","siedem"],["eight","osiem"],["nine","dziewięć"],["ten","dziesięć"],["very","bardzo"],["too","zbyt"],["also","również"],["set","ustaw"],["up","w górę"],["off","z"],["pass","przepuść"],["serving","podanie"],["mixture","masa"],["paste","pasta"],["size","rozmiar"],["table","stół"],["needle","igła"],["cloves","ząbki"],["whites","białka"],["yolks","żółtka"],["chinese","chiński"],["Chinese","chiński"],
+["it on","to na"],["it is","to jest"],["it was","to było"],["it with","to z"],["and then","a następnie"],["and mix","i wymieszaj"],["and add","i dodaj"],["then add","następnie dodaj"],["then mix","następnie wymieszaj"],["take care","uważaj"],["take care to","uważaj, aby"],["let it","pozostaw"],["let it cool","ostudź"],["let stand","odstaw"],["set aside","odstaw na bok"],
+["table to","stołu do"],["on the table","na stole"],["to the table","na stół"],["on table","na stole"],["on top","na wierzchu"],["top of","wierzch"],["bottom of","dno"],
+["fifteen","piętnaście"],["twenty","dwadzieścia"],["thirty","trzydzieści"],["forty","czterdzieści"],["fifty","pięćdziesiąt"],["sixty","sześćdziesiąt"],
+["more","więcej"],["less","mniej"],["longer","dłużej"],["same","taki sam"],["different","różny"],["another","kolejny"],["other","pozostały"],["each","każdy"],["both","oba"],["either","jeden z dwóch"],["neither","żaden z dwóch"],
+["very thin","bardzo cienki"],["very small","bardzo mały"],["very large","bardzo duży"],["very hot","bardzo gorący"],["very cold","bardzo zimny"],
+["sticking","przywieraniu"],["browning","rumienieniu"],["heats up","nagrzewa się"],["heated","podgrzany"],["heat up","podgrzej"],["goes out","gaśnie"],["comes out","wychodzi"],["comes","wychodzi"],["appears","pojawia się"],["appear","pojawiać się"],["falls","opada"],["fall","opadać"],
+["sure","pewny"],["wide","szeroki"],["rectangular","prostokątny"],["length","długość"],["width","szerokość"],["shape","kształt"],["surface","powierzchnia"],["area","obszar"],["remaining","pozostały"],["repeatedly","wielokrotnie"],["alternating","naprzemiennie"],["separately","osobno"],["traditionally","tradycyjnie"],["tradition","tradycja"],
+["fowl","drób"],["pig","świnia"],["piglet","prosię"],["veal","cielęcina"],["mutton","baranina"],["lamb","jagnięcina"],["goose","gęś"],["duck","kaczka"],["turkey","indyk"],["rabbit","królik"],["hare","zając"],["game","dziczyzna"],
+["giblets","podroby"],["gizzard","żołądek"],["gizzards","żołądki"],["sweetbreads","grasica"],["tripe","flaki"],["oxtail","ogon wołowy"],["tongue","język"],["kidney","nerka"],["liver","wątróbka"],["heart","serce"],["brain","mózg"],["bone","kość"],["bones","kości"],["cartilage","chrząstka"],["fatback","słonina"],
+["veal breast","pierś cielęca"],["veal loin","schab cielęcy"],["beef tongue","język wołowy"],["beef kidney","nerka wołowa"],["pork loin","schab wieprzowy"],["pork shoulder","łopatka wieprzowa"],["lamb shoulder","łopatka jagnięca"],["lamb leg","udziec jagnięcy"],
+["almond meal","mąka migdałowa"],["almond paste","masa migdałowa"],["walnut meats","jądra orzechów włoskich"],["chestnuts","kasztany"],["chestnut","kasztan"],["figs","figi"],["fig","figa"],["prunes","suszone śliwki"],["prune","suszona śliwka"],
+["French Manner","po francusku"],["French manner","po francusku"],["French style","po francusku"],["German style","po niemiecku"],["Italian style","po włosku"],["Spanish style","po hiszpańsku"],["Chinese style","po chińsku"],
+["French Manners","po francusku"],["in French Manner","po francusku"],["in German Manner","po niemiecku"],["in Italian Manner","po włosku"],
+["Aal","węgorz"],["aal","węgorz"],["Agnello","baranina"],["agnello","baranina"],["Acciughe","anchois"],["acciughe","anchois"],
+["all'Orientale","po orientalnemu"],["alla Marinara","po marynarsku"],["alla marinaio","po marynarsku"],["alla","po"],["coda di","ogon "],["coda","ogon"],["con","z"],["senza","bez"],
+["Atún","tuńczyk"],["Atun","tuńczyk"],["asado","pieczony"],["natural","naturalny"],["Castañas","kasztany"],["Vainilla","wanilia"],["Judías","fasola"],["Carmen","po Carmen"],["Sopa","zupa"],["Puré","puree"],["Guisantes","groszek"],["Lentejas","soczewica"],["Habas","bób"],
+["französische Art","po francusku"],["Französische Art","po francusku"],["Lamm","jagnięcina"],["Schwein","wieprzowina"],["Rind","wołowina"],["Huhn","kurczak"],["Kartoffel","ziemniak"],
+["Paste","pasta"],["Biscuit","biszkopt"],["Pickled","marynowany"],["Cured","peklowany"],["Frankfurter","parówka"],["Frankfurters","parówki"],["Sponge Cake","biszkopt"],["red cheese","czerwony ser"],["white cheese","biały ser"],
+["le veau et le mouton","cielęcinę i baraninę"],["faites la même chose","zrób to samo"],["à la réserve","na bok"],["que vous ne les faites point revenir","aby ich nie rumienić"],["de la","z"],["du","z"],["des","z"],["avec","z"],["pour","dla"],["dans","w"],["sur","na"],["faire","robić"],["faites","zrób"],["cuire","gotować"],["cuit","ugotowany"],["mouton","baranina"],["veau","cielęcina"],["réserve","zapas"],["chose","rzecz"],["même","samo"],["point","wcale"],["revenir","rumienić"],["rôtir","piec"],["hacher","siekać"],["couper","kroić"],["mettre","włożyć"],["mettez","włóż"],
+["jártra","wątróbka"],["Játra","wątróbka"],["jiné","inne"],["jiné drůbeže","innego drobiu"],["drůbeže","drobiu"],["dle potřeby","według potrzeby"],["potřeby","potrzeby"],["rozkrájej","pokrój"],["husí","gęsi"],["husí játra","wątróbka gęsia"],["knitting needle","drut dziewiarski"],["trussing needle","igła do sznurowania"],
+["Chinese","chiński"],["Japanese","japoński"],["Italian","włoski"],["French","francuski"],["German","niemiecki"],["Spanish","hiszpański"],["Czech","czeski"],["Polish","polski"],
+];
+const ALL_TERMS = RAW_TERMS.concat(RESIDUAL_FINAL).filter(([a]) => a.length >= 3 || SHORT_SAFE.has(a.toLowerCase())).sort((a,b)=>b[0].length-a[0].length);
 const escapeRegex = (s) => String(s).replace(/[.*+?^$(){}|[\\]\\]/g, "\\$&");
 const TOKEN_RE = new RegExp("(?<!\\p{L})(" + ALL_TERMS.map(([a])=>escapeRegex(a)).join("|") + ")(?!\\p{L})","giu");
 const TERM_MAP = new Map(ALL_TERMS.map(([a,b])=>[a.toLowerCase(),b]));
@@ -272,6 +299,6 @@ export function translateRecipe(recipe) {
     steps,
     archiveCollectionName:C[recipe.archiveCollectionName]||recipe.archiveCollectionName,
     translationLanguage:"pl",
-    translationVersion:6
+    translationVersion:7
   };
 }

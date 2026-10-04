@@ -146,8 +146,7 @@ export async function loadAll() {
     await restoreSeeds();
     await setSetting('seedLibraryVersion', SEED_MEDIA_VERSION);
   }
-  await refreshArchiveTranslations();
-  state.ready = true;
+  // Nie blokuj pierwszego renderu ciężkim odświeżaniem całego korpusu 1200+ receptur.\n  // Aplikacja ma wystartować natychmiast, a tłumaczenia zostaną zaktualizowane w tle.\n  refreshArchiveTranslations().catch((e) => console.warn('[Kucharek] Aktualizacja tłumaczeń w tle nie powiodła się:', e));\n  state.ready = true;
 }
 
 /* ---------- Kategorie ---------- */

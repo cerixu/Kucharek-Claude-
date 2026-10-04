@@ -113,5 +113,5 @@ test('Stage 34B: numer wersji jest widoczny w Ustawieniach', async ({ page }) =>
   await page.goto('/#/settings');
   await page.waitForFunction(() => window.__kucharzyna?.ready === true);
   await expect(page.getByText('Wersja aplikacji', { exact: true })).toBeVisible();
-  await expect(page.getByText('1.3.32', { exact: true })).toBeVisible();
+  await expect(page.getByText('1.3.34', { exact: true })).toBeVisible();
 });

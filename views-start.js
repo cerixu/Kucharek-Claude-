@@ -90,8 +90,11 @@ export function startView() {
     kids.push(
       h('section', { class: 'start-section' },
         h('div', { class: 'start-section-head' },
-          h('h2', null, 'Szybki dostęp'),
-          h('span', { class: 'muted small' }, 'Najczęściej używane')),
+          h('div', null,
+            h('h2', null, 'Szybki dostęp'),
+            h('span', { class: 'muted small' }, 'Najważniejsze rzeczy bez szukania')),
+          h('button', { type: 'button', class: 'start-text-link start-search-link', onClick: () => navigate('/recipes') },
+            icon('search', 15), 'Szukaj receptury')),
         h('div', { class: 'start-actions-grid' },
           link('Przepisy', 'Znajdź recepturę', 'book', '/recipes'),
           link('Magazyn', lowStock ? `${lowStock} ${lowStock === 1 ? 'uwaga' : 'uwag'}` : 'Stany produktów', 'list', '/inventory', '', lowStock),

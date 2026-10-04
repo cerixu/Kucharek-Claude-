@@ -42,7 +42,7 @@ test.describe('Stage 54 — static Polish corpus gate', () => {
         for (const f of fields) if (re.test(String(f))) hits.push({ id: r.id, name: r.name, text: f });
       }
       return hits.slice(0, 40);
-    }, words => words);
+    }, OBVIOUS_ENGLISH);
     expect(result).toEqual([]);
   });
 

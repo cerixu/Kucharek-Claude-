@@ -70,7 +70,7 @@ test.describe('Stage 53 — Polish recipe translation gate', () => {
         }
       }
       return { hits, fields };
-    }, markers);
+    }, FOREIGN);
     expect(result.fields).toBeGreaterThan(5000);
     expect(result.hits).toBeLessThan(30);
   });

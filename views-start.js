@@ -65,13 +65,14 @@ export function startView() {
     const alerts = getSetting('inventoryAlerts') !== false;
     const lowStock = alerts ? listInventory().filter((item) => stockState(item) !== 'ok').length : 0;
     const heroRecipe = cooked[0] || recent[0] || favs[0] || null;
+    const heroVisual = heroRecipe || all[0] || { id: 'start-fallback', name: 'Kucharek', category: 'cat-pizza' };
 
     const kids = [];
 
     kids.push(
       h('section', { class: 'start-hero-card' },
-        heroRecipe ? h('div', { class: 'start-hero-backdrop' }, recipeVisual(heroRecipe, '', { hero: true })) : null,
-        heroRecipe ? h('div', { class: 'start-hero-image' }, recipeVisual(heroRecipe, '', { hero: true })) : null,
+        h('div', { class: 'start-hero-backdrop' }, recipeVisual(heroVisual, '', { hero: true })),
+        h('div', { class: 'start-hero-image' }, recipeVisual(heroVisual, '', { hero: true })),
         h('div', { class: 'start-hero-scrim' }),
         h('div', { class: 'start-hero-content' },
           h('div', { class: 'start-hero-top' },
@@ -80,7 +81,7 @@ export function startView() {
           h('div', { class: 'start-hero-copy' },
             h('h2', null, 'Co dziś gotujemy?'),
             h('p', { class: 'start-hero-sub' },
-              heroRecipe ? heroRecipe.name : `${plural(all.length)} · wszystko pod ręką`)),
+              heroRecipe ? heroRecipe.name : `${plural(all.length)} · wybierz coś na dziś`)),
           button('Zacznij gotować', { kind: 'primary', icon: 'chef', cls: 'start-cook-btn', onClick: () => navigate(heroRecipe ? '/cook/' + encodeURIComponent(heroRecipe.id) : '/cook') }),
         )
       )

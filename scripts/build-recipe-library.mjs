@@ -65,7 +65,7 @@ function parseScalar(raw) {
   const v = String(raw ?? '').trim();
   if (!v) return '';
   if ((v.startsWith('"') && v.endsWith('"')) || (v.startsWith("'") && v.endsWith("'"))) {
-    return v.slice(1, -1).replace(/\\/g, '\');
+    return v.slice(1, -1);
   }
   if (v.startsWith('[') && v.endsWith(']')) {
     try { return JSON.parse(v.replace(/'/g, '"')); } catch (_) {}

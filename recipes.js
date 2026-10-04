@@ -384,7 +384,7 @@ export function allTags() {
 
 
 /* ---------- Biblioteka zdjęć startowych ---------- */
-const SEED_MEDIA_VERSION = 10;
+const SEED_MEDIA_VERSION = 11;
 const PHOTO = Object.freeze({
   pizza:'https://photoshop-api.adobe.io/v2/short-url/urn:aaid:ps:US:19d098c7-f308-4416-951d-4d5bb6ed6cc4',
   carbonara:'https://photoshop-api.adobe.io/v2/short-url/urn:aaid:ps:US:995b5785-cd24-4bff-b5c2-ba36d567a827',
@@ -489,7 +489,14 @@ function extraSeedRecipes(now) {
 /** Dodaje przykładowe receptury, jeśli ich brakuje (nie nadpisuje edytowanych). */
 /** Usuwa stare, automatycznie wygenerowane rekordy biblioteki przed zmianą corpusu. */
 async function removeLegacyLibrarySeeds() {
-  const legacy=[...state.recipes.values()].filter((r)=>String(r.id||'').startsWith('rcp_lib_')||r.source==='Kucharek — biblioteka startowa');
+  const legacy=[...state.recipes.values()].filter((r)=>{
+    const id=String(r.id||'');
+    if(id.startsWith('rcp_lib_')||r.source==='Kucharek — biblioteka startowa') return true;
+    if(id.startsWith('rcp_archive_')){
+      return (r.updatedAt||0)===(r.createdAt||0);
+    }
+    return false;
+  });
   if(!legacy.length)return 0;
   const hist=(await Promise.all(legacy.map((r)=>db.byIndex('history','recipeId',r.id).catch(()=>[])))).flat();
   const cookHist=(await Promise.all(legacy.map((r)=>db.byIndex('cookHistory','recipeId',r.id).catch(()=>[])))).flat();

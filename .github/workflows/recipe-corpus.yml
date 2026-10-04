@@ -30,6 +30,31 @@ jobs:
       - name: Generate corpus
         run: node scripts/build-recipe-library.mjs
 
+      - name: Validate generated module
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --input-type=module <<'NODE'
+          import fs from 'node:fs';
+          const meta = JSON.parse(fs.readFileSync('recipe-library-data/BUILD-META.json', 'utf8'));
+          if (meta.count <= 1200 || meta.count !== meta.uniqueFingerprints) {
+            throw new Error('Invalid corpus meta: ' + JSON.stringify(meta));
+          }
+          const { recipeLibrary } = await import('./recipe-library.js');
+          const rows = recipeLibrary(0);
+          if (rows.length !== meta.count) throw new Error(`Module count ${rows.length} != meta ${meta.count}`);
+          if (new Set(rows.map(r => r.id)).size !== rows.length) throw new Error('Duplicate recipe IDs');
+          if (rows.some(r => !String(r.id).startsWith('rcp_archive_'))) throw new Error('Non-archive recipe in generated corpus');
+          if (rows.some(r => r.archiveLicense !== 'public-domain' || !r.sourceRepository)) throw new Error('Missing archive provenance');
+          const titleCounts = new Map();
+          for (const r of rows) {
+            const key = String(r.name).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, ' ').trim();
+            titleCounts.set(key, (titleCounts.get(key) || 0) + 1);
+          }
+          if (Math.max(...titleCounts.values()) > 3) throw new Error('Too many same-title records');
+          console.log(`Validated ${rows.length} real archive recipes.`);
+          NODE
+
       - name: Commit generated corpus
         shell: bash
         run: |

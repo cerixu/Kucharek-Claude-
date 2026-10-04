@@ -154,8 +154,25 @@ const FRACTIONS = {
 function parseQuantity(raw) {
   let s = String(raw).trim().replace(/[–—]/g, '-');
 
+  if (/^(a few|several|some|enough|a little|little)\b/i.test(s)) {
+    return { amount: null, rest: s };
+  }
+
+  const wordValue = (word) => NUMBER_WORDS[word.toLowerCase()];
+
+  const mixedWord = s.match(/^(one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve)\s+and\s+(a |an )?(one half|one quarter|one fourth|one third|two thirds|three quarters|three fourths|a half|a quarter)\b/i);
+  if (mixedWord) {
+    const whole = wordValue(mixedWord[1]);
+    const fracPhrase = mixedWord[3].toLowerCase();
+    const frac = FRACTION_WORDS[fracPhrase] ?? (fracPhrase === 'a half' ? 0.5 : fracPhrase === 'a quarter' ? 0.25 : null);
+    if (frac != null) {
+      return { amount: whole + frac, rest: s.slice(mixedWord[0].length).trim() };
+    }
+  }
+
   for (const [phrase, amount] of Object.entries(FRACTION_WORDS)) {
-    if (new RegExp('^' + phrase.replace(' ', '\\s+') + '\\b', 'i').test(s)) {
+    const re = new RegExp('^' + phrase.replace(/\s+/g, '\\s+') + '\\b', 'i');
+    if (re.test(s)) {
       return { amount, rest: s.slice(phrase.length).trim() };
     }
   }
@@ -187,7 +204,6 @@ function parseQuantity(raw) {
 
   return { amount: null, rest: s };
 }
-
 function normalizeIngredient(raw) {
   const original = cleanText(raw);
   const lower = original.toLowerCase();
@@ -225,6 +241,8 @@ function normalizeIngredient(raw) {
     [/^(quarts?|quart)\b\s+of?\s*/i, (n) => ({ amount: n * 946.353, unit: 'ml' })],
     [/^(gallons?|gallon)\b\s+of?\s*/i, (n) => ({ amount: n * 3785.41, unit: 'ml' })],
     [/^(pieces?|piece)\b\s+of?\s*/i, (n) => ({ amount: n, unit: 'szt.' })],
+    [/^(handfuls?|handful)\b\s+of?\s*/i, (n) => ({ amount: n, unit: 'garść' })],
+    [/^(heads?|head|cloves?|clove|sprigs?|sprig|slices?|slice)\b\s+of?\s*/i, (n) => ({ amount: n, unit: 'szt.' })],
   ];
 
   if (amount != null) {
@@ -255,20 +273,46 @@ function normalizeIngredient(raw) {
 }
 
 function categoryFor(title, ingredients) {
-  const text = norm(title + ' ' + ingredients.join(' '));
+  const titleText = norm(title);
+  const ingredientText = norm(ingredients.join(' '));
 
-  if (/\b(pizza|pizzae|pizzas)\b/.test(text)) return 'cat-pizza';
-  if (/\b(pasta|macaroni|spaghetti|lasagn|ravioli|noodles?|vermicelli|dumplings?|pierogi|gnocchi)\b/.test(text)) return 'cat-pasta';
-  if (/\b(sauce|sugo|salsa|ragout|ragu|gravy|mayonnaise|mustard|vinaigrette|dressing|aioli|relish)\b/.test(text)) return 'cat-sosy';
-  if (/\b(soup|soups|broth|chowder|bisque|stew|zupa|consomme|consomm)\b/.test(text)) return 'cat-zupy';
-  if (/\b(salad|salads|slaw|salade|ensalada|sałatka)\b/.test(text)) return 'cat-salatki';
-  if (/\b(cocktail|cocktails|punch|drink|drinks|lemonade|tea|coffee)\b/.test(text)) return 'cat-cocktaile';
-  if (/\b(cake|cakes|pie|pies|pudding|puddings|dessert|sweet|pastry|tart|cookies?|biscuit|custard|ice cream|chocolate|jelly|candy)\b/.test(text)) return 'cat-desery';
-  if (/\b(bread|loaf|loaves|rolls?|bun|buns|focaccia|brioche|dough)\b/.test(text)) return 'cat-pieczywo';
-  if (/\b(fish|salmon|cod|herring|tuna|trout|pike|carp|mackerel)\b/.test(text)) return 'cat-ryby';
-  if (/\b(shrimp|prawn|lobster|crab|oyster|mussel|clam|squid|octopus|anchov)\b/.test(text)) return 'cat-owoce-morza';
-  if (/\b(beef|veal|pork|ham|bacon|mutton|lamb|chicken|duck|turkey|goose|sausage|meat|venison)\b/.test(text)) return 'cat-mieso';
-  if (/\b(vegetable|vegetables|bean|beans|pea|peas|carrot|potato|cabbage|eggplant|aubergine|tomato|mushroom|spinach)\b/.test(text)) return 'cat-warzywa';
+  const titleRules = [
+    ['cat-pizza', /\b(pizza|pizzas)\b/],
+    ['cat-pasta', /\b(pasta|macaroni|spaghetti|lasagn|ravioli|noodles?|vermicelli|dumplings?|pierogi|gnocchi)\b/],
+    ['cat-sosy', /\b(sauce|sugo|salsa|ragout|ragu|gravy|mayonnaise|mustard|vinaigrette|dressing|aioli|relish)\b/],
+    ['cat-zupy', /\b(soup|soups|broth|chowder|bisque|stew|zupa|consomme|consomm)\b/],
+    ['cat-salatki', /\b(salad|salads|slaw|salade|ensalada|sałatka)\b/],
+    ['cat-cocktaile', /\b(cocktail|cocktails|punch|drink|drinks|lemonade|tea|coffee)\b/],
+    ['cat-ryby', /\b(fish|salmon|cod|herring|tuna|trout|pike|carp|mackerel|eel|eels|frog legs|frogs legs)\b/],
+    ['cat-owoce-morza', /\b(shrimp|prawn|lobster|crab|oyster|mussel|clam|squid|octopus|anchov)\b/],
+    ['cat-mieso', /\b(beef|veal|pork|ham|bacon|mutton|lamb|chicken|duck|turkey|goose|sausage|meat|venison|frog legs)\b/],
+    ['cat-desery', /\b(cake|cakes|pie|pies|pudding|puddings|dessert|sweet|pastry|tart|cookies?|biscuit|custard|ice cream|chocolate|jelly|candy|zmrzlin)\b/],
+    ['cat-pieczywo', /\b(bread|loaf|loaves|rolls?|bun|buns|focaccia|brioche|dough|muffins?)\b/],
+    ['cat-warzywa', /\b(vegetable|vegetables|bean|beans|pea|peas|carrot|potato|cabbage|eggplant|aubergine|tomato|mushroom|spinach)\b/],
+  ];
+
+  for (const [category, re] of titleRules) {
+    if (re.test(titleText)) return category;
+  }
+
+  const text = titleText + ' ' + ingredientText;
+  const ingredientRules = [
+    ['cat-ryby', /\b(fish|salmon|cod|herring|tuna|trout|pike|carp|mackerel|eel|eels)\b/],
+    ['cat-owoce-morza', /\b(shrimp|prawn|lobster|crab|oyster|mussel|clam|squid|octopus|anchov)\b/],
+    ['cat-mieso', /\b(beef|veal|pork|ham|bacon|mutton|lamb|chicken|duck|turkey|goose|sausage|meat|venison|frog legs)\b/],
+    ['cat-pizza', /\b(pizza|pizzas)\b/],
+    ['cat-pasta', /\b(pasta|macaroni|spaghetti|lasagn|ravioli|noodles?|vermicelli|dumplings?|pierogi|gnocchi)\b/],
+    ['cat-sosy', /\b(sauce|sugo|salsa|ragout|ragu|gravy|mayonnaise|mustard|vinaigrette|dressing|aioli|relish)\b/],
+    ['cat-zupy', /\b(soup|soups|broth|chowder|bisque|stew|zupa|consomme|consomm)\b/],
+    ['cat-salatki', /\b(salad|salads|slaw|salade|ensalada|sałatka)\b/],
+    ['cat-desery', /\b(cake|cakes|pie|pies|pudding|puddings|dessert|sweet|pastry|tart|cookies?|biscuit|custard|ice cream|chocolate|jelly|candy|zmrzlin)\b/],
+    ['cat-pieczywo', /\b(bread|loaf|loaves|rolls?|bun|buns|focaccia|brioche|dough|muffins?)\b/],
+    ['cat-warzywa', /\b(vegetable|vegetables|bean|beans|pea|peas|carrot|potato|cabbage|eggplant|aubergine|tomato|mushroom|spinach)\b/],
+    ['cat-cocktaile', /\b(cocktail|cocktails|punch|drink|drinks|lemonade|tea|coffee)\b/],
+  ];
+  for (const [category, re] of ingredientRules) {
+    if (re.test(text)) return category;
+  }
   return 'cat-inne';
 }
 

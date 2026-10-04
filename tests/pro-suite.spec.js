@@ -434,3 +434,38 @@ test('ETAP 31: ekran strat pokazuje raport i przycisk Dodaj stratę',async({page
 test('ETAP 32: historia inwentaryzacji zapisuje zamknięty spis i różnicę',async({page})=>{await reset(page);const out=await page.evaluate(async()=>{const i=await import('/inventory.js');const p=await import('/pro.js');const item=await i.saveInventoryItem({name:'Historia spisu',quantity:10,unit:'kg'});const t=await p.startStocktake('Koniec zmiany');await p.updateStocktake(t.id,item.id,8);await p.finalizeStocktake(t.id);const rows=await p.listStocktakes();return{status:rows[0]?.status,diff:rows[0]?.items.find(x=>x.inventoryId===item.id)?.difference,note:rows[0]?.note};});expect(out.status).toBe('closed');expect(out.diff).toBe(-2);expect(out.note).toBe('Koniec zmiany');});
 
 test('ETAP 32: ekran Inwentaryzacje pokazuje historię i różnice',async({page})=>{await reset(page);await page.evaluate(async()=>{const i=await import('/inventory.js');const p=await import('/pro.js');const item=await i.saveInventoryItem({name:'UI spis',quantity:5,unit:'kg'});const t=await p.startStocktake();await p.updateStocktake(t.id,item.id,4);await p.finalizeStocktake(t.id);});await page.goto('/#/inventory');await page.getByRole('button',{name:'PRO',exact:true}).click();await page.getByRole('button',{name:'Inwentaryzacje',exact:true}).click();await expect(page.getByRole('heading',{name:'Historia inwentaryzacji',exact:true})).toBeVisible({timeout:10000});await expect(page.getByText('1 różnic', {exact:true})).toBeVisible();});
+test('ETAP 33: partie zapisują termin, ilość i źródło dostawy',async({page})=>{
+  await reset(page);
+  const out=await page.evaluate(async()=>{
+    const p=await import('/pro.js');
+    const d=await p.receiveDelivery({supplierName:'Dostawca partii',documentNo:'FV/PARTIA',items:[{name:'Śmietana partia test',quantity:4,unit:'kg',lot:'LOT-007',expiryAt:Date.now()+2*86400000}]});
+    const rows=await p.listLots();
+    return {lot:rows[0].lot,qty:rows[0].quantity,unit:rows[0].unit,deliveryId:rows[0].deliveryId,doc:(await p.listDeliveries()).find(x=>x.id===d.id)?.documentNo};
+  });
+  expect(out.lot).toBe('LOT-007');
+  expect(out.qty).toBe(4);
+  expect(out.unit).toBe('kg');
+  expect(out.doc).toBe('FV/PARTIA');
+  expect(out.deliveryId).toBeTruthy();
+});
+
+test('ETAP 33: ekran Partie i terminy pokazuje statusy i filtry',async({page})=>{
+  await reset(page);
+  await page.evaluate(async()=>{
+    const p=await import('/pro.js');
+    await p.receiveDelivery({supplierName:'Dostawca terminów',documentNo:'FV-TERM',items:[
+      {name:'Produkt przeterminowany',quantity:1,unit:'kg',lot:'OLD-1',expiryAt:Date.now()-86400000},
+      {name:'Produkt wkrótce',quantity:2,unit:'kg',lot:'SOON-1',expiryAt:Date.now()+2*86400000},
+      {name:'Produkt bez terminu',quantity:3,unit:'kg',lot:'NOEXP-1'}
+    ]});
+  });
+  await page.goto('/#/pro?tab=lots');
+  await expect(page.getByRole('heading',{name:'Partie i terminy ważności',exact:true})).toBeVisible();
+  await expect(page.getByText('PRZETERMINOWANA',{exact:true})).toBeVisible();
+  await expect(page.getByText('WKRÓTCE',{exact:true})).toBeVisible();
+  await expect(page.getByText('BEZ TERMINU',{exact:true})).toBeVisible();
+  await expect(page.getByText('FV-TERM',{exact:true})).toBeVisible();
+  await page.getByRole('button',{name:'Przeterminowane',exact:true}).click();
+  await expect(page.getByText('Produkt przeterminowany',{exact:true})).toBeVisible();
+  await expect(page.getByText('Produkt wkrótce',{exact:true})).toHaveCount(0);
+});

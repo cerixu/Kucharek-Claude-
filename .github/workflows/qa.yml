@@ -1,7 +1,7 @@
 name: Kucharek QA
 
 concurrency:
-  group: kucharek-qa-${{ github.ref }}
+  group: kucharek-qa-${{ github.workflow }}-${{ github.sha }}
   cancel-in-progress: true
 
 on:
@@ -111,6 +111,7 @@ jobs:
             "Stage 52:"*) echo "test_files=tests/stage-52.spec.js" >> "$GITHUB_OUTPUT" ;;
             "Stage 53:"*) echo "test_files=tests/stage-53.spec.js" >> "$GITHUB_OUTPUT" ;;
             "Stage 54:"*) echo "test_files=tests/stage-54.spec.js" >> "$GITHUB_OUTPUT" ;;
+            "Optimize Stage 54 corpus gate"*) echo "test_files=tests/stage-54.spec.js" >> "$GITHUB_OUTPUT" ;;
             "Wait for background archive before corpus assertions"*) echo "test_files=tests/startup.spec.js tests/stage-54.spec.js" >> "$GITHUB_OUTPUT" ;;
             "Fix startup:"*) echo "test_files=tests/startup.spec.js" >> "$GITHUB_OUTPUT" ;;
             "Bump app cache version"*) echo "test_files=tests/startup.spec.js tests/pwa.spec.js" >> "$GITHUB_OUTPUT" ;;

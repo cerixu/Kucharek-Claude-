@@ -78,6 +78,77 @@ const EXTRA = [
 ["add to","dodaj do"],["mix with","wymieszaj z"],["cook with","gotuj z"],["serve with","podawaj z"],["cover with","przykryj"],["pour with","polej"],
 ];
 
+
+
+const MORE = [
+["walnut-sized","wielkości orzecha włoskiego"],["walnuts","orzechy włoskie"],["walnut","orzech włoski"],["almonds","migdały"],["almond","migdał"],
+["hazelnuts","orzechy laskowe"],["hazelnut","orzech laskowy"],["cashews","nerkowce"],["cashew","orzech nerkowca"],["pecans","orzechy pekan"],["pecan","orzech pekan"],
+["raisins","rodzynki"],["raisin","rodzynka"],["currants","porzeczki"],["currant","porzeczka"],["dates","daktyle"],["date","daktyl"],
+["blanched","sparzony"],["shelled","obrany ze skorupek"],["unsalted","niesolony"],["salted","solony"],["sour","kwaśny"],["sweet","słodki"],
+["bitter","gorzki"],["spicy","pikantny"],["young","młody"],["old","stary"],["white","biały"],["black","czarny"],["red","czerwony"],["green","zielony"],
+["cold","zimny"],["hot","gorący"],["warm","ciepły"],["fine","drobny"],["finely","drobno"],["coarse","gruby"],["roughly","grubo"],["thin","cienki"],
+["thick","gruby"],["freshly","świeżo"],["previously","wcześniej"],["preferably","najlepiej"],["optional","opcjonalnie"],["optionally","opcjonalnie"],
+["instead","zamiast"],["instead of","zamiast"],["according","według"],["following","następujący"],["various","różne"],["other","pozostałe"],["remaining","pozostałe"],
+["meat","mięso"],["meats","mięsa"],["soup","zupa"],["juice","sok"],["extract","ekstrakt"],["powder","proszek"],["baking powder","proszek do pieczenia"],
+["wheat","pszenica"],["rye","żyto"],["barley","jęczmień"],["oat","owies"],["oats","płatki owsiane"],["corn","kukurydza"],["cornmeal","mąka kukurydziana"],
+["bread","chleb"],["roll","bułka"],["loaf","bochenek"],["slices","plastry"],["slice","plaster"],["piece","kawałek"],["pieces","kawałki"],
+["skin","skórka"],["skins","skórki"],["seeds","nasiona"],["seed","nasiono"],["leaves","liście"],["leaf","liść"],["stalk","łodyga"],
+["shoulder","łopatka"],["leg","udziec"],["legs","nogi"],["breast","pierś"],["thigh","udo"],["wing","skrzydło"],["wings","skrzydła"],["neck","szyja"],
+["head","głowa"],["tail","ogon"],["bone","kość"],["bones","kości"],["shell","skorupka"],["skinless","bez skóry"],
+["grind","zmiel"],["ground","zmielony"],["grinding","mielenie"],["pounded","utłuczony"],["pound","utłucz"],["crushed","rozgnieciony"],["crush","rozgnieć"],
+["sift","przesiej"],["sifted","przesiany"],["sifting","przesiewanie"],["strain","przecedź"],["strained","przecedzony"],
+["sieve","sito"],["dressed","przybrany"],["toasted","opiekany"],["toast","opiecz"],["browned","zrumieniony"],["brown","zrumień"],
+["melt","roztop"],["melts","topi się"],["melted","roztopiony"],["boiled","ugotowany"],["boiling","wrzący"],["drained","odcedzony"],["covered","przykryty"],
+["placed","umieszczony"],["arrange","ułóż"],["arranged","ułożony"],["fill","napełnij"],["filled","wypełniony"],["wrap","zawiń"],["wrapped","zawinięty"],
+["seal","zlep"],["sealed","zlepiony"],["stretch","rozciągnij"],["stretched","rozciągnięty"],["take","weź"],["taken","wzięty"],["make","zrób"],
+["made","zrobiony"],["use","użyj"],["used","użyty"],["replace","zastąp"],["replaced","zastąpiony"],["cover","przykryj"],["covered","przykryty"],
+["should","powinien"],["can","można"],["may","może"],["must","musi"],["will","będzie"],["would","byłoby"],["could","można by"],
+["but","ale"],["if","jeśli"],["there","tam"],["there are","są"],["they","one"],["them","je"],["their","ich"],["which","który"],["that","który"],
+["were","były"],["was","był"],["being","będąc"],["be","być"],["been","był"],["not","nie"],["no","nie"],["yes","tak"],
+["about","około"],["approximately","około"],["almost","prawie"],["more","więcej"],["longer","dłużej"],["again","ponownie"],["well","dobrze"],
+["together","razem"],["along","wraz"],["over","nad"],["on top","na wierzchu"],["bottom","dno"],["top","wierzch"],["center","środek"],
+["first","najpierw"],["second","drugi"],["third","trzeci"],["next","następnie"],["finally","na koniec"],["immediately","natychmiast"],
+["rest","odpocznij"],["let rest","odstaw"],["let sit","odstaw"],["allow","pozostaw"],["until completely","aż całkowicie"],
+["inch","cal"],["inches","cale"],["quart","kwarta"],["quarts","kwarty"],["pint","pinta"],["pints","pinty"],["gallon","galon"],["gallons","galony"],
+["glass","szklanka"],["glasses","szklanki"],["handful","garść"],["spoonful","łyżka"],["pinch","szczypta"],["half","pół"],["quarter","ćwierć"],
+["one","jeden"],["two","dwa"],["three","trzy"],["four","cztery"],["five","pięć"],["six","sześć"],["seven","siedem"],["eight","osiem"],["nine","dziewięć"],["ten","dziesięć"],
+["twenty","dwadzieścia"],["thirty","trzydzieści"],["forty","czterdzieści"],["hundred","sto"],
+["perfectly","dokładnie"],["sufficiently","wystarczająco"],["lightly","lekko"],["firmly","mocno"],["strongly","energicznie"],
+["deep","głęboki"],["deeply","głęboko"],["straight","prosty"],["even","równy"],["entire","cały"],["whole","cały"],
+["fire","ogień"],["heat","ogień"],["flame","płomień"],["grill","grill"],["iron","żeliwo"],["pan","patelnia"],["pot","garnek"],["bowl","miska"],
+["dish","naczynie"],["vessel","naczynie"],["mold","forma"],["platter","półmisek"],["sieve","sito"],
+["catsup","ketchup"],["ketchup","ketchup"],["brandy","brandy"],["prosciutto","prosciutto"],
+["bacon","boczek"],["sausage","kiełbasa"],["sausages","kiełbasy"],["herring","śledź"],["pheasant","bażant"],["capon","kapłon"],
+["rutabaga","brukiew"],["beefsteak","befsztyk"],["steak","stek"],["garnish","dodatek"],["garnished","przybrany"],["mayonnaise","majonez"],
+];
+
+const NAME_MAP = [
+["Baking Powder Babka","Babka z proszkiem do pieczenia"],["Economy Babka","Babka oszczędna"],["Home Cake","Ciasto domowe"],["Brown Bread","Chleb brunatny"],
+["Whole Wheat Bread","Chleb pełnoziarnisty"],["Brown chleb","Chleb brunatny"],["Herring Cake","Babka ze śledzi"],["Beefsteak","Befsztyk"],
+["German-style Steak","Befsztyk po niemiecku"],["French Pancakes","Bliny francuskie"],["Buckwheat Pancakes","Bliny gryczane"],["Cornmeal Pancakes","Bliny kukurydziane"],
+["Pancakes","Naleśniki"],["Date Sandwiches","Butersznyty z daktyli"],["Nut Sandwiches","Butersznyty z orzechów"],["Sandwiches","Butersznyty"],
+["Fruit Cake","Ciasto owocowe"],["Exquisite Cake","Ciasto wykwintne"],["Yellow Cake","Ciasto żółte"],["Pound Cake","Ciasto funtowe"],
+["Stewed Rutabaga","Brukiew duszona"],["Italian kapusta Pudding","Budyń z włoskiej kapusty"],["Boston baked beans","Fasola po bostońsku"],
+["Polish zimny Soup","Chłodnik polski"],["White Fish Mayonnaise","Biały majonez z ryb"],["Pure Beet Soup","Barszcz czysty"],
+["Podolian Beet Soup","Barszcz podolski"],["Volyn Beet Soup","Barszcz wołyński"],["Rye Beet Soup with Beet Greens","Barszcz żytni z botwiną"],
+["Beet Soup with Sour Cream","Barszcz ze śmietaną"],["Stuffed jagnięcina","Baranina faszerowana"],["Fried Lamb","Baranina smażona"],
+["Mazovian \"Capon\"","Kapłon mazurski"],["Boston pieczony fasola","Fasola po bostońsku"],["ryż Pancakes","Bliny z ryżu"],
+["Bananas with Orange Juice","Banany z pomarańczowym sokiem"],["Steak with Bananas","Befsztyk z bananami"],["Rye burak Soup","Barszcz żytni"],
+["Baking Powder","proszek do pieczenia"],["English Muffins","muffiny angielskie"],["Muffins","muffiny"],["Bread","Chleb"],["Cake","Ciasto"],
+];
+
+function cleanRecipeName(text) {
+  let n=String(text??"").replace(/^["“”]+|["“”]+$/g,"").trim();
+  const colon=n.indexOf(":");
+  if(colon>0) n=n.slice(0,colon).trim();
+  const paren=n.indexOf("(");
+  if(paren>0) n=n.slice(0,paren).trim();
+  for(const [a,b] of NAME_MAP.sort((x,y)=>y[0].length-x[0].length)) n=n.replace(new RegExp(String(a).replace(/[.*+?^$(){}|[\\]\\]/g,"\\\\const C = {"),"giu"),b);
+  n=apply(n,MORE);
+  n=n.replace(/\s*[-–—]\s*$/,"").replace(/\s{2,}/g," ").trim();
+  return n;
+}
+
 const C = {"Kuchnia Polska":"Kuchnia polska","Cucina Italiana":"Kuchnia włoska","Cocina Española":"Kuchnia hiszpańska","Cuisine Française":"Kuchnia francuska","Japanese Kitchen":"Kuchnia japońska","Chinese Kitchen":"Kuchnia chińska","Indian Kitchen":"Kuchnia indyjska","German Kitchen":"Kuchnia niemiecka","Česká kuchyně":"Kuchnia czeska"};
 const SENTENCE = [
   ["Shred the cabbage","Poszatkuj kapustę"],

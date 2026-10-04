@@ -14,7 +14,7 @@ import { detailView } from './views-detail.js';
 import { editorView } from './views-editor.js';
 import { cookView } from './views-cook.js';
 import { calcView } from './views-calc.js';
-import { shoppingView, pendingCount } from './shopping.js';
+import { shoppingView } from './shopping.js';
 import { importView } from './views-import.js';
 import { settingsView } from './views-settings.js';
 import { historyView } from './views-history.js';
@@ -99,17 +99,6 @@ function buildTabbar() {
       ),
       h('span', { class: 'tab-label' }, label));
   }));
-  updateBadge();
-}
-
-function updateBadge() {
-  const b = $('#cart-badge');
-  if (!b) return;
-  const n = pendingCount();
-  b.textContent = n > 99 ? '99+' : String(n);
-  b.hidden = n === 0;
-  const a = $('.tab[data-tab="shopping"]');
-  if (a) a.setAttribute('aria-label', n ? `Zakupy, do kupienia: ${n}` : 'Zakupy');
 }
 
 function setActiveTab(meta) {
@@ -205,12 +194,11 @@ async function boot() {
   applyAppearance();
   subscribe((type) => {
     if (type === 'settings') applyAppearance();
-    if (type === 'shopping') updateBadge();
   });
   buildTabbar();
   watchViewport();
   watchNetwork();
-  startRouter($('#view'), (path, meta) => { setActiveTab(meta); updateBadge(); });
+  startRouter($('#view'), (path, meta) => { setActiveTab(meta); });
   const bootEl = $('#boot');
   if (bootEl) { bootEl.classList.add('gone'); setTimeout(() => bootEl.remove(), 350); }
 

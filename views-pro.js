@@ -163,55 +163,152 @@ export function proView(){
       )
     );
   }
-  function deliverySheet() {
-    let supplierId = '', supplierName = '', documentNo = '';
-    const item = { name: '', quantity: '', unit: 'kg', purchasePrice: '', priceUnit: 'kg', lot: '', expiryAt: '' };
-
-    const supplier = selectEl(
-      [['', 'Bez dostawcy'], ...suppliers.map((x) => [x.id, x.name])],
-      '',
-      (v) => {
-        supplierId = v;
-        supplierName = suppliers.find((x) => x.id === v)?.name || '';
-      }
+  function supplierSheet(){
+    let name='',contact='',phone='',email='',notes='';
+    const form=h('div',{class:'stack'},
+      textInput({label:'Nazwa dostawcy',onInput:v=>name=v}),
+      textInput({label:'Kontakt',onInput:v=>contact=v}),
+      textInput({label:'Telefon',onInput:v=>phone=v,inputmode:'tel'}),
+      textInput({label:'E-mail',onInput:v=>email=v,type:'email',inputmode:'email'}),
+      textInput({label:'Notatki',onInput:v=>notes=v})
     );
-    const form = h('div', { class: 'stack' },
-      field('Dostawca', supplier),
-      field('Numer dokumentu', textInput({
-        label: 'Numer dokumentu',
-        onInput: (v) => { documentNo = v; }
-      })),
-      h('div', { class: 'card stack' },
-        h('strong', null, 'Pozycja dostawy'),
-        textInput({ label: 'Produkt', onInput: (v) => { item.name = v; } }),
-        h('div', { class: 'grid-2' },
-          textInput({ type: 'number', label: 'Ilość', onInput: (v) => { item.quantity = v; } }),
-          selectEl(units, item.unit, (v) => { item.unit = v; })
+    openSheet({title:'Nowy dostawca',variant:'sheet',body:form,actions:[
+      {label:'Anuluj',kind:'ghost'},
+      {label:'Zapisz',kind:'primary',icon:'check',onClick:async()=>{
+        try{await addSupplier({name,contact,phone,email,notes});toast('Dostawca zapisany');paint();}
+        catch(e){toast(e?.message||'Nie udało się zapisać dostawcy',{type:'error'});return false;}
+      }}
+    ]});
+  }
+
+  function deliverySheet(){
+    let supplierId='',supplierName='',documentNo='';
+    const item={name:'',quantity:'',unit:'kg',purchasePrice:'',priceUnit:'kg',lot:'',expiryAt:''};
+    const form=h('div',{class:'stack'},
+      field('Dostawca',selectEl(
+        [['','Bez dostawcy'],...suppliers.map(x=>[x.id,x.name])],'',
+        v=>{supplierId=v;supplierName=suppliers.find(x=>x.id===v)?.name||''}
+      )),
+      field('Numer dokumentu',textInput({label:'Numer dokumentu',onInput:v=>documentNo=v})),
+      h('div',{class:'card'},
+        h('strong',null,'Pozycja dostawy'),
+        textInput({label:'Produkt',onInput:v=>item.name=v}),
+        h('div',{class:'grid-2'},
+          textInput({type:'number',label:'Ilość',onInput:v=>item.quantity=v}),
+          selectEl(units,'kg',v=>item.unit=v)
         ),
-        h('div', { class: 'grid-2' },
-          textInput({ type: 'number', label: 'Cena zakupu', onInput: (v) => { item.purchasePrice = v; } }),
-          selectEl(units, item.priceUnit, (v) => { item.priceUnit = v; })
+        h('div',{class:'grid-2'},
+          textInput({type:'number',label:'Cena zakupu',onInput:v=>item.purchasePrice=v}),
+          selectEl(units,item.priceUnit,v=>item.priceUnit=v)
         ),
-        textInput({ label: 'Partia', onInput: (v) => { item.lot = v; } }),
-        textInput({ type: 'date', label: 'Termin', onInput: (v) => { item.expiryAt = v ? new Date(v).getTime() : ''; } })
+        textInput({label:'Partia',onInput:v=>item.lot=v}),
+        textInput({type:'date',label:'Termin',onInput:v=>item.expiryAt=v?new Date(v).getTime():''})
       )
     );
+    openSheet({title:'Nowa dostawa',variant:'sheet',body:form,actions:[
+      {label:'Anuluj',kind:'ghost'},
+      {label:'Przyjmij',kind:'primary',icon:'check',onClick:async()=>{
+        try{await receiveDelivery({supplierId,supplierName,documentNo,items:[item]});toast('Dostawa przyjęta 📦');paint();}
+        catch(e){toast(e?.message||'Nie udało się przyjąć dostawy',{type:'error'});return false;}
+      }}
+    ]});
+  }
 
-    openSheet({
-      title: 'Nowa dostawa',
-      variant: 'sheet',
-      body: form,
-      actions: [
-        { label: 'Anuluj', kind: 'ghost' },
-        {
-          label: 'Przyjmij',
-          kind: 'primary',
-          icon: 'check',
-          onClick: async () => {
-            try {
-              await receiveDelivery({ supplierId, supplierName, documentNo, items: [item] });
-              toast('Dostawa przyjęta 📦');
-              paint();
+  function orderSheet(){
+    let supplierId='',supplierName='',name='',amount='',unit='kg';
+    const form=h('div',{class:'stack'},
+      field('Dostawca',selectEl(
+        [['','Bez dostawcy'],...suppliers.map(x=>[x.id,x.name])],'',
+        v=>{supplierId=v;supplierName=suppliers.find(x=>x.id===v)?.name||''}
+      )),
+      textInput({label:'Produkt',onInput:v=>name=v}),
+      h('div',{class:'grid-2'},
+        textInput({type:'number',label:'Ilość',onInput:v=>amount=v}),
+        selectEl(units,'kg',v=>unit=v)
+      )
+    );
+    openSheet({title:'Nowe zamówienie',variant:'sheet',body:form,actions:[
+      {label:'Anuluj',kind:'ghost'},
+      {label:'Zapisz',kind:'primary',icon:'check',onClick:async()=>{
+        try{await createPurchaseOrder({supplierId,supplierName,status:'ordered',items:[{name,amount,unit}]});toast('Zamówienie zapisane');paint();}
+        catch(e){toast(e?.message||'Nie udało się zapisać zamówienia',{type:'error'});return false;}
+      }}
+    ]});
+  }
+
+  function wasteSheet(){
+    if(!inv.length) return toast('Najpierw dodaj produkt do Magazynu',{type:'error'});
+    let id=inv[0].id,amount='',reason='zepsucie';
+    const form=h('div',{class:'stack'},
+      field('Produkt',selectEl(inv.map(x=>[x.id,x.name]),id,v=>id=v)),
+      textInput({type:'number',label:'Ilość straty',onInput:v=>amount=v}),
+      field('Powód',selectEl([
+        ['zepsucie','Zepsucie'],['przeterminowanie','Przeterminowanie'],
+        ['uszkodzenie','Uszkodzenie'],['produkcja','Błąd produkcyjny'],['inne','Inne']
+      ],reason,v=>reason=v))
+    );
+    openSheet({title:'Zarejestruj stratę',variant:'sheet',body:form,actions:[
+      {label:'Anuluj',kind:'ghost'},
+      {label:'Zapisz',kind:'primary',icon:'check',onClick:async()=>{
+        try{await recordWaste(id,amount,reason);toast('Strata zapisana');paint();}
+        catch(e){toast(e?.message||'Nie udało się zapisać straty',{type:'error'});return false;}
+      }}
+    ]});
+  }
+
+  function adjustSheet(){
+    if(!inv.length) return toast('Magazyn jest pusty',{type:'error'});
+    let id=inv[0].id,delta='',reason='manual';
+    const form=h('div',{class:'stack'},
+      field('Produkt',selectEl(inv.map(x=>[x.id,x.name]),id,v=>id=v)),
+      textInput({type:'number',label:'Zmiana ilości (+ / -)',onInput:v=>delta=v}),
+      textInput({label:'Powód',value:reason,onInput:v=>reason=v})
+    );
+    openSheet({title:'Korekta stanu',variant:'sheet',body:form,actions:[
+      {label:'Anuluj',kind:'ghost'},
+      {label:'Zapisz',kind:'primary',icon:'check',onClick:async()=>{
+        try{await adjustStockPro(id,delta,reason);toast('Korekta zapisana');paint();}
+        catch(e){toast(e?.message||'Nie udało się zapisać korekty',{type:'error'});return false;}
+      }}
+    ]});
+  }
+
+  async function stocktakeSheet(){
+    try{
+      const take=await startStocktake();
+      for(const item of take.items) await updateStocktake(take.id,item.inventoryId,item.systemQuantity);
+      await finalizeStocktake(take.id);
+      toast('Inwentaryzacja zamknięta.');
+      paint();
+    }catch(e){toast(e?.message||'Błąd inwentaryzacji',{type:'error'});}
+  }
+
+  function productionSheet(){
+    let productName='',quantity='',unit='kg',recipeId='',factor=1;
+    const recipes=listRecipes();
+    const form=h('div',{class:'stack'},
+      textInput({label:'Półprodukt',onInput:v=>productName=v}),
+      textInput({type:'number',label:'Ilość',onInput:v=>quantity=v}),
+      selectEl(units,unit,v=>unit=v),
+      field('Receptura wejściowa',selectEl(
+        [['','Bez receptury'],...recipes.map(r=>[r.id,r.name])],'',
+        v=>recipeId=v
+      )),
+      textInput({type:'number',label:'Mnożnik receptury',value:factor,onInput:v=>factor=v})
+    );
+    openSheet({title:'Nowa produkcja',variant:'sheet',body:form,actions:[
+      {label:'Anuluj',kind:'ghost'},
+      {label:'Zapisz i przyjmij',kind:'primary',icon:'check',onClick:async()=>{
+        try{
+          const row=await createProductionBatch({productName,quantity,unit,recipeId,factor});
+          await completeProductionBatch(row.id);
+          toast('Produkcja przyjęta do Magazynu');
+          paint();
+        }catch(e){toast(e?.message||'Nie udało się zapisać produkcji',{type:'error'});return false;}
+      }}
+    ]});
+  }
+  paint();
             } catch (e) {
               toast(e?.message || 'Nie udało się przyjąć dostawy', { type: 'error' });
               return false;

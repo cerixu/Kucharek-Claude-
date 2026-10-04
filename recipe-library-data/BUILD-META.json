@@ -1,19 +1,19 @@
 {
-  "generatedAt": "2026-10-04T14:31:47.607Z",
+  "generatedAt": "2026-10-04T14:38:45.651Z",
   "sourceRepository": "https://github.com/AdamBouhmad/open-recipe-archive",
   "target": 1700,
   "count": 1700,
   "uniqueFingerprints": 1700,
   "maxSameNormalizedTitle": 3,
   "byCollection": {
-    "kuchnia-polska": 202,
-    "cucina-italiana": 202,
-    "cocina-espanola": 202,
-    "cuisine-francaise": 201,
+    "kuchnia-polska": 500,
+    "cucina-italiana": 250,
+    "cocina-espanola": 200,
+    "cuisine-francaise": 200,
     "japanese-kitchen": 109,
-    "chinese-kitchen": 181,
-    "indian-kitchen": 201,
-    "german-kitchen": 201,
-    "ceska-kuchyne": 201
+    "chinese-kitchen": 100,
+    "indian-kitchen": 150,
+    "german-kitchen": 100,
+    "ceska-kuchyne": 91
   }
 }

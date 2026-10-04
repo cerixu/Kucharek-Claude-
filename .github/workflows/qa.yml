@@ -30,11 +30,17 @@ jobs:
       - name: Install dependencies
         run: npm install --no-audit --no-fund
 
+      - name: Cache Playwright browsers
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ hashFiles('package.json') }}
+
       - name: Syntax preflight
         run: find . -name '*.js' -not -path './node_modules/*' -print0 | xargs -0 -n1 node --check
 
       - name: Install Chromium
-        run: npx playwright install --with-deps chromium webkit
+        run: npx playwright install chromium webkit
 
       - name: Run E2E
         env:

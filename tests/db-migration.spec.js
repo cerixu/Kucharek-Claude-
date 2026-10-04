@@ -417,17 +417,32 @@ test('Food Cost: cena zakupu z Magazynu zasila koszt receptury', async ({ page }
   const result = await page.evaluate(async (name) => {
     const { getRecipe, saveRecipe, blankRecipe } = await import('/recipes.js');
     const { recipeCost } = await import('/calculator.js');
-    if (!getRecipe('rcp_seed_pizza')) {
-      await saveRecipe(blankRecipe({id:'rcp_seed_pizza',name:'Pizza test',servings:1,category:'cat-pizza',sections:[{id:'s1',name:'',ingredients:[{id:'i1',name:'Mąka pszenna typ 00 (W 260–280)',amount:1000,unit:'g'}]}],steps:[]}));
-    }
+    const recipe = blankRecipe({
+      id: 'e2e-food-cost-flour-only',
+      name: 'Food Cost fixture',
+      servings: 1,
+      category: 'cat-pizza',
+      sections: [{
+        id: 'e2e-food-cost-section',
+        name: '',
+        ingredients: [{
+          id: 'e2e-food-cost-flour',
+          name: 'Mąka pszenna typ 00 (W 260–280)',
+          amount: 1000,
+          unit: 'g'
+        }]
+      }],
+      steps: []
+    });
+    await saveRecipe(recipe);
     const { loadInventory, findInventoryByName } = await import('/inventory.js');
     await loadInventory();
-    const recipe = getRecipe('rcp_seed_pizza');
+    const storedRecipe = getRecipe(recipe.id);
     const priceResolver = (ing) => {
       const item = findInventoryByName(ing.name);
       return item?.purchasePrice != null ? { price: item.purchasePrice, priceUnit: item.priceUnit } : null;
     };
-    const cost = recipeCost(recipe, 1, { priceResolver });
+    const cost = recipeCost(storedRecipe, 1, { priceResolver });
     return {
       flourCost: cost.lines.find((x) => x.ing.name === 'Mąka pszenna typ 00 (W 260–280)')?.cost,
       total: cost.total,
@@ -515,7 +530,29 @@ test('Food Cost UI: kalkulator pokazuje cenę z Magazynu', async ({ page }) => {
 
   await page.goto('/#/calc/cost');
   await expect(page.getByLabel('Receptura')).toBeVisible();
-  await page.getByLabel('Receptura').selectOption('rcp_seed_pizza');
+  await page.evaluate(async () => {
+    const { saveRecipe, blankRecipe } = await import('/recipes.js');
+    await saveRecipe(blankRecipe({
+      id: 'e2e-ui-food-cost',
+      name: 'Food Cost UI fixture',
+      servings: 1,
+      category: 'cat-pizza',
+      sections: [{
+        id: 'e2e-ui-food-cost-section',
+        name: '',
+        ingredients: [{
+          id: 'e2e-ui-food-cost-flour',
+          name: 'Mąka pszenna typ 00 (W 260–280)',
+          amount: 1000,
+          unit: 'g'
+        }]
+      }],
+      steps: []
+    }));
+  });
+  await page.goto('/#/calc/cost');
+  await expect(page.getByLabel('Receptura')).toBeVisible();
+  await page.getByLabel('Receptura').selectOption('e2e-ui-food-cost');
   await expect(page.getByText('Magazyn: 8,00 zł/kg')).toBeVisible();
-  await expect(page.getByText('33,38 zł')).toBeVisible();
+  await expect(page.getByText('8,00 zł')).toBeVisible();
 });

@@ -2,6 +2,18 @@ import { test, expect, devices } from '@playwright/test';
 
 test.use({ ...devices['iPhone 13'] });
 
+async function stableEvaluate(page, fn) {
+  for (let attempt = 0; attempt < 3; attempt += 1) {
+    try {
+      return await page.evaluate(fn);
+    } catch (e) {
+      if (!/Execution context was destroyed|Target page, context or browser has been closed/.test(e?.message || '')) throw e;
+      await page.waitForTimeout(80);
+    }
+  }
+  return await page.evaluate(fn);
+}
+
 test.describe('Test użytkownika: iPhone', () => {
 
   test('start → receptury → historia → powrót działa jak użytkownik', async ({ page }) => {
@@ -38,9 +50,11 @@ test.describe('Test użytkownika: iPhone', () => {
   test('wyszukiwarka zachowuje fokus podczas pisania', async ({ page }) => {
     await page.goto('/#/recipes');
     await page.waitForFunction(() => window.__kucharzyna?.ready === true);
+    await expect(page.locator('input.search-input')).toBeVisible();
 
     const input = page.locator('input.search-input');
-    await input.fill('pizza');
+    await input.click();
+    await input.type('pizza');
     await expect(input).toHaveValue('pizza');
     await expect(input).toBeFocused();
   });
@@ -87,7 +101,7 @@ test.describe('Stage 34A: nowy UX iPhone', () => {
     for (const path of ['/', '/recipes', '/cook', '/inventory']) {
       await page.goto('/#' + path);
       await page.waitForFunction(() => window.__kucharzyna?.ready === true);
-      const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
+      const overflow = await stableEvaluate(page, () => document.documentElement.scrollWidth - document.documentElement.clientWidth);
       expect(overflow).toBeLessThanOrEqual(1);
     }
   });

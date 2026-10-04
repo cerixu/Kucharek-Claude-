@@ -55,8 +55,8 @@ export function recipesView(query) {
     sub, cls: 'recipes',
   });
 
-  const onSearch = debounce(() => { vs.q = search.value; focusPreservingPaint(paint, s.el); }, 100);
-  search.addEventListener('input', () => { clear.hidden = !search.value; onSearch(); });
+  const onSearch = debounce(() => { focusPreservingPaint(paint, s.el); }, 100);
+  search.addEventListener('input', () => { vs.q = search.value; clear.hidden = !search.value; onSearch(); });
   search.addEventListener('keydown', (e) => { if (e.key === 'Enter') search.blur(); });
 
   function matches() {

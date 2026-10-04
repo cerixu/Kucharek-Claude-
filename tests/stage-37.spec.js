@@ -3,7 +3,7 @@ import { test, expect } from '@playwright/test';
 test.describe('Stage 37: GOTUJĘ', () => {
   test('GOTUJĘ zapisuje postęp składnika i przywraca go po reloadzie', async ({ page }) => {
     await page.goto('/#/cook/rcp_seed_pizza');
-    await page.waitForFunction(() => window.__kucharzyna?.ready === true);
+    await page.waitForFunction(() => window.__kucharek?.ready === true);
     const row = page.getByRole('checkbox').first();
     await expect(row).toBeVisible();
     await row.click();
@@ -19,7 +19,7 @@ test.describe('Stage 37: GOTUJĘ', () => {
 
   test('GOTUJĘ ma minutnik i skalowanie w jednym miejscu', async ({ page }) => {
     await page.goto('/#/cook/rcp_seed_pizza');
-    await page.waitForFunction(() => window.__kucharzyna?.ready === true);
+    await page.waitForFunction(() => window.__kucharek?.ready === true);
     await expect(page.getByRole('button', { name: 'Minutnik' })).toBeVisible();
     await expect(page.getByRole('button', { name: 'Przelicz' })).toBeVisible();
     await page.getByRole('button', { name: 'Przelicz' }).click();
@@ -31,7 +31,7 @@ test.describe('Stage 37: GOTUJĘ', () => {
 
   test('GOTUJĘ zachowuje dostęp do uwag i zakończenia pracy', async ({ page }) => {
     await page.goto('/#/cook/rcp_seed_pizza');
-    await page.waitForFunction(() => window.__kucharzyna?.ready === true);
+    await page.waitForFunction(() => window.__kucharek?.ready === true);
     await expect(page.getByRole('button', { name: 'Zakończ' })).toBeVisible();
     await page.getByRole('button', { name: 'Uwagi' }).click();
     await expect(page.getByLabel('Własne uwagi')).toBeVisible();

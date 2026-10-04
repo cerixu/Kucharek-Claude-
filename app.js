@@ -198,7 +198,7 @@ async function boot() {
   try {
     await Promise.race([
       (async () => { await openDB(); await loadAll(); })(),
-      new Promise((_, reject) => setTimeout(() => reject(new Error('Start aplikacji trwa zbyt długo. IndexedDB może być zablokowane przez starą kartę aplikacji.')), 12000))
+      new Promise((_, reject) => setTimeout(() => reject(new Error('Start aplikacji trwa zbyt długo. IndexedDB może być zablokowane przez starą kartę aplikacji.')), 30000))
     ]);
   } catch (e) { fatal(e); return; }
 

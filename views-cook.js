@@ -13,6 +13,7 @@ import { qtyParts, ingredientIcon } from './components.js';
 import { fmtNum, fmtClock, debounce, parseNum } from './util.js';
 import { consumeRecipeIngredients } from './inventory.js';
 import { addItems, addLowStockToShopping } from './shopping.js';
+import { openRecipeAiSheet } from './views-ai.js';
 
 /* ---------- Minutnik (poziom modułu — działa też po wyjściu z ekranu) ---------- */
 
@@ -108,7 +109,9 @@ export function cookView({ id }) {
   s.top.append(h('div', { class: 'cook-sub' }, tabs, h('div', { class: 'row between' }, progressText), progress));
 
   const timerBar = h('div', { class: 'timerbar', hidden: true });
+  const currentStepText = () => s.content.querySelector('.cook-row.step.current .cook-step')?.textContent?.trim() || '';
   const foot = h('div', { class: 'cookbar' },
+    button('AI', { icon: 'sparkle', onClick: () => openRecipeAiSheet({ openSheet, recipe: view(), currentStep: currentStepText() }) }),
     button('Minutnik', { icon: 'timer', onClick: () => openTimerSheet() }),
     button('Przelicz', { icon: 'swap', onClick: () => openScale() }),
     button('Zakończ', { icon: 'check', kind: 'primary', onClick: () => finish() }));

@@ -20,13 +20,15 @@ jobs:
           node-version: 22
 
       - name: Install dependencies
-        run: npm install
+        run: npm install --no-audit --no-fund
 
       - name: Install Chromium
         run: npx playwright install --with-deps chromium
 
       - name: Run E2E
-        run: npm run test:e2e
+        env:
+          CI: true
+        run: npm run test:e2e -- --reporter=line
 
       - name: Upload Playwright report
         if: always()

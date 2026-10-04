@@ -1,0 +1,61 @@
+/* 35 • AI surfaces */
+.ai-panel { padding-bottom: env(safe-area-inset-bottom, 0px); }
+.ai-intro {
+  display: grid;
+  grid-template-columns: 46px minmax(0, 1fr);
+  gap: 11px;
+  align-items: center;
+  padding: 12px;
+  border: 1px solid var(--34e-stroke-soft);
+  border-radius: 19px;
+  background: color-mix(in srgb, var(--34e-glass) 85%, transparent);
+}
+.ai-orb {
+  width: 46px; height: 46px; border-radius: 16px;
+  display: grid; place-items: center;
+  background: color-mix(in srgb, var(--34e-accent) 18%, transparent);
+  color: var(--34e-accent);
+}
+.ai-intro strong { font-size: 1rem; }
+.ai-intro p { margin-top: 3px; }
+.ai-suggestions { display: flex; gap: 7px; overflow-x: auto; padding: 2px 1px 4px; scrollbar-width: none; }
+.ai-suggestions::-webkit-scrollbar { display:none; }
+.ai-suggestions .chip { flex: 0 0 auto; text-align: left; max-width: 86vw; white-space: nowrap; }
+.ai-transcript { display: grid; gap: 8px; }
+.ai-q, .ai-a {
+  display: grid;
+  grid-template-columns: 28px minmax(0,1fr);
+  gap: 9px;
+  padding: 10px 11px;
+  border-radius: 16px;
+  border: 1px solid var(--34e-stroke-soft);
+}
+.ai-q { background: color-mix(in srgb, var(--34e-accent) 7%, transparent); }
+.ai-a { background: color-mix(in srgb, var(--34e-glass) 90%, transparent); }
+.ai-role { font-size: .67rem; text-transform: uppercase; letter-spacing: .08em; color: var(--34e-muted); font-weight: 800; }
+.ai-answer { padding: 12px; border-radius: 18px; border: 1px solid color-mix(in srgb, var(--34e-accent) 28%, var(--34e-stroke-soft)); background: color-mix(in srgb, var(--34e-accent) 8%, var(--34e-glass)); line-height: 1.42; }
+.ai-error { color: var(--34e-danger); }
+.ai-thinking { color: var(--34e-muted); display:inline-flex; align-items:center; gap:6px; }
+.cookbar .btn.ai-btn { border-color: color-mix(in srgb, var(--34e-accent) 35%, var(--34e-stroke)); }
+
+.ai-settings-status {
+  min-height: 42px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 11px;
+  border-radius: 15px;
+  border: 1px solid var(--34e-stroke-soft);
+  background: color-mix(in srgb, var(--34e-glass-soft) 90%, transparent);
+}
+.ai-settings-status svg { color: var(--34e-accent); flex: 0 0 auto; }
+
+.ai-setup-guide { border: 1px solid var(--34e-stroke-soft); border-radius: 18px; background: color-mix(in srgb, var(--34e-glass) 88%, transparent); overflow: hidden; }
+.ai-setup-guide > summary { cursor: pointer; list-style: none; display:flex; align-items:center; gap:8px; padding:13px 14px; font-size:.94rem; }
+.ai-setup-guide > summary::-webkit-details-marker { display:none; }
+.ai-guide-body { padding: 0 13px 14px; }
+.ai-step { padding: 11px 0; border-top: 1px solid var(--34e-stroke-soft); }
+.ai-step b { display:block; margin-bottom:4px; }
+.ai-step p { margin:4px 0; }
+.ai-step code { display:block; overflow:auto; padding:8px 10px; border-radius:10px; background: color-mix(in srgb, var(--34e-bg) 75%, transparent); font-size:.78rem; }
+.ai-guide-body .notice.warning { margin-top: 4px; }

@@ -8,6 +8,8 @@ import { h, icon, screen, button, iconBtn, toast, field, textInput, textArea, em
 import { navigate, goBack } from './router.js';
 import { saveRecipe, kv, catName } from './recipes.js';
 import { parseRecipeText, looksLikeUrl, hostOf } from './importer.js';
+import { importRecipeFromUrl, hasAIAccess } from './ai.js';
+import { normalizeRecipe } from './recipes.js';
 import { qtyParts } from './components.js';
 import { copyText, fmtMinutes } from './util.js';
 
@@ -23,9 +25,14 @@ export function importView(query) {
   const qParam = (query && query.get && query.get('q')) || '';
 
   const searchIn = textInput({ value: qParam, label: 'Czego szukasz', placeholder: 'np. ciasto na pizzę neapolitańską', capitalize: 'none' });
-  const urlIn = textInput({ value: '', label: 'Adres strony z przepisem', placeholder: 'https://… (opcjonalnie, zapisze się jako źródło)', type: 'url', capitalize: 'none', inputmode: 'url' });
+  const urlIn = textInput({ value: '', label: 'Adres strony z przepisem', placeholder: 'https://…', type: 'url', capitalize: 'none', inputmode: 'url' });
+  const manualUrlIn = textInput({ value: '', label: 'Adres strony (źródło)', placeholder: 'https://…', type: 'url', capitalize: 'none', inputmode: 'url' });
+  const syncSourceUrl = (from, to) => { to.value = from.value; };
+  urlIn.addEventListener('input', () => syncSourceUrl(urlIn, manualUrlIn));
+  manualUrlIn.addEventListener('input', () => syncSourceUrl(manualUrlIn, urlIn));
   const textIn = textArea({ value: '', label: 'Wklejony przepis', rows: 8, placeholder: 'Wklej tutaj cały przepis: nazwa, składniki, przygotowanie…\n\nMożesz też wkleić kod HTML strony — rozpoznam dane przepisu.' });
   const preview = h('div', { class: 'stack' });
+  const aiStatus = h('p', { class: 'muted small', 'aria-live': 'polite' });
   const s = screen({ title: 'Importuj recepturę', left: iconBtn('left', 'Wstecz', () => goBack('/recipes')), cls: 'import' });
 
   const doSearch = () => {
@@ -42,6 +49,7 @@ export function importView(query) {
       if (!t.trim()) { toast('Schowek jest pusty'); return; }
       if (looksLikeUrl(t)) {
         urlIn.value = t.trim();
+        manualUrlIn.value = urlIn.value;
         toast('To adres strony — zapisałem go jako źródło. Skopiuj teraz tekst przepisu ze strony i wklej tutaj.', { ms: 5000 });
         return;
       }
@@ -64,10 +72,44 @@ export function importView(query) {
   const fileIn = h('input', { type: 'file', accept: '.txt,.html,.htm,.md,.json,text/*', class: 'sr-file', 'aria-label': 'Wczytaj plik z przepisem' });
   fileIn.addEventListener('change', () => { loadFile(fileIn.files && fileIn.files[0]); fileIn.value = ''; });
 
+  async function importUrlWithAI() {
+    const url = urlIn.value.trim();
+    if (!url) { urlIn.focus(); toast('Wklej adres strony z przepisem', { type: 'error' }); return; }
+    if (!/^https:\/\//i.test(url)) { toast('Importer AI przyjmuje adres HTTPS', { type: 'error' }); return; }
+    if (!navigator.onLine) { toast('Import z URL wymaga internetu', { type: 'error' }); return; }
+    if (!hasAIAccess()) { toast('Najpierw skonfiguruj Kucharek AI w Ustawieniach', { type: 'error', ms: 5000 }); return; }
+    const btn = c?.querySelector?.('[data-ai-import]') || null;
+    if (btn) btn.disabled = true;
+    aiStatus.textContent = 'AI pobiera stronę i układa recepturę…';
+    try {
+      const recipe = normalizeRecipe(await importRecipeFromUrl(url));
+      parsed = {
+        recipe,
+        issues: [
+          ...(!recipe.name ? ['Brak nazwy receptury — sprawdź w formularzu.'] : []),
+          ...(!recipe.sections.some((sec) => sec.ingredients.length) ? ['Nie znaleziono składników — sprawdź stronę.'] : []),
+          ...(!recipe.steps.length ? ['Nie znaleziono kroków przygotowania — sprawdź stronę.'] : [])
+        ],
+        stats: {
+          ingredients: recipe.sections.reduce((n, sec) => n + sec.ingredients.length, 0),
+          steps: recipe.steps.length
+        }
+      };
+      aiStatus.textContent = 'Gotowe. Sprawdź podgląd przed zapisaniem.';
+      paintPreview();
+      setTimeout(() => preview.scrollIntoView({ behavior: 'smooth', block: 'start' }), 80);
+    } catch (e) {
+      aiStatus.textContent = '';
+      toast(e?.message || 'Nie udało się zaimportować strony', { type: 'error', ms: 5000 });
+    } finally {
+      if (btn) btn.disabled = false;
+    }
+  }
+
   function recognize() {
     const text = textIn.value;
     if (!text.trim()) { toast('Najpierw wklej przepis', { type: 'error' }); textIn.focus(); return; }
-    const url = urlIn.value.trim();
+    const url = (manualUrlIn.value.trim() || urlIn.value.trim());
     try { parsed = parseRecipeText(text, { url: /^https?:\/\//i.test(url) ? url : '' }); }
     catch (e) { console.error(e); toast('Nie udało się rozpoznać przepisu', { type: 'error' }); return; }
     paintPreview();
@@ -86,7 +128,7 @@ export function importView(query) {
 
   function paintPreview() {
     if (!parsed) { preview.replaceChildren(); return; }
-    const { recipe: r, issues, stats } = parsed;
+    const { recipe: r, issues = [], stats = { ingredients: 0, steps: 0 } } = parsed;
     const kids = [
       h('section', { class: 'card stack' },
         h('h2', { class: 'card-title' }, icon('sparkle', 20), 'Rozpoznano'),
@@ -133,9 +175,17 @@ export function importView(query) {
       h('div', { class: 'row gap' }, h('div', { class: 'grow' }, searchIn), button('Szukaj', { icon: 'search', kind: 'primary', onClick: doSearch })),
       h('p', { class: 'muted small' }, 'Wyszukiwanie i tłumaczenie otwierają zewnętrzne strony (wymagają internetu). Sama aplikacja działa offline.')),
     h('section', { class: 'card stack' },
-      h('h2', { class: 'card-title' }, icon('upload', 20), 'Wklej przepis'),
+      h('h2', { class: 'card-title' }, icon('sparkle', 20), 'Import z URL przez AI'),
+      h('p', { class: 'muted' }, 'Wklej link do strony z przepisem. Kucharek pobierze stronę przez Twój AI Gateway, wyciągnie recepturę i przygotuje ją w formacie aplikacji.'),
+      field('Adres strony z przepisem', urlIn),
+      button('Importuj URL z AI', { kind: 'primary', lg: true, block: true, icon: 'sparkle', onClick: importUrlWithAI, aria: 'Importuj adres strony z AI' }),
+      aiStatus,
+      h('p', { class: 'muted small' }, 'Klucz OpenAI nie jest wpisywany do aplikacji. Gateway przechowuje go po swojej stronie jako sekret.'),
+    ),
+    h('section', { class: 'card stack' },
+      h('h2', { class: 'card-title' }, icon('upload', 20), 'Wklej przepis ręcznie'),
       fileIn, textIn,
-      field('Adres strony (źródło)', urlIn),
+      field('Adres strony (źródło)', manualUrlIn),
       h('div', { class: 'row wrap gap' },
         button('Wklej ze schowka', { icon: 'copy', onClick: pasteFromClipboard }),
         button('Wczytaj plik', { icon: 'upload', kind: 'ghost', onClick: () => fileIn.click() }),

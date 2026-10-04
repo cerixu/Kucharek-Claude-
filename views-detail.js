@@ -19,6 +19,7 @@ import { heartBtn, tradMark, qtyParts, recipeToText, originOf, recipeVisual, ing
 import { openAddToShopping, addMissingFromRecipe } from './shopping.js';
 import { hostOf } from './importer.js';
 import { db } from './db.js';
+import { openRecipeAiSheet } from './views-ai.js';
 
 const KIND_LABEL = { flour: 'mąka', water: 'woda', salt: 'sól', yeast: 'drożdże', fat: 'tłuszcz', other: '' };
 const servingsText = (n) => Number(n) === 1 ? '1 porcja' : `${fmtNum(n, 1)} porcji`;
@@ -426,6 +427,7 @@ export function detailView({ id }) {
     kids.push(cookingHistoryCard());
 
     kids.push(h('div', { class: 'actions-row' },
+      button('Zapytaj AI', { icon: 'sparkle', onClick: () => openRecipeAiSheet({ openSheet, recipe: cur() }) }),
       button('Przelicz', { icon: 'swap', onClick: openScale }),
       button('Do zakupów', { icon: 'cart', onClick: () => openAddToShopping(r, 1) }), button('Dodaj braki', { icon: 'cart', onClick: async () => { const res = await addMissingFromRecipe(r, 1); toast(res.count ? 'Dodano braki do zakupów: ' + res.count : 'Magazyn pokrywa całą recepturę'); } }),
       button('Edytuj', { icon: 'edit', onClick: () => navigate('/edit/' + id) })));

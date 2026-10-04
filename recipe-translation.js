@@ -79,10 +79,9 @@ const EXTRA = [
 ];
 
 const C = {"Kuchnia Polska":"Kuchnia polska","Cucina Italiana":"Kuchnia włoska","Cocina Española":"Kuchnia hiszpańska","Cuisine Française":"Kuchnia francuska","Japanese Kitchen":"Kuchnia japońska","Chinese Kitchen":"Kuchnia chińska","Indian Kitchen":"Kuchnia indyjska","German Kitchen":"Kuchnia niemiecka","Česká kuchyně":"Kuchnia czeska"};
-const REPLACERS = [...P, ...OTHER, ...EXTRA]
-  .sort((a,b) => b[0].length - a[0].length)
-  .map(([from,to]) => [new RegExp("(?<!\\\\p{L})" + String(from).replace(/[.*+?^$(){}|[\\\\]\\\\]/g,"\\\\\\\\$&") + "(?!\\\\p{L})","giu"), to]);
-
+const SORTED_TERMS = [...P, ...OTHER, ...EXTRA].sort((a,b) => b[0].length - a[0].length);
+const TERM_MAP = new Map(SORTED_TERMS);
+const TOKEN_RE = new RegExp("(^|[^A-Za-zÀ-ž])(" + SORTED_TERMS.map(([from]) => from).join("|") + ")(?=$|[^A-Za-zÀ-ž])", "giu");
 const TEXT_CACHE = new Map();
 const CACHE_LIMIT = 16000;
 
@@ -90,9 +89,8 @@ function apply(text) {
   const key = String(text ?? "");
   const hit = TEXT_CACHE.get(key);
   if (hit !== undefined) return hit;
-  let out = key;
-  for (const [re,to] of REPLACERS) out = out.replace(re,to);
-  out = out.replace(/\\\\s{2,}/g," ").replace(/\\\\s+([,.;:!?])/g,"$1").trim();
+  let out = key.replace(TOKEN_RE, (full, prefix, term) => prefix + TERM_MAP.get(term.toLowerCase()));
+  out = out.replace(/\\s{2,}/g," ").replace(/\\s+([,.;:!?])/g,"$1").trim();
   if (TEXT_CACHE.size >= CACHE_LIMIT) TEXT_CACHE.clear();
   TEXT_CACHE.set(key,out);
   return out;

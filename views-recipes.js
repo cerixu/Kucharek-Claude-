@@ -59,9 +59,9 @@ export function recipesView(query) {
   search.addEventListener('input', () => { vs.q = search.value; clear.hidden = !search.value; onSearch(); });
   search.addEventListener('keydown', (e) => { if (e.key === 'Enter') search.blur(); });
 
-  function matches() {
+  function matches(all = listRecipes()) {
     const words = norm(vs.q).split(/\s+/).filter(Boolean);
-    let list = listRecipes();
+    let list = all.slice();
     if (vs.chip === 'fav') list = list.filter((r) => r.favorite);
     else if (vs.chip === 'recent') list = list.filter((r) => r.lastOpenedAt);
     else if (vs.chip === 'cooked') list = list.filter((r) => Number(r.cookCount || 0) > 0 || Number(r.lastCookedAt || 0) > 0);
@@ -80,8 +80,7 @@ export function recipesView(query) {
     return { trad: [], rest: list, total: list.length };
   }
 
-  function paintChips() {
-    const all = listRecipes();
+  function paintChips(all = listRecipes()) {
     const used = new Set(all.map((r) => r.category));
     const mk = (id, label, n) => h('button', { type: 'button', class: 'chip' + (vs.chip === id ? ' on' : ''), 'aria-pressed': vs.chip === id,
       onClick: () => { vs.chip = id; vs.visibleCount = 40; paint(); } }, label, n != null ? h('span', { class: 'chip-n' }, String(n)) : null);
@@ -104,8 +103,9 @@ export function recipesView(query) {
   function paint() {
     clear.hidden = !search.value;
     filterBtn.classList.toggle('active', filterActive());
-    paintChips();
-    const { trad, rest, total } = matches();
+    const all = listRecipes();
+    paintChips(all);
+    const { trad, rest, total } = matches(all);
     const kids = [];
     if (!state.recipes.size) {
       kids.push(emptyState('📒', 'Brak receptur', 'Dodaj swoją pierwszą recepturę albo wklej przepis z internetu.',

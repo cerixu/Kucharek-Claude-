@@ -3,7 +3,7 @@
    Liczby, jednostki, daty, formatowanie po polsku.
    ========================================================================== */
 
-export const APP_VERSION = '1.3.81';
+export const APP_VERSION = '1.3.82';
 
 /** Stabilne ID z prefiksem (rcp_, sec_, ing_, stp_, cat_, shp_, his_). */
 export function uid(prefix = '') {
@@ -23,17 +23,17 @@ export function parseNum(v) {
   if (v == null) return null;
   let s = String(v).trim();
   if (!s) return null;
-  s = s.replace(/[½⅓⅔¼¾⅛⅜⅝⅞]/g, (m) => ' ' + VULGAR[m]).replace(/\s+/g, ' ').trim();
+  s = s.replace(/[½⅓⅔¼¾⅛⅜⅝⅞]/g, (m) => ' ' + VULGAR[m]).replace(/s+/g, ' ').trim();
   let m;
-  if ((m = s.match(/^(\d+) (\d+)\/(\d+)$/))) return m[3] === '0' ? null : +m[1] + m[2] / m[3];
-  if ((m = s.match(/^(\d+)\/(\d+)$/))) return m[2] === '0' ? null : m[1] / m[2];
-  s = s.replace(/\s/g, '').replace(',', '.');
-  if (/^[-+]?(\d+\.?\d*|\.\d+)$/.test(s)) return parseFloat(s);
+  if ((m = s.match(/^(d+) (d+)/(d+)$/))) return m[3] === '0' ? null : +m[1] + m[2] / m[3];
+  if ((m = s.match(/^(d+)/(d+)$/))) return m[2] === '0' ? null : m[1] / m[2];
+  s = s.replace(/s/g, '').replace(',', '.');
+  if (/^[-+]?(d+.?d*|.d+)$/.test(s)) return parseFloat(s);
   return null;
 }
 
 function trimZeros(s) {
-  if (s.includes('.')) s = s.replace(/0+$/, '').replace(/\.$/, '');
+  if (s.includes('.')) s = s.replace(/0+$/, '').replace(/.$/, '');
   return s.replace('.', ',');
 }
 
@@ -94,7 +94,7 @@ export function norm(s) {
 }
 export const capFirst = (s) => (s ? s.charAt(0).toUpperCase() + s.slice(1) : s);
 
-/** Flaga kraju (emoji) z kodu ISO-3166 alfa-2. */
+/** Flaga kraju (kod ISO-3166 alfa-2). */
 export function flagEmoji(code) {
   if (!code || code.length !== 2) return '';
   return String.fromCodePoint(...[...code.toUpperCase()].map((c) => 0x1f1e6 + c.charCodeAt(0) - 65));

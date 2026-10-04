@@ -7,7 +7,7 @@ const PARTS = Array.from({ length: 9 }, (_, i) => path.join(ROOT, 'recipe-librar
 const MAX_RETRIES = 6;
 const DELAY_MS = 250;
 const PAYLOAD = 2400;
-const VERSION = 20;
+const VERSION = 21;
 
 const sleep = (ms) => new Promise(r => setTimeout(r, ms));
 
@@ -22,9 +22,52 @@ function emitPart(rows) {
 function cleanName(value) {
   let s = String(value == null ? '' : value);
   s = s.replaceAll('\\', '').replaceAll('"', '');
+  s = s.replace(/[\\(\\[\\{][^\\)\\]\\}]*[\\)\\]\\}]/g, ' ');
+  for (const ch of [':', ';']) s = s.split(ch).join(' ');
+  for (let i = 0; i < 5; i++) s = s.replaceAll('  ', ' ');
+  return s.trim();
+}
+
+const POST_FIXES = [
+  ['tablespoonfuls','łyżki'],['tablespoonful','łyżka'],['teaspoonfuls','łyżeczki'],['teaspoonful','łyżeczka'],
+  ['cupfuls','szklanki'],['cupful','szklanka'],['almonds','migdały'],['almond','migdał'],
+  ['walnuts','orzechy włoskie'],['walnut','orzech włoski'],['hazelnuts','orzechy laskowe'],['hazelnut','orzech laskowy'],
+  ['cashews','nerkowce'],['cashew','nerkowiec'],['pecans','orzechy pekan'],['pecan','orzech pekan'],
+  ['raisins','rodzynki'],['raisin','rodzynka'],['ginger root','korzeń imbiru'],['ginger','imbir'],
+  ['shoulder','łopatka'],['larding needle','igła do szpikowania'],['needle','igła'],['strips','paski'],['strip','pasek'],
+  ['halfway through cooking','w połowie gotowania'],['halfway','w połowie'],['spit','rożen'],['delicate','delikatny'],
+  ['entirely','całkowicie'],['minced','mielony'],['smoked','wędzony'],['scalding','sparzanie'],['pouring','wlewanie'],
+  ['ingredients','składniki'],['mixture','masa'],['serving','podanie'],['saucepan','rondel'],['chives','szczypiorek'],
+  ['herbs','zioła'],['herb','zioło'],['truffles','trufle'],['truffle','trufla'],['casserole','zapiekanka'],
+  ['recipe','przepis'],['jelly','galaretka'],['coat','obtocz'],['moisten','zwilż'],['seasoning','przyprawianie'],
+  ['sides','boki'],['brim','brzeg'],['moderately','umiarkowanie'],['densely','ściśle'],['follows','następuje'],
+  ['sticking','przywieraniu'],['browning','rumienienie'],['scraped','zeskrobany'],['kernels','ziarna'],['fowl','drób'],
+  ['giblets','podroby'],['gizzard','żołądek'],['gizzards','żołądki'],['frankfurter','parówka'],['frankfurters','parówki'],
+  ['pickled','marynowany'],['cured','peklowany'],['scrambled','jajecznica'],['spicery powder','mieszanka przypraw'],
+  ['Fun Wine','chińskie wino ryżowe'],['Syou','sos sojowy'],['syou','sos sojowy'],['ghee','masło klarowane'],
+  ['bamboo shoots','pędy bambusa'],['water chestnuts','kasztany wodne'],['bean sticks','makaron sojowy'],['string beans','fasolka szparagowa'],
+  ['primary soup','bazowa zupa'],['secondary vegetables','warzywa dodatkowe'],['Chinese tissue-paper','chińska bibułka'],
+  ['tinned beef','wołowina z puszki'],['clear jelly','klarowna galaretka'],['sweet herbs','zioła aromatyczne'],
+  ['powders of chillies','sproszkowane chili'],['mustard oil','olej musztardowy'],['cow\'s ghee','masło klarowane'],
+  ['mixed','wymieszany'],['stirring','mieszając'],['slices','plastry'],['slice','plaster'],['pieces','kawałki'],['piece','kawałek'],
+  ['long','długi'],['hard','twardy'],['color','kolor'],['little','mało'],['knife','nóż'],['knives','noże'],['paper','papier'],
+  ['keep','zachowaj'],['spices','przyprawy'],['quarters','ćwiartki'],['bouquet','bukiet'],['dozen','tuzin'],['strong','mocny'],
+  ['using','używając'],['cooking','gotowanie'],['while','podczas gdy'],['only','tylko'],['also','również'],
+];
+
+function postFix(text) {
+  let s = String(text == null ? '' : text);
+  for (const [from, to] of POST_FIXES) {
+    const re = new RegExp('(?<!\\p{L})' + from.replace(/[.*+?^$(){}|[\\]\\\\]/g, '\\\\function cleanName(value) {
+  let s = String(value == null ? '' : value);
+  s = s.replaceAll('\\', '').replaceAll('"', '');
   for (const ch of ['(', ')', '[', ']', '{', '}', ':', ';']) s = s.split(ch).join(' ');
   for (let i = 0; i < 5; i++) s = s.replaceAll('  ', ' ');
   return s.trim();
+}') + '(?!\\p{L})', 'giu');
+    s = s.replace(re, to);
+  }
+  return s.replace(/\\s{2,}/g, ' ').replace(/\\s+([,.;:!?])/g, '$1').trim();
 }
 function cleanText(value) {
   let s = String(value == null ? '' : value);
@@ -75,7 +118,7 @@ async function translateRecipe(recipe) {
   if (recipe.translationLanguage === 'pl' && Number(recipe.translationVersion || 0) >= VERSION) return recipe;
   const fields = [];
   const add = (m, v) => fields.push(m + String(v == null ? '' : v).replaceAll('\u0000', ' '));
-  add('[[NAME]]', recipe.name || recipe.originalName || '');
+  add('[[NAME]]', cleanName(recipe.name || recipe.originalName || ''));
   for (let si = 0; si < (recipe.sections || []).length; si++) {
     const list = recipe.sections[si].ingredients || [];
     for (let ii = 0; ii < list.length; ii++) add('[[I:' + si + ':' + ii + ']]', list[ii].name || '');
@@ -105,17 +148,17 @@ async function translateRecipe(recipe) {
   return {
     ...recipe,
     originalName: recipe.originalName || recipe.name || '',
-    name: cleanName(parsed['[[NAME]]'] || recipe.name || recipe.originalName || ''),
+    name: postFix(cleanName(parsed['[[NAME]]'] || cleanName(recipe.name || recipe.originalName || ''))),
     sections: (recipe.sections || []).map((s, si) => ({
       ...s,
       ingredients: (s.ingredients || []).map((ing, ii) => ({
         ...ing,
-        name: cleanText(parsed['[[I:' + si + ':' + ii + ']]'] || ing.name || '')
+        name: postFix(cleanText(parsed['[[I:' + si + ':' + ii + ']]'] || ing.name || ''))
       }))
     })),
     steps: (recipe.steps || []).map((st, si) => ({
       ...st,
-      text: cleanText(parsed['[[S:' + si + ']]'] || st.text || '')
+      text: postFix(cleanText(parsed['[[S:' + si + ']]'] || st.text || ''))
     })),
     translationLanguage: 'pl',
     translationVersion: VERSION,

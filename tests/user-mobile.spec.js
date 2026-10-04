@@ -92,3 +92,26 @@ test.describe('Stage 34A: nowy UX iPhone', () => {
     }
   });
 });
+
+  
+test('Stage 34B: Start ma docelowy hero, wyszukiwanie i spójną warstwę wizualną', async ({ page }) => {
+  await page.goto('/');
+  await page.waitForFunction(() => window.__kucharzyna?.ready === true);
+
+  await expect(page.locator('.start-hero-backdrop')).toBeVisible();
+  await expect(page.locator('.start-hero-image')).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Zacznij gotować' })).toBeVisible();
+  await expect(page.getByRole('button', { name: /Szukaj receptury/ })).toBeVisible();
+  await expect(page.locator('.start-actions-grid .start-action')).toHaveCount(4);
+  await expect(page.locator('.start-status-strip > div')).toHaveCount(3);
+
+  const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
+  expect(overflow).toBeLessThanOrEqual(1);
+});
+
+test('Stage 34B: numer wersji jest widoczny w Ustawieniach', async ({ page }) => {
+  await page.goto('/#/settings');
+  await page.waitForFunction(() => window.__kucharzyna?.ready === true);
+  await expect(page.getByText('Wersja aplikacji', { exact: true })).toBeVisible();
+  await expect(page.getByText('1.3.32', { exact: true })).toBeVisible();
+});

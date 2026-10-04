@@ -84,7 +84,7 @@ test.describe('Stage 34A: nowy UX iPhone', () => {
     await expect(page.getByRole('heading', { name: 'Więcej' })).toBeVisible();
     await expect(page.getByRole('button', { name: 'Zakupy' })).toBeVisible();
     await expect(page.getByRole('button', { name: 'Kalkulatory' })).toBeVisible();
-    await expect(page.getByRole('button', { name: 'Ustawienia' })).toBeVisible();
+    await expect(page.getByRole('dialog', { name: 'Więcej' }).getByRole('button', { name: 'Ustawienia' })).toBeVisible();
   });
 
   test('zakładka Gotuję prowadzi do prostego wyboru receptury', async ({ page }) => {

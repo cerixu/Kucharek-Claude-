@@ -14,9 +14,9 @@ const OBVIOUS_ENGLISH = [
 test.describe('Stage 54 — static Polish corpus gate', () => {
   test('all 1700 archive records are version 10 Polish translations with clean names', async ({ page }) => {
     await page.goto('/#/recipes');
-    await page.waitForFunction(() => window.__kucharzyna?.ready === true);
+    await page.waitForFunction(() => window.__kucharek?.ready === true);
     const info = await page.evaluate(() => {
-      const rs = [...window.__kucharzyna.state.recipes.values()].filter(r => String(r.id).startsWith('rcp_archive_'));
+      const rs = [...window.__kucharek.state.recipes.values()].filter(r => String(r.id).startsWith('rcp_archive_'));
       return {
         count: rs.length,
         ids: new Set(rs.map(r => r.id)).size,
@@ -32,10 +32,10 @@ test.describe('Stage 54 — static Polish corpus gate', () => {
 
   test('no obvious untranslated English remains in visible recipe text', async ({ page }) => {
     await page.goto('/#/recipes');
-    await page.waitForFunction(() => window.__kucharzyna?.ready === true);
+    await page.waitForFunction(() => window.__kucharek?.ready === true);
     const result = await page.evaluate((words) => {
       const re = new RegExp('(?<!\\p{L})(?:' + words.map(w => w.replace(/[.*+?^$(){}|[\\]\\]/g, '\\$&')).join('|') + ')(?!\\p{L})', 'iu');
-      const rs = [...window.__kucharzyna.state.recipes.values()].filter(r => String(r.id).startsWith('rcp_archive_'));
+      const rs = [...window.__kucharek.state.recipes.values()].filter(r => String(r.id).startsWith('rcp_archive_'));
       const hits = [];
       for (const r of rs) {
         const fields = [r.name, ...(r.sections || []).flatMap(s => (s.ingredients || []).map(i => i.name)), ...(r.steps || []).map(s => s.text)];
@@ -48,9 +48,9 @@ test.describe('Stage 54 — static Polish corpus gate', () => {
 
   test('Bigos and detail view are Polish and source original is preserved', async ({ page }) => {
     await page.goto('/#/recipe/' + BIGOS_ID);
-    await page.waitForFunction(() => window.__kucharzyna?.ready === true);
+    await page.waitForFunction(() => window.__kucharek?.ready === true);
     const data = await page.evaluate((id) => {
-      const r = window.__kucharzyna.state.recipes.get(id);
+      const r = window.__kucharek.state.recipes.get(id);
       return {
         name: r?.name, originalName: r?.originalName,
         ingredient: r?.sections?.[0]?.ingredients?.[0]?.name, step: r?.steps?.[0]?.text

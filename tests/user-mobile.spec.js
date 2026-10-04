@@ -113,11 +113,26 @@ test('Stage 34B: numer wersji jest widoczny w Ustawieniach', async ({ page }) =>
   await page.goto('/#/settings');
   await page.waitForFunction(() => window.__kucharzyna?.ready === true);
   await expect(page.getByText('Wersja aplikacji', { exact: true })).toBeVisible();
-  await expect(page.getByText('1.3.36', { exact: true })).toBeVisible();
+  await expect(page.getByText('1.3.37', { exact: true })).toBeVisible();
 });
 
 
 test.describe('Stage 34C: wspólny system wizualny', () => {
+
+  test('auto-theme ma kontrast zgodny z motywem urządzenia', async ({ page }) => {
+    await page.emulateMedia({ colorScheme: 'light' });
+    await page.goto('/');
+    await page.waitForFunction(() => window.__kucharzyna?.ready === true);
+    const lightGlass = await page.evaluate(() => getComputedStyle(document.documentElement).getPropertyValue('--glass-bg').trim());
+    expect(lightGlass).toContain('255');
+
+    await page.emulateMedia({ colorScheme: 'dark' });
+    await page.reload();
+    await page.waitForFunction(() => window.__kucharzyna?.ready === true);
+    const darkGlass = await page.evaluate(() => getComputedStyle(document.documentElement).getPropertyValue('--glass-bg').trim());
+    expect(darkGlass).toContain('28');
+  });
+
   test('główne ekrany używają wspólnej geometrii i iPhone tap targets', async ({ page }) => {
     for (const path of ['/', '/recipes', '/inventory', '/settings']) {
       await page.goto('/#' + path);
@@ -164,7 +179,7 @@ test.describe('Stage 34C: wspólny system wizualny', () => {
     await page.goto('/#/settings');
     await page.waitForFunction(() => window.__kucharzyna?.ready === true);
     await expect(page.getByText('Wersja aplikacji', { exact: true })).toBeVisible();
-    await expect(page.getByText('1.3.36', { exact: true })).toBeVisible();
+    await expect(page.getByText('1.3.37', { exact: true })).toBeVisible();
   });
 
   test('zrzuty kontrolne głównych ekranów powstają w QA', async ({ page }, testInfo) => {

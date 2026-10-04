@@ -2308,3 +2308,27 @@ img {
     transition: none !important;
   }
 }
+
+
+/* Stage 34C final: auto respektuje jasny/ciemny wygląd urządzenia także dla szkła. */
+:root[data-theme="auto"][data-mode="pro"],
+:root[data-theme="auto"][data-mode="amateur"] {
+  --glass-bg: rgba(255,255,255,.72);
+  --glass-line: rgba(24,25,27,.10);
+  --glass-shadow: 0 10px 34px rgba(20,20,10,.10);
+  --glass-hi: rgba(255,255,255,.52);
+}
+@media (prefers-color-scheme: dark) {
+  :root[data-theme="auto"][data-mode="pro"] {
+    --glass-bg: rgba(28,30,34,.76);
+    --glass-line: rgba(255,255,255,.09);
+    --glass-shadow: 0 14px 42px rgba(0,0,0,.34);
+    --glass-hi: rgba(255,255,255,.045);
+  }
+  :root[data-theme="auto"][data-mode="amateur"] {
+    --glass-bg: rgba(23,37,28,.78);
+    --glass-line: rgba(255,255,255,.08);
+    --glass-shadow: 0 14px 42px rgba(0,0,0,.30);
+    --glass-hi: rgba(255,255,255,.045);
+  }
+}

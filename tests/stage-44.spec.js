@@ -179,8 +179,8 @@ test('Stage 44: powrót online usuwa stan offline, a wersja SW zgadza się z apl
   await expect.poll(() => page.evaluate(() => navigator.onLine)).toBeTruthy();
   await expect.poll(() => page.locator('html.offline').count()).toBe(0);
 
-  const version = await swVersion(page);
-  expect(version).toBe('kucharek-claude-1.3.71');
   const appVersion = await page.evaluate(async () => (await import('/util.js')).APP_VERSION);
-  expect(appVersion).toBe('1.3.71');
+  const version = await swVersion(page);
+  expect(version).toBe('kucharek-claude-' + appVersion);
+  expect(appVersion).toMatch(/^1\.3\./);
 });

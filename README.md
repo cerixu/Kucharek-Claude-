@@ -14,10 +14,22 @@ Wszystkie dane są w pamięci Twojego urządzenia.
 - **Kalkulatory**: pizza/ciasto (z podpowiedzią ilości drożdży), procenty, przeliczanie receptury, koszt receptury.
 - **Food cost**: ceny składników (za kg/l/g/ml/szt./opakowanie), koszt receptury i porcji, food cost %, cena sprzedaży.
 - **Zakupy**: dodawanie z receptury (z wyborem pozycji), ręcznie, odhaczanie, edycja ilości, grupowanie wg alejek/receptur, czyszczenie kupionych, udostępnianie listy.
+- **Kucharek AI**: opcjonalny gateway do funkcji AI. Import URL przez AI pobiera stronę przez Twój gateway i zwraca uporządkowaną recepturę; asystent w „GOTUJĘ” odpowiada na pytania na podstawie receptury i bieżącego kroku. Klucz OpenAI nie trafia do aplikacji, a token gatewaya jest trzymany tylko w pamięci bieżącej sesji.
 - **Import**: wklej tekst przepisu (albo kod strony) — aplikacja rozpoznaje nazwę, składniki, ilości, jednostki (także cups/oz/lb/°F), sekcje, kroki, czasy, temperaturę i porcje. Możesz zapisać od razu albo poprawić w formularzu. „Znajdź przepis w internecie” otwiera Google, a tłumaczenie obcego tekstu — Google Tłumacz (tylko na Twoje kliknięcie).
 - **Historia zmian**: poprzednie wersje receptury i „Przywróć wersję” (też można cofnąć).
 - **Kopia zapasowa JSON**: eksport/import wszystkiego, wczytanie z opcją „Zastąp” albo „Połącz”.
 - **Wygląd**: jasny/ciemny/auto, tryb **Pro** (ciemna stal + szafran, procenty piekarskie, food cost, historia) i **Amator** (zielony, zaokrąglony, prostszy, bez funkcji zaawansowanych), rozmiar przycisków (normalne/duże/bardzo duże) i tekstu.
+
+## Kucharek AI
+
+AI jest opcjonalne i działa przez **Twój własny gateway**. W aplikacji nie zapisujemy klucza OpenAI. Token gatewaya jest tylko sesyjny i nie trafia do IndexedDB ani localStorage.
+
+1. Wdróż `ai-gateway/worker.js` jako własny Cloudflare Worker.
+2. Ustaw sekrety `OPENAI_API_KEY` oraz `KUCHAREK_GATEWAY_TOKEN`; `ALLOWED_ORIGIN` ustaw na origin swojej aplikacji.
+3. W Kucharku otwórz **Ustawienia → Kucharek AI**, wpisz adres gatewaya i token sesji, a następnie sprawdź połączenie.
+4. Przy imporcie URL albo pytaniu w „GOTUJĘ” do gatewaya trafiają tylko dane potrzebne do konkretnej operacji. Gateway jest stateless.
+
+Pełna instrukcja wdrożenia znajduje się w `ai-gateway/README.md`.
 
 ## Struktura plików
 
@@ -45,6 +57,11 @@ kucharek/
 ├── views-cook.js           # tryb GOTUJĘ + minutnik
 ├── views-calc.js           # kalkulatory
 ├── views-import.js         # import i „Znajdź przepis w internecie”
+├── ai.js                   # klient Kucharek AI, bez klucza OpenAI w PWA
+├── views-ai.js             # arkusz asystenta AI
+├── styles-ai.css           # warstwa wizualna AI
+├── ai-gateway/worker.js    # stateless Cloudflare Worker
+├── tests/ai.spec.js        # E2E kontrakty AI i prywatności
 ├── views-settings.js       # ustawienia
 └── assets/                 # ikony: apple-touch-icon 180, 192, 512, maskable 512
 ```

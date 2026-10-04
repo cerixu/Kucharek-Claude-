@@ -106,7 +106,7 @@ jobs:
             "Stage 46:"*) echo "test_file=tests/stage-46.spec.js" >> "$GITHUB_OUTPUT" ;;
             "Stage 47:"*) echo "test_file=__FULL__" >> "$GITHUB_OUTPUT" ;;
             "Stage 48:"*) echo "test_file=__FULL__" >> "$GITHUB_OUTPUT" ;;
-            "Stage 50:"*) echo "test_file=tests/stage-50.spec.js" >> "$GITHUB_OUTPUT" ;;
+            "Stage 50:"*) echo "test_file=__FULL__" >> "$GITHUB_OUTPUT" ;;
             *) echo "test_file=" >> "$GITHUB_OUTPUT" ;;
           esac
 

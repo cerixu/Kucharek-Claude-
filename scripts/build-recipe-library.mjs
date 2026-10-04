@@ -445,26 +445,83 @@ function buildRecipe(pool, file) {
   };
 }
 
-while (selected.length < TARGET) {
-  let addedThisPass = 0;
-  for (const pool of pools) {
-    if (selected.length >= TARGET) break;
-    while (pool.cursor < pool.files.length) {
-      const file = pool.files[pool.cursor++];
-      const recipe = buildRecipe(pool, file);
-      if (!recipe) continue;
-      fingerprints.add(
-        shasum(norm(recipe.name) + '|' + recipe.sections[0].ingredients.map((x) => x.raw).join('|') + '|' + recipe.steps.map((x) => x.text).join('|'))
-      );
-      const key = norm(recipe.name);
-      titleCounts.set(key, (titleCounts.get(key) || 0) + 1);
-      selected.push(recipe);
-      addedThisPass += 1;
-      break;
-    }
-  }
-  if (!addedThisPass) break;
+const QUOTAS = new Map([
+  ['kuchnia-polska', 500],
+  ['cucina-italiana', 250],
+  ['cocina-espanola', 200],
+  ['cuisine-francaise', 200],
+  ['indian-kitchen', 150],
+  ['chinese-kitchen', 100],
+  ['japanese-kitchen', 109],
+  ['german-kitchen', 100],
+  ['ceska-kuchyne', 91],
+]);
+
+function acceptRecipe(recipe) {
+  if (!recipe) return false;
+  const fingerprint = shasum(
+    norm(recipe.name) + '|' +
+    recipe.sections[0].ingredients.map((x) => x.raw).join('|') + '|' +
+    recipe.steps.map((x) => x.text).join('|')
+  );
+  if (fingerprints.has(fingerprint)) return false;
+  const key = norm(recipe.name);
+  if ((titleCounts.get(key) || 0) >= MAX_SAME_TITLE) return false;
+  fingerprints.add(fingerprint);
+  titleCounts.set(key, (titleCounts.get(key) || 0) + 1);
+  selected.push(recipe);
+  return true;
 }
+
+function addFromPool(pool, predicate = () => true) {
+  while (pool.cursor < pool.files.length) {
+    const file = pool.files[pool.cursor++];
+    const recipe = buildRecipe(pool, file);
+    if (!recipe || !predicate(recipe)) continue;
+    if (acceptRecipe(recipe)) return true;
+  }
+  return false;
+}
+
+// Quotas keep the corpus genuinely multi-cuisine instead of taking the first
+// alphabetical slice of every collection. Polish anchors also guarantee that
+// everyday searches such as "pierogi" exist in the shipped offline corpus.
+for (const pool of pools) {
+  const quota = QUOTAS.get(pool.slug) || 0;
+  if (!quota) continue;
+
+  const mustInclude = pool.slug === 'kuchnia-polska'
+    ? [/pierogi/i, /żurek|zurek/i, /bigos/i, /barszcz/i, /schabowy/i, /sernik/i]
+    : [];
+
+  for (const re of mustInclude) {
+    if (selected.filter((r) => r.archiveCollection === pool.slug).length >= quota) break;
+    addFromPool(pool, (recipe) => re.test(recipe.name));
+  }
+
+  const remaining = quota - selected.filter((r) => r.archiveCollection === pool.slug).length;
+  if (remaining <= 0) continue;
+
+  const files = pool.files.slice(pool.cursor);
+  const stride = files.length / Math.max(remaining, 1);
+  for (let i = 0; i < remaining && pool.cursor < pool.files.length; i += 1) {
+    const targetIndex = Math.min(
+      pool.files.length - 1,
+      Math.floor(pool.cursor + i * stride)
+    );
+    while (pool.cursor < targetIndex) pool.cursor += 1;
+    if (!addFromPool(pool)) break;
+  }
+}
+
+// Fill any quota gaps from the same pools, then fail hard below 1201.
+for (const pool of pools) {
+  const quota = QUOTAS.get(pool.slug) || 0;
+  while (selected.filter((r) => r.archiveCollection === pool.slug).length < quota) {
+    if (!addFromPool(pool)) break;
+  }
+}
+
 
 if (selected.length < 1201) {
   throw new Error('Only ' + selected.length + ' unique recipes were built. Need more than 1200.');

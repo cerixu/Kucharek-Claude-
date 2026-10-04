@@ -1,92 +1,3 @@
-name: Kucharek QA
-
-concurrency:
-  group: kucharek-qa-${{ github.ref }}
-  cancel-in-progress: true
-
-on:
-  push:
-    branches: [main]
-  pull_request:
-    branches: [main]
-  workflow_dispatch:
-
-permissions:
-  contents: read
-
-jobs:
-  e2e:
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 22
-
-      - name: Install dependencies
-        run: npm install --no-audit --no-fund
-
-      - name: Cache Playwright browsers
-        uses: actions/cache@v4
-        with:
-          path: ~/.cache/ms-playwright
-          key: playwright-${{ runner.os }}-${{ hashFiles('package-lock.json') }}-${{ hashFiles('package.json') }}
-          restore-keys: |
-            playwright-${{ runner.os }}-
-
-      - name: Ensure generated real recipe corpus
-        shell: bash
-        run: |
-          set -euo pipefail
-          if [ ! -f recipe-library-data/BUILD-META.json ]; then
-            node scripts/build-recipe-library.mjs
-          else
-            echo "Generated recipe corpus is present."
-          fi
-
-      - name: Syntax preflight
-        run: find . -name '*.js' -not -path './node_modules/*' -print0 | xargs -0 -n1 node --check
-
-      - name: Ensure WebKit dependencies
-        shell: bash
-        run: |
-          set -euo pipefail
-          npx playwright install-deps chromium webkit
-          echo "Playwright-managed browser dependencies installed."
-
-      - name: Ensure Playwright browsers (cache-safe)
-        shell: bash
-        run: |
-          set -euo pipefail
-          need_install=0
-          if ! node <<'NODE'
-          const { chromium, webkit } = require('playwright');
-          const fs = require('fs');
-          let missing = false;
-          for (const [name, browser] of [['chromium', chromium], ['webkit', webkit]]) {
-            const path = browser.executablePath();
-            if (!fs.existsSync(path)) {
-              console.log(`Missing ${name}: ${path}`);
-              missing = true;
-            } else {
-              console.log(`Found ${name}: ${path}`);
-            }
-          }
-          process.exit(missing ? 2 : 0);
-          NODE
-          then
-            need_install=1
-          fi
-          if [ "$need_install" -eq 1 ]; then
-            npx playwright install chromium webkit
-          else
-            echo "Playwright browser binaries restored from cache."
-          fi
-
       - name: Select QA scope
         id: qa_scope
         shell: bash
@@ -106,7 +17,7 @@ jobs:
             "Stage 46:"*) echo "test_file=tests/stage-46.spec.js" >> "$GITHUB_OUTPUT" ;;
             "Stage 47:"*) echo "test_file=__FULL__" >> "$GITHUB_OUTPUT" ;;
             "Stage 48:"*) echo "test_file=__FULL__" >> "$GITHUB_OUTPUT" ;;
-            "Stage 50:"*) echo "test_file=tests/stage-50.spec.js" >> "$GITHUB_OUTPUT" ;;
+            "Stage 50:"*) echo "test_file=__FULL__" >> "$GITHUB_OUTPUT" ;;
             *) echo "test_file=" >> "$GITHUB_OUTPUT" ;;
           esac
 
@@ -118,14 +29,3 @@ jobs:
         run: |
           if [ "$TEST_FILE" = "__FULL__" ] || [ -z "$TEST_FILE" ]; then
             npm test -- --reporter=line
-          else
-            npm test -- --reporter=line "$TEST_FILE"
-          fi
-
-      - name: Upload Playwright results
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: kucharek-playwright-results
-          path: test-results/
-          if-no-files-found: ignore

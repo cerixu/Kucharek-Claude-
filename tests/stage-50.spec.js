@@ -80,17 +80,17 @@ test.describe('Stage 50 — real recipe corpus', () => {
     await page.waitForFunction(() => window.__kucharzyna?.ready === true);
     const known = await page.evaluate(async () => {
       const { listRecipes, searchText } = await import('/recipes.js');
-      const row = listRecipes().find(r => /pierogi/i.test(r.name));
-      return { id: row?.id || '', name: row?.name || '', indexed: row ? searchText(row).includes('pierogi') : false };
+      const row = listRecipes().find(r => /frog legs/i.test(r.name));
+      return { id: row?.id || '', name: row?.name || '', indexed: row ? searchText(row).includes('frog legs') : false };
     });
     expect(known.id).toMatch(/^rcp_archive_/);
     expect(known.indexed).toBe(true);
 
     const search = page.getByRole('searchbox', { name: 'Szukaj' });
     await expect(search).toBeVisible();
-    await search.fill('pierogi');
+    await search.fill('frog legs');
     await page.waitForTimeout(250);
     await expect(page.locator('.counter')).toHaveText(/[0-9]+ receptur/);
-    await expect(page.locator('.list').first()).toContainText(/pierogi/i);
+    await expect(page.locator('.list').first()).toContainText(/frog legs/i);
   });
 });

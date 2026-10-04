@@ -139,18 +139,20 @@ export async function loadAll() {
   state.catalog = new Map(ings.map((i) => [i.id, i]));
   if (!cats.length) { await db.putMany('categories', DEFAULT_CATEGORIES); state.categories = [...DEFAULT_CATEGORIES]; }
   else state.categories = cats.sort((a, b) => a.order - b.order);
-  // Seed, migracje biblioteki i tłumaczenia nie mogą blokować pierwszego renderu.
-  if (!getSetting('seeded') && state.recipes.size) {
+  // Na świeżej instalacji pierwszy seed musi zakończyć się przed ready,
+  // żeby aplikacja nie pokazała pustej biblioteki. W istniejącej bazie ciężkie
+  // migracje i tłumaczenia nie mogą blokować startu.
+  if (!getSetting('seeded') && !state.recipes.size) {
+    await restoreSeeds();
+    await setSetting('seeded', true);
+  } else if (!getSetting('seeded')) {
     await setSetting('seeded', true);
   }
+
   state.ready = true;
 
   (async () => {
     try {
-      if (!getSetting('seeded')) {
-        await restoreSeeds();
-        await setSetting('seeded', true);
-      }
       if (getSetting('seedLibraryVersion') !== SEED_MEDIA_VERSION) {
         await removeLegacyLibrarySeeds();
         await restoreSeeds();

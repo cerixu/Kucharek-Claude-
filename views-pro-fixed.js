@@ -111,16 +111,14 @@ export function proView(){
 
  async function lotsView(){
   const rows=await listLots();
-  const deliveries=await listDeliveries();
-  const deliveryMap=new Map(deliveries.map(d=>[d.id,d]));
-  let filter='all';
+    let filter='all';
   const host=h('div',{class:'stack'});
   const now=Date.now(), soonLimit=now+7*86400000;
   const getState=(x)=>x.expiryAt&&x.expiryAt<now?'expired':x.expiryAt&&x.expiryAt<=soonLimit?'soon':'normal';
   const renderLots=()=>{
     const filtered=rows.filter(x=>filter==='all'||getState(x)===filter);
     const visible=filtered.length?filtered.map(x=>{
-      const state=getState(x), d=x.deliveryId?deliveryMap.get(x.deliveryId):null;
+      const state=getState(x);
       const expiry=x.expiryAt?new Date(x.expiryAt).toLocaleDateString('pl-PL',{day:'2-digit',month:'2-digit',year:'numeric'}):'Brak terminu';
       const label=state==='expired'?'PRZETERMINOWANA':state==='soon'?'WKRÓTCE':x.expiryAt? 'W TERMINIE':'BEZ TERMINU';
       return h('div',{class:'card'},
@@ -130,7 +128,7 @@ export function proView(){
         ),
         h('div',{class:'row between'},h('span',null,'Ilość'),h('strong',null,money(x.quantity)+' '+(x.unit||''))),
         h('div',{class:'row between'},h('span',null,'Termin ważności'),h('strong',{class:state==='expired'?'danger-text':''},expiry)),
-        d?h('p',{class:'muted'},'Dostawa: '+(d.documentNo||'bez numeru')+' · '+new Date(d.at||d.createdAt).toLocaleDateString('pl-PL')):h('p',{class:'muted'},'Źródło dostawy: brak danych')
+        x.documentNo?h('p',{class:'muted'},'Dostawa: '+x.documentNo+' · '+new Date(x.at||Date.now()).toLocaleDateString('pl-PL')):h('p',{class:'muted'},'Źródło dostawy: brak numeru')
       );
     }):[h('div',{class:'card'},h('p',{class:'muted'},'Brak partii dla wybranego filtra.'))];
     host.replaceChildren(h('div',{class:'row between wrap'},button('Wszystkie',{sm:true,kind:filter==='all'?'primary':'ghost',onClick:()=>{filter='all';renderLots();}}),button('Wkrótce',{sm:true,kind:filter==='soon'?'primary':'ghost',onClick:()=>{filter='soon';renderLots();}}),button('Przeterminowane',{sm:true,kind:filter==='expired'?'primary':'ghost',onClick:()=>{filter='expired';renderLots();}})),h('div',{class:'card'},h('h3',null,'Partie i terminy ważności'),h('p',{class:'muted'},rows.length+' part'+(rows.length===1?'ia':rows.length<5?'ie':'ii')+' · Wkrótce = 7 dni')), ...visible);

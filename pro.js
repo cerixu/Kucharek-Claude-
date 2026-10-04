@@ -69,7 +69,7 @@ export async function receiveDelivery(data) {
     const delta=item.quantity-before;
     movementWrites.push({id:uid('mov_'),at:delivery.at,type:'delivery',inventoryId:item.id,inventoryName:item.name,delta,unit:item.unit,before,after:item.quantity,sourceId:delivery.id,reason:'delivery'});
     if(price!=null) priceWrites.push({id:uid('price_'),inventoryId:item.id,inventoryName:item.name,price,priceUnit,at:delivery.at,source:'delivery',sourceId:delivery.id,supplierId:delivery.supplierId||null,documentNo:delivery.documentNo||''});
-    if(raw.lot||raw.expiryAt) lotWrites.push({id:uid('lot_'),inventoryId:item.id,inventoryName:item.name,lot:String(raw.lot||''),expiryAt:raw.expiryAt?Number(raw.expiryAt):null,quantity:qty,unit,deliveryId:delivery.id,at:delivery.at});
+    if(raw.lot||raw.expiryAt) lotWrites.push({id:uid('lot_'),inventoryId:item.id,inventoryName:item.name,lot:String(raw.lot||''),expiryAt:raw.expiryAt?Number(raw.expiryAt):null,quantity:qty,unit,deliveryId:delivery.id,documentNo:delivery.documentNo||'',at:delivery.at});
     delivery.items.push({inventoryId:item.id,name:item.name,quantity:qty,unit,purchasePrice:price,priceUnit,lot:raw.lot||'',expiryAt:raw.expiryAt||null,purchaseOrderItemId:raw.purchaseOrderItemId||null});
   }
   if(!delivery.items.length) throw new Error('Dostawa nie zawiera poprawnych pozycji.');

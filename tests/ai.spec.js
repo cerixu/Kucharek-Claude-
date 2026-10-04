@@ -92,6 +92,12 @@ test.describe('Kucharek AI', () => {
 
   test('AI w Gotuję dostaje recepturę i aktualny krok', async ({ page }) => {
     await ready(page);
+    const id = await page.evaluate(async () => {
+      const { listRecipes } = await import('/recipes.js');
+      return listRecipes()[0]?.id;
+    });
+    expect(id).toBeTruthy();
+    await page.goto('/#/cook/' + id);
     await configureMockGateway(page);
 
     let received = null;
@@ -104,13 +110,6 @@ test.describe('Kucharek AI', () => {
       });
     });
 
-    const id = await page.evaluate(async () => {
-      const { listRecipes } = await import('/recipes.js');
-      return listRecipes()[0]?.id;
-    });
-    expect(id).toBeTruthy();
-
-    await page.goto('/#/cook/' + id);
     await expect(page.getByRole('button', { name: 'AI', exact: true })).toBeVisible();
     await page.getByRole('button', { name: 'AI', exact: true }).click();
     await expect(page.getByRole('heading', { name: 'Zapytaj AI' })).toBeVisible();

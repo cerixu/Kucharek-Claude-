@@ -23,7 +23,23 @@ export function proView(){
     return h('div',{class:'results'},h('div',{class:'results-grid'},...cards),h('div',{class:'card'},h('h3',null,'Szybkie operacje'),h('div',{class:'row wrap'},button('➕ Dostawa',{kind:'primary',onClick:()=>{tab='delivery';paint();}}),button('🗑️ Strata',{onClick:()=>wasteSheet()}),button('📋 Inwentaryzacja',{onClick:()=>stocktakeSheet()}),button('⚖️ Korekta',{onClick:()=>adjustSheet()}))),h('div',{class:'card'},h('h3',null,'Magazyn PRO'),h('p',{class:'muted'},'Dostawy, ceny zakupu, partie, straty, inwentaryzacja, zakupy, produkcja i analityka w jednym miejscu.')));
   }
   function delivery(){return h('div',{class:'stack'},h('div',{class:'row between'},h('div',null,h('h3',null,'Dostawy'),h('p',{class:'muted'},String(deliveries.length)+' przyjętych dostaw')),button('Nowa dostawa',{kind:'primary',icon:'plus',onClick:()=>deliverySheet()})),deliveries.length?h('div',{class:'stack'},...deliveries.slice(0,20).map(d=>h('div',{class:'card'},h('strong',null,d.supplierName||'Bez dostawcy'),h('p',{class:'muted'},date(d.at)+' · '+(d.documentNo||'bez numeru dokumentu')+' · '+(d.items?.length||0)+' pozycji')))):emptyState('📦','Brak dostaw','Przyjmij pierwszą dostawę do magazynu.'));}
-  function ordersView(){return h('div',{class:'stack'},h('div',{class:'row between'},h('div',null,h('h3',null,'Zamówienia'),h('p',{class:'muted'},String(orders.length)+' zamówień')),h('div',{class:'row'},button('Dostawca',{sm:true,onClick:()=>supplierSheet()}),button('Nowe zamówienie',{kind:'primary',icon:'plus',onClick:()=>orderSheet()}))),orders.length?h('div',{class:'stack'},...orders.slice(0,20).map(o=>h('div',{class:'card'},h('div',{class:'row between'},h('strong',null,o.supplierName||'Bez dostawcy'),h('span',{class:'tag'},o.status)),h('p',{class:'muted'},date(o.createdAt)+' · '+(o.items?.length||0)+' pozycji')))):emptyState('🛒','Brak zamówień','Zbuduj pierwsze zamówienie do dostawcy.')));}
+  function ordersView(){
+    const header=h('div',{class:'row between'},
+      h('div',null,
+        h('h3',null,'Zamówienia'),
+        h('p',{class:'muted'},String(orders.length)+' zamówień')),
+      h('div',{class:'row'},
+        button('Dostawca',{sm:true,onClick:()=>supplierSheet()}),
+        button('Nowe zamówienie',{kind:'primary',icon:'plus',onClick:()=>orderSheet()})));
+    const list=orders.length
+      ? h('div',{class:'stack'},...orders.slice(0,20).map(o=>h('div',{class:'card'},
+          h('div',{class:'row between'},
+            h('strong',null,o.supplierName||'Bez dostawcy'),
+            h('span',{class:'tag'},o.status)),
+          h('p',{class:'muted'},date(o.createdAt)+' · '+(o.items?.length||0)+' pozycji')))
+      : emptyState('🛒','Brak zamówień','Zbuduj pierwsze zamówienie do dostawcy.');
+    return h('div',{class:'stack'},header,list);
+  }
   function production(){return h('div',{class:'stack'},h('div',{class:'row between'},h('div',null,h('h3',null,'Produkcja półproduktów'),h('p',{class:'muted'},'Twórz półprodukty i zwiększaj ich stan w Magazynie.')),button('Nowa produkcja',{kind:'primary',icon:'plus',onClick:()=>productionSheet()})),h('div',{class:'card'},h('strong',null,'Przykład'),h('p',{class:'muted'},'Sos pomidorowy 7,5 kg → przyjęcie do Magazynu jako półprodukt.')));}
   function planning(){const recipes=listRecipes().slice(0,30);return h('div',{class:'stack'},h('div',null,h('h3',null,'Planowanie produkcji'),h('p',{class:'muted'},'Sprawdź zapotrzebowanie receptury względem aktualnego Magazynu.')),recipes.length?h('div',{class:'stack'},...recipes.map(r=>h('div',{class:'card'},h('div',{class:'row between'},h('strong',null,r.name),button('Sprawdź braki',{sm:true,onClick:async()=>{const lines=await planRecipe(r,1);const miss=lines.filter(x=>x.missing>0);toast(miss.length?'Braki: '+miss.map(x=>x.name+' '+fmt(x.missing)+' '+x.unit).join(', '):'Komplet składników na 1×',{type:miss.length?'error':'success'});}})))):emptyState('📐','Brak receptur','Dodaj recepturę, aby planować produkcję.')));}
   function calculators(){

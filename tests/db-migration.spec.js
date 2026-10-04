@@ -294,7 +294,6 @@ test('Magazyn: powtarzające się składniki są sumowane bez podwójnego odejmo
     await new Promise((resolve, reject) => { tx.oncomplete = resolve; tx.onerror = () => reject(tx.error); });
     db.close();
     const mod = await import('/inventory.js');
-    await mod.loadInventory();
     const recipe = {
       id: 'e2e-dup-recipe',
       name: 'Test duplikatów',
@@ -511,6 +510,7 @@ test('Food Cost: koszt porcji skaluje się razem z recepturą', async ({ page })
 
 test('Food Cost UI: kalkulator pokazuje cenę z Magazynu', async ({ page }) => {
   await page.goto('/');
+  await page.evaluate(async () => { const { saveRecipe, blankRecipe } = await import('/recipes.js'); await saveRecipe(blankRecipe({id:'e2e-ui-cost-recipe',name:'UI koszt test',servings:1,category:'cat-pizza',sections:[{id:'s1',name:'',ingredients:[{id:'i1',name:'Mąka pszenna typ 00 (W 260–280)',amount:1000,unit:'g'}]}],steps:[]})); });
   await page.evaluate(async (name) => {
     const db = await new Promise((resolve, reject) => {
       const req = indexedDB.open(name);
@@ -557,5 +557,5 @@ test('Food Cost UI: kalkulator pokazuje cenę z Magazynu', async ({ page }) => {
   await expect(page.getByLabel('Receptura')).toBeVisible();
   await page.getByLabel('Receptura').selectOption('e2e-ui-food-cost');
   await expect(page.getByText('Magazyn: 8,00 zł/kg')).toBeVisible();
-  await expect(page.locator('.results-grid .result-v').filter({ hasText: '8,00 zł' }).first()).toBeVisible();
+  await expect(page.locator('.result').filter({ hasText: 'Koszt receptury' }).locator('.result-v')).toContainText('8,00');
 });

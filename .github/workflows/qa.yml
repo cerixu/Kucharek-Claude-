@@ -34,13 +34,47 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ~/.cache/ms-playwright
-          key: playwright-${{ runner.os }}-${{ hashFiles('package.json') }}
+          key: playwright-${{ runner.os }}-${{ hashFiles('package-lock.json') }}-${{ hashFiles('package.json') }}
+          restore-keys: |
+            playwright-${{ runner.os }}-
 
       - name: Syntax preflight
         run: find . -name '*.js' -not -path './node_modules/*' -print0 | xargs -0 -n1 node --check
 
-      - name: Install Chromium
-        run: npx playwright install --with-deps chromium webkit
+      - name: Ensure WebKit dependencies
+        shell: bash
+        run: |
+          set -euo pipefail
+          npx playwright install-deps chromium webkit
+          echo "Playwright-managed browser dependencies installed."
+
+      - name: Ensure Playwright browsers
+        shell: bash
+        run: |
+          set -euo pipefail
+          need_install=0
+          node <<'NODE'
+          const { chromium, webkit } = require('playwright');
+          const fs = require('fs');
+          for (const [name, browser] of [['chromium', chromium], ['webkit', webkit]]) {
+            const path = browser.executablePath();
+            if (!fs.existsSync(path)) {
+              console.log(`Missing ${name}: ${path}`);
+              process.exitCode = 2;
+            } else {
+              console.log(`Found ${name}: ${path}`);
+            }
+          }
+          NODE
+          status=$?
+          if [ "$status" -ne 0 ]; then
+            need_install=1
+          fi
+          if [ "$need_install" -eq 1 ]; then
+            npx playwright install chromium webkit
+          else
+            echo "Playwright browser binaries restored from cache."
+          fi
 
       - name: Run E2E
         env:

@@ -9,6 +9,7 @@ import {
   loadInventory, listInventory, saveInventoryItem, adjustInventory, removeInventoryItem,
   stockState, subscribeInventory, normalizeEAN, validEAN,
 } from './inventory.js';
+import { ingredientIcon } from './components.js';
 
 const UNITS=[['g','g'],['kg','kg'],['ml','ml'],['l','l'],['szt','szt'],['opak','opak']];
 const PRICE_UNITS=[['kg','zł / kg'],['l','zł / l'],['szt','zł / szt'],['opak','zł / opak']];
@@ -53,7 +54,7 @@ export function inventoryView(){
     const autoShopping=getSetting('inventoryAutoShopping')!==false;
     const body=h('div',{class:'stack'},
       h('div',{class:'inventory-tool-intro'},
-        icon('sparkles',20),
+        icon('sparkle',20),
         h('div',null,
           h('strong',null,'Magazyn może robić to za Ciebie.'),
           h('p',{class:'muted'},'Automatyka działa w tle. Tutaj tylko decydujesz, co ma być aktywne.')
@@ -103,7 +104,7 @@ export function inventoryView(){
     let closeSheet=null;
     const body=h('div',{class:'stack inventory-detail'},
       h('div',{class:'inventory-detail-hero'},
-        h('div',{class:'inventory-detail-icon'},icon('box',22)),
+        h('div',{class:'inventory-detail-icon'},ingredientIcon(item)),
         h('div',{class:'grow',},
           h('div',{class:'inventory-detail-title'},item.name),
           h('div',{class:'inventory-detail-meta'},item.category||'Bez kategorii')
@@ -150,7 +151,7 @@ export function inventoryView(){
         onClick:()=>openDetail(item)
       },
         h('div',{class:'inventory-product-visual '+st},
-          icon(st==='empty'?'box':st==='low'?'alert':'check',20)
+          ingredientIcon(item)
         ),
         h('div',{class:'inventory-product-copy'},
           h('div',{class:'inventory-product-title'},item.name),
@@ -161,7 +162,7 @@ export function inventoryView(){
           )
         ),
         h('span',{class:'stock-state'},stateLabel(st)),
-        icon('chevron-right',18)
+        icon('right',18)
       ),
       h('div',{class:'inventory-product-actions'},
         iconBtn('minus','Odejmij 1 '+item.unit+' — '+item.name,()=>{adjustInventory(item.id,-1,'manual').then(paint);},'quiet'),

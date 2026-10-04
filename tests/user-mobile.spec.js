@@ -127,7 +127,7 @@ test('Stage 34B: numer wersji jest widoczny w Ustawieniach', async ({ page }) =>
   await page.goto('/#/settings');
   await page.waitForFunction(() => window.__kucharzyna?.ready === true);
   await expect(page.getByText('Wersja aplikacji', { exact: true })).toBeVisible();
-  await expect(page.getByText('1.3.47', { exact: true })).toBeVisible();
+  await expect(page.getByText('1.3.50', { exact: true })).toBeVisible();
 });
 
 
@@ -193,7 +193,7 @@ test.describe('Stage 34C: wspólny system wizualny', () => {
     await page.goto('/#/settings');
     await page.waitForFunction(() => window.__kucharzyna?.ready === true);
     await expect(page.getByText('Wersja aplikacji', { exact: true })).toBeVisible();
-    await expect(page.getByText('1.3.47', { exact: true })).toBeVisible();
+    await expect(page.getByText('1.3.50', { exact: true })).toBeVisible();
   });
 
   test('zrzuty kontrolne głównych ekranów powstają w QA', async ({ page }, testInfo) => {
@@ -269,5 +269,67 @@ test.describe('Stage 34D: Magazyn UX', () => {
     expect(metrics.overflow).toBeLessThanOrEqual(1);
     if (metrics.action) expect(metrics.action).toBeGreaterThanOrEqual(40);
     if (metrics.mainAction) expect(metrics.mainAction).toBeGreaterThanOrEqual(44);
+  });
+});
+
+
+test.describe('Stage 34F: redesign iPhone + real user flows', () => {
+  test('Gotuję renderuje prawdziwe karty i otwiera tryb gotowania', async ({ page }) => {
+    await page.goto('/#/cook');
+    await page.waitForFunction(() => window.__kucharzyna?.ready === true);
+    await expect(page.getByRole('heading', { name: 'Wybierz recepturę' })).toBeVisible();
+    await expect(page.locator('.cook-hub-list')).not.toContainText('[object Object]');
+    await expect(page.locator('.cook-hub-card')).not.toHaveCount(0);
+    await page.locator('.cook-hub-card').first().click();
+    await expect(page).toHaveURL(/#\/cook\//);
+  });
+
+  test('Magazyn ma ikonę składnika na każdym widocznym produkcie', async ({ page }) => {
+    await page.goto('/#/inventory');
+    await page.waitForFunction(() => window.__kucharzyna?.ready === true);
+    await page.evaluate(async () => {
+      const { saveInventoryItem } = await import('/inventory.js');
+      await saveInventoryItem({ id:'e2e-34f-icon', name:'Pecorino Romano UI', quantity:2, unit:'kg', minQuantity:0, targetQuantity:3, purchasePrice:55, priceUnit:'kg', ean:'', category:'Nabiał', aliases:[] });
+    });
+    await page.reload();
+    await page.waitForFunction(() => window.__kucharzyna?.ready === true);
+    await expect(page.locator('.inventory-product').first()).toBeVisible();
+    expect(await page.locator('.inventory-product-visual .ingredient-icon svg').count()).toBeGreaterThan(0);
+  });
+
+  test('Więcej jest kompaktowym sheetem', async ({ page }) => {
+    await page.goto('/');
+    await page.waitForFunction(() => window.__kucharzyna?.ready === true);
+    await page.getByRole('button', { name: 'Więcej' }).click();
+    const panel=page.locator('.overlay.sheet .panel').last();
+    await expect(panel).toBeVisible();
+    const box=await panel.boundingBox();
+    expect(box).not.toBeNull();
+    expect(box.height).toBeLessThan(page.viewportSize().height*0.82);
+  });
+
+  test('Hero nie powiela nazwy dania w grafice tła', async ({ page }) => {
+    await page.goto('/');
+    await page.waitForFunction(() => window.__kucharzyna?.ready === true);
+    const heroImg = page.locator('.start-hero-image img').first();
+    await expect(heroImg).toBeVisible();
+    const src = await heroImg.getAttribute('src');
+    expect(src).toBeTruthy();
+    if (src?.startsWith('data:image/svg+xml')) {
+      const svg = decodeURIComponent(src.split(',', 2)[1] || '');
+      const recipeName = await page.locator('.start-hero-card').innerText();
+      const lines = recipeName.split('\\n').map(x=>x.trim()).filter(Boolean);
+      const dishName = lines.at(-1);
+      expect(dishName).toBeTruthy();
+      expect(svg).not.toContain(dishName);
+    }
+  });
+
+  test('Import łączy instrukcję i wklejanie w jednym panelu', async ({ page }) => {
+    await page.goto('/#/import');
+    await page.waitForFunction(() => window.__kucharzyna?.ready === true);
+    await expect(page.locator('.import-workflow-card')).toBeVisible();
+    await expect(page.getByLabel('Wklejony przepis', { exact: true })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Rozpoznaj przepis' })).toBeVisible();
   });
 });

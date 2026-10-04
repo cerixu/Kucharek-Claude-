@@ -164,11 +164,28 @@ if (flat.length !== 1700) throw new Error(`Oczekiwano 1700 rekordów, jest ${fla
 
 let cursor = 0;
 const out = new Array(flat.length);
+
+async function writeCheckpoint() {
+  let offset = 0;
+  for (const group of all) {
+    const slice = group.recipes.map((recipe) => {
+      const translated = out[offset];
+      offset++;
+      return translated || recipe;
+    });
+    await fs.writeFile(group.file, emitPart(slice), 'utf8');
+  }
+}
+
 async function worker() {
   while (true) {
     const i = cursor++;
     if (i >= flat.length) return;
     out[i] = await translateRecipe(flat[i], i);
+    if ((i + 1) % 25 === 0 || i === flat.length - 1) {
+      await writeCheckpoint();
+      console.log(`Checkpoint zapisany: ${i + 1}/1700`);
+    }
   }
 }
 await Promise.all(Array.from({length: CONCURRENCY}, worker));
@@ -179,10 +196,5 @@ if (idsAfter.size !== 1700 || [...idsBefore].some(id => !idsAfter.has(id))) {
   throw new Error('Zmiana/duplikacja stabilnych ID podczas tłumaczenia.');
 }
 
-for (let i = 0; i < all.length; i++) {
-  const start = all[i].recipes[0]?.id;
-  const end = all[i].recipes.at(-1)?.id;
-  const slice = out.slice(flat.findIndex(r => r.id === start), out.findIndex(r => r.id === end) + 1);
-  await fs.writeFile(all[i].file, emitPart(slice), 'utf8');
-}
+await writeCheckpoint();
 console.log('Stage 54 translation complete: 1700/1700 records written.');

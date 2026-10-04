@@ -52,16 +52,18 @@ test.describe('Stage 50 — real recipe corpus', () => {
     expect(meta.noArtificialProfile).toBe(meta.count);
     expect(meta.categories).toBeGreaterThanOrEqual(10);
 
+    await page.goto('/#/recipes');
+    await page.waitForFunction(() => window.__kucharzyna?.ready === true);
     await expect(page.getByRole('heading', { name: 'Receptury' })).toBeVisible();
-    await expect(page.locator('.counter')).toHaveText(/\\d{4} receptur/);
+    await expect(page.locator('.counter')).toHaveText(/[0-9]{4,} receptur/);
   });
 
   test('recipe search works against the real archive corpus', async ({ page }) => {
-    await page.goto('/recipes');
-    await page.waitForLoadState('networkidle');
+    await page.goto('/#/recipes');
+    await page.waitForFunction(() => window.__kucharzyna?.ready === true);
     const search = page.getByRole('searchbox', { name: 'Szukaj' });
     await search.fill('pierogi');
-    await expect(page.locator('.counter')).toHaveText(/\\d+ receptur/);
+    await expect(page.locator('.counter')).toHaveText(/[0-9]+ receptur/);
     const text = await page.locator('.list').first().innerText().catch(() => '');
     expect(text.toLowerCase()).toContain('pierogi');
   });

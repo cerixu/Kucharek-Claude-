@@ -21,5 +21,6 @@ export default defineConfig({
     { name: 'chromium', use: { ...devices['Desktop Chrome'], serviceWorkers: 'block' }, testIgnore: /pwa\.spec\.js/ },
     { name: 'pwa', use: { ...devices['Desktop Chrome'], serviceWorkers: 'allow' }, testMatch: /pwa\.spec\.js/ },
     { name: 'webkit-mobile', use: { ...devices['iPhone 13'], serviceWorkers: 'allow' }, testMatch: /startup\.spec\.js/ },
+    { name: 'design-mobile', use: { ...devices['iPhone 13'], serviceWorkers: 'allow' }, testMatch: /design-34e\\.spec\\.js/ },
   ],
 });

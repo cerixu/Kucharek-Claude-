@@ -51,7 +51,7 @@ test.describe('Stage 34E • visual system', () => {
 
     await page.getByRole('button', { name: 'Więcej' }).click();
     await expect(page.getByRole('button', { name: 'Zakupy' })).toBeVisible();
-    await expect(page.getByRole('button', { name: 'Historia gotowania' })).toBeVisible();
+    await expect(page.getByRole('dialog', { name: 'Więcej' }).getByRole('button', { name: 'Historia gotowania' })).toBeVisible();
     await expect(page.getByRole('button', { name: 'Kalkulatory' })).toBeVisible();
     await expect(page.getByRole('button', { name: 'Ustawienia' })).toBeVisible();
   });

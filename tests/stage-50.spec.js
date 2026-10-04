@@ -61,10 +61,19 @@ test.describe('Stage 50 — real recipe corpus', () => {
   test('recipe search works against the real archive corpus', async ({ page }) => {
     await page.goto('/#/recipes');
     await page.waitForFunction(() => window.__kucharzyna?.ready === true);
+    const known = await page.evaluate(async () => {
+      const { listRecipes, searchText } = await import('/recipes.js');
+      const row = listRecipes().find(r => /pierogi/i.test(r.name));
+      return { id: row?.id || '', name: row?.name || '', indexed: row ? searchText(row).includes('pierogi') : false };
+    });
+    expect(known.id).toMatch(/^rcp_archive_/);
+    expect(known.indexed).toBe(true);
+
     const search = page.getByRole('searchbox', { name: 'Szukaj' });
+    await expect(search).toBeVisible();
     await search.fill('pierogi');
+    await page.waitForTimeout(250);
     await expect(page.locator('.counter')).toHaveText(/[0-9]+ receptur/);
-    const text = await page.locator('.list').first().innerText().catch(() => '');
-    expect(text.toLowerCase()).toContain('pierogi');
+    await expect(page.locator('.list').first()).toContainText(/pierogi/i);
   });
 });

@@ -7,7 +7,7 @@ const BIGOS_ID = 'rcp_archive_aa342cc6ecae42afbac0';
 test.describe('Stage 51 — recipe UX', () => {
   test('recipe library is paginated and recipe opens at one portion', async ({ page }) => {
     await page.goto('/#/recipes');
-    await page.waitForFunction(() => window.__kucharzyna?.ready === true);
+    await page.waitForFunction(() => window.__kucharek?.ready === true);
     await expect(page.getByRole('heading', { name: 'Receptury' })).toBeVisible();
 
     const counter = await page.locator('.counter').textContent();
@@ -15,7 +15,7 @@ test.describe('Stage 51 — recipe UX', () => {
     expect(await page.locator('.rcard').count()).toBeLessThanOrEqual(40);
 
     await page.goto('/#/recipe/' + BIGOS_ID);
-    await page.waitForFunction(() => window.__kucharzyna?.ready === true);
+    await page.waitForFunction(() => window.__kucharek?.ready === true);
     await expect(page.locator('.screen.detail')).toBeVisible();
     await expect(page.locator('.facts .fact').first()).toContainText('1 porcja');
     await expect(page.locator('.ingredients')).toBeVisible();
@@ -25,7 +25,7 @@ test.describe('Stage 51 — recipe UX', () => {
 
   test('recipe scaling changes the visible quantities without saving', async ({ page }) => {
     await page.goto('/#/recipe/' + BIGOS_ID);
-    await page.waitForFunction(() => window.__kucharzyna?.ready === true);
+    await page.waitForFunction(() => window.__kucharek?.ready === true);
 
     await page.getByRole('button', { name: 'Przelicz' }).click();
     const dialog = page.getByRole('dialog', { name: 'Przelicz' });
@@ -42,7 +42,7 @@ test.describe('Stage 51 — recipe UX', () => {
 
   test('recipe search indexes ingredients from the real corpus', async ({ page }) => {
     await page.goto('/#/recipes');
-    await page.waitForFunction(() => window.__kucharzyna?.ready === true);
+    await page.waitForFunction(() => window.__kucharek?.ready === true);
 
     const search = page.getByRole('searchbox', { name: 'Szukaj' });
     await search.fill('frog legs');

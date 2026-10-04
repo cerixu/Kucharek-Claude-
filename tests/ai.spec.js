@@ -126,9 +126,9 @@ test.describe('Kucharek AI', () => {
     await ready(page);
     const message = await page.evaluate(async () => {
       const { setAIGatewayUrl, setAIGatewayToken, testAIGateway } = await import('/ai.js');
-      await setAIGatewayUrl('http://example.com/ai');
-      setAIGatewayToken('test-gateway-token');
       try {
+        await setAIGatewayUrl('http://example.com/ai');
+        setAIGatewayToken('test-gateway-token');
         await testAIGateway();
         return 'NO_ERROR';
       } catch (e) {

@@ -17,7 +17,7 @@ const SORTS = [
 ];
 
 // Stan widoku zostaje w pamięci, więc po powrocie z receptury lista wygląda tak samo.
-const vs = { q: '', chip: 'all', tag: '', maxTime: 0, favOnly: false };
+const vs = { q: '', chip: 'all', tag: '', maxTime: 0, favOnly: false, visibleCount: 40 };
 
 const activeTime = (r) => (r.prepTime || 0) + (r.cookTime || 0);
 
@@ -55,7 +55,7 @@ export function recipesView(query) {
     sub, cls: 'recipes',
   });
 
-  const onSearch = debounce(() => { focusPreservingPaint(paint, s.el); }, 100);
+  const onSearch = debounce(() => { vs.visibleCount = 40; focusPreservingPaint(paint, s.el); }, 100);
   search.addEventListener('input', () => { vs.q = search.value; clear.hidden = !search.value; onSearch(); });
   search.addEventListener('keydown', (e) => { if (e.key === 'Enter') search.blur(); });
 
@@ -84,7 +84,7 @@ export function recipesView(query) {
     const all = listRecipes();
     const used = new Set(all.map((r) => r.category));
     const mk = (id, label, n) => h('button', { type: 'button', class: 'chip' + (vs.chip === id ? ' on' : ''), 'aria-pressed': vs.chip === id,
-      onClick: () => { vs.chip = id; paint(); } }, label, n != null ? h('span', { class: 'chip-n' }, String(n)) : null);
+      onClick: () => { vs.chip = id; vs.visibleCount = 40; paint(); } }, label, n != null ? h('span', { class: 'chip-n' }, String(n)) : null);
     const kids = [
       mk('all', 'Wszystkie', all.length),
       mk('fav', '★ Ulubione', all.filter((r) => r.favorite).length),
@@ -113,17 +113,28 @@ export function recipesView(query) {
         button('Importuj', { icon: 'upload', onClick: () => navigate('/import') })));
     } else if (!total) {
       kids.push(emptyState('🔎', 'Nic nie znaleziono', vs.q ? `Brak wyników dla „${vs.q}”.` : 'Zmień filtry lub wyszukiwanie.',
-        button('Wyczyść filtry', { onClick: () => { Object.assign(vs, { q: '', chip: 'all', tag: '', maxTime: 0, favOnly: false }); search.value = ''; paint(); } }),
+        button('Wyczyść filtry', { onClick: () => { Object.assign(vs, { q: '', chip: 'all', tag: '', maxTime: 0, favOnly: false, visibleCount: 40 }); search.value = ''; paint(); } }),
         button('Szukaj w internecie', { icon: 'globe', onClick: () => navigate('/import?q=' + encodeURIComponent(vs.q || '')) })));
     } else {
       kids.push(h('p', { class: 'muted counter' }, `${total} ${total === 1 ? 'receptura' : total % 10 >= 2 && total % 10 <= 4 && (total % 100 < 10 || total % 100 >= 20) ? 'receptury' : 'receptur'}`));
-      if (trad.length) {
+      const visibleTrad = trad.slice(0, Math.min(trad.length, vs.visibleCount));
+      const remainingBudget = Math.max(0, vs.visibleCount - visibleTrad.length);
+      const visibleRest = rest.slice(0, remainingBudget);
+      const shownCount = visibleTrad.length + visibleRest.length;
+      if (visibleTrad.length) {
         if (rest.length) kids.push(h('h3', { class: 'group-title' }, icon('star', 16), 'Tradycyjne'));
-        kids.push(h('div', { class: 'list' }, trad.map((r) => recipeCard(r))));
+        kids.push(h('div', { class: 'list' }, visibleTrad.map((r) => recipeCard(r))));
       }
-      if (rest.length) {
+      if (visibleRest.length) {
         if (trad.length) kids.push(h('h3', { class: 'group-title' }, 'Pozostałe'));
-        kids.push(h('div', { class: 'list' }, rest.map((r) => recipeCard(r))));
+        kids.push(h('div', { class: 'list' }, visibleRest.map((r) => recipeCard(r))));
+      }
+      if (shownCount < total) {
+        const remaining = total - shownCount;
+        kids.push(button(remaining > 40 ? 'Pokaż kolejne 40' : `Pokaż kolejne ${remaining}`, {
+          block: true, kind: 'ghost',
+          onClick: () => { vs.visibleCount += 40; paint(); }
+        }));
       }
       kids.push(h('div', { class: 'import-cta' },
         h('p', { class: 'muted' }, 'Masz przepis z internetu lub ze zdjęcia książki?'),
@@ -155,7 +166,7 @@ export function recipesView(query) {
         field('Czas czynny (przygotowanie + gotowanie)', selectEl([[0, 'Dowolny'], [15, 'do 15 min'], [30, 'do 30 min'], [60, 'do 1 h'], [120, 'do 2 h']], maxTime, (v) => { maxTime = +v; }))),
       actions: [
         { label: 'Wyczyść', kind: 'ghost', onClick: () => { Object.assign(vs, { tag: '', maxTime: 0, favOnly: false }); paint(); } },
-        { label: 'Zastosuj', kind: 'primary', onClick: () => { Object.assign(vs, { tag, maxTime, favOnly }); paint(); } },
+        { label: 'Zastosuj', kind: 'primary', onClick: () => { Object.assign(vs, { tag, maxTime, favOnly, visibleCount: 40 }); paint(); } },
       ],
     });
   }

@@ -6,7 +6,7 @@ Wszystkie dane są w pamięci Twojego urządzenia.
 
 ## Co potrafi
 
-- **Receptury**: wyszukiwarka (bez względu na polskie znaki), kategorie (własne też), filtry, sortowanie, ulubione, ostatnie. Tradycyjne receptury są przypięte na górze z gwiazdką i flagą kraju.
+- **Receptury**: ponad **1200 receptur startowych** z 30 stylami regionalnymi, wyszukiwarka (bez względu na polskie znaki), kategorie (własne też), filtry, sortowanie, ulubione, ostatnie. Tradycyjne receptury są przypięte na górze z gwiazdką i flagą kraju.
 - **Edytor**: wiele sekcji (CIASTO / SOS / DODATKI), przesuwanie składników i sekcji, kroki, zdjęcie (kompresowane lokalnie), tagi, źródło, czasy, temperatura, własne uwagi. Szkic zapisuje się na bieżąco — nic nie ginie.
 - **GOTUJĘ**: duże checkboxy składników i kroków (postęp zapamiętany), minutnik z dźwiękiem, zmiana rozmiaru tekstu, przeliczanie w trakcie, ekran nie gaśnie.
 - **Przelicz**: według porcji, wydajności albo jednego składnika; szybkie ×0,5 ×2 ×3 ×5 ×10; zapis jako nowa receptura lub nadpisanie.
@@ -45,6 +45,7 @@ kucharek/
 ├── pwa.js                  # rejestracja SW, „Nowa wersja → Odśwież”, trwały magazyn
 ├── db.js                   # IndexedDB (receptury, zakupy, magazyn, dostawy, partie, PRO)
 ├── recipes.js              # model danych, zapis, historia, kategorie, dane startowe
+├── recipe-library.js       # 1200+ deterministycznych receptur startowych
 ├── calculator.js           # przeliczanie, procenty piekarskie, pizza, food cost
 ├── importer.js             # parser tekstu przepisu (PL/EN, JSON-LD)
 ├── backup.js               # eksport/import JSON

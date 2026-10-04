@@ -127,7 +127,8 @@ test('Stage 34B: numer wersji jest widoczny w Ustawieniach', async ({ page }) =>
   await page.goto('/#/settings');
   await page.waitForFunction(() => window.__kucharzyna?.ready === true);
   await expect(page.getByText('Wersja aplikacji', { exact: true })).toBeVisible();
-  await expect(page.getByText('1.3.52', { exact: true })).toBeVisible();
+  const appVersion = await page.evaluate(async () => (await import('/util.js')).APP_VERSION);
+  await expect(page.getByText(appVersion, { exact: true })).toBeVisible();
 });
 
 
@@ -193,7 +194,8 @@ test.describe('Stage 34C: wspólny system wizualny', () => {
     await page.goto('/#/settings');
     await page.waitForFunction(() => window.__kucharzyna?.ready === true);
     await expect(page.getByText('Wersja aplikacji', { exact: true })).toBeVisible();
-    await expect(page.getByText('1.3.52', { exact: true })).toBeVisible();
+    const appVersion = await page.evaluate(async () => (await import('/util.js')).APP_VERSION);
+  await expect(page.getByText(appVersion, { exact: true })).toBeVisible();
   });
 
   test('zrzuty kontrolne głównych ekranów powstają w QA', async ({ page }, testInfo) => {

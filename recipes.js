@@ -7,6 +7,7 @@
    ========================================================================== */
 import { db, kv } from './db.js';
 import { uid, norm, fmtAmount, fmtMinutes, fmtDateTime, flagEmoji } from './util.js';
+import { recipeLibrary } from './recipe-library.js';
 
 /* ---------- Kategorie i kraje ---------- */
 
@@ -382,7 +383,7 @@ export function allTags() {
 
 
 /* ---------- Biblioteka zdjęć startowych ---------- */
-const SEED_MEDIA_VERSION = 8;
+const SEED_MEDIA_VERSION = 9;
 const PHOTO = Object.freeze({
   pizza:'https://photoshop-api.adobe.io/v2/short-url/urn:aaid:ps:US:19d098c7-f308-4416-951d-4d5bb6ed6cc4',
   carbonara:'https://photoshop-api.adobe.io/v2/short-url/urn:aaid:ps:US:995b5785-cd24-4bff-b5c2-ba36d567a827',
@@ -464,6 +465,7 @@ export function seedRecipes() {
       ],
     }),
   ...extraSeedRecipes(now),
+    ...recipeLibrary(now),
   ];
 }
 

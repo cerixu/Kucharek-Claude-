@@ -77,14 +77,52 @@ export function proView(){
         : emptyState('📐', 'Brak receptur', 'Dodaj recepturę, aby planować produkcję.')
     );
   }
-  function calculators(){
-    let input='10',output='7.5',target='15';
-    const yieldCard=()=>{
-      const i=Number(input),o=Number(output),t=Number(target);
-      return h('div',{class:'card'},h('h3',null,'Wydajność i skala produkcji'),h('div',{class:'grid-2'},textInput({type:'number',label:'Surowiec',value:input,onInput:v=>{input=v;paint();}}),textInput({type:'number',label:'Wynik',value:output,onInput:v=>{output=v;paint();}})),textInput({type:'number',label:'Docelowy wynik',value:target,onInput:v=>{target=v;paint();}}),h('div',{class:'results-grid'},h('div',{class:'result'},h('span',{class:'result-k'},'Wydajność'),h('strong',{class:'result-v'},fmt(o/i*100)+'%')),h('div',{class:'result'},h('span',{class:'result-k'},'Strata'),h('strong',{class:'result-v'},fmt(Math.max(0,(i-o)/i*100))+'%')),h('div',{class:'result'},h('span',{class:'result-k'},'Surowiec na cel'),h('strong',{class:'result-v'},fmt(i*t/o))))));
+  function calculators() {
+    let input = '10', output = '7.5', target = '15';
+    const yieldCard = () => {
+      const i = Number(input), o = Number(output), t = Number(target);
+      const efficiency = i > 0 ? (o / i) * 100 : 0;
+      const loss = i > 0 ? Math.max(0, ((i - o) / i) * 100) : 0;
+      const sourceForTarget = o > 0 ? (i * t) / o : 0;
+      return h('div', { class: 'card' },
+        h('h3', null, 'Wydajność i skala produkcji'),
+        h('div', { class: 'grid-2' },
+          textInput({ type: 'number', label: 'Surowiec', value: input, onInput: (v) => { input = v; paint(); } }),
+          textInput({ type: 'number', label: 'Wynik', value: output, onInput: (v) => { output = v; paint(); } })
+        ),
+        textInput({ type: 'number', label: 'Docelowy wynik', value: target, onInput: (v) => { target = v; paint(); } }),
+        h('div', { class: 'results-grid' },
+          h('div', { class: 'result' },
+            h('span', { class: 'result-k' }, 'Wydajność'),
+            h('strong', { class: 'result-v' }, fmt(efficiency) + '%')
+          ),
+          h('div', { class: 'result' },
+            h('span', { class: 'result-k' }, 'Strata'),
+            h('strong', { class: 'result-v' }, fmt(loss) + '%')
+          ),
+          h('div', { class: 'result' },
+            h('span', { class: 'result-k' }, 'Surowiec na cel'),
+            h('strong', { class: 'result-v' }, fmt(sourceForTarget))
+          )
+        )
+      );
     };
-    return h('div',{class:'stack'},h('div',null,h('h3',null,'Kalkulatory PRO'),h('p',{class:'muted'},'Wydajność, straty, skala produkcji i pokrycie magazynowe.')),yieldCard(),
-      h('div',{class:'card'},h('h3',null,'Pokrycie magazynu'),...inv.slice(0,12).map(x=>h('div',{class:'row between'},h('span',null,x.name),h('span',{class:'muted'},fmt(x.quantity)+' '+x.unit)))));
+    return h('div', { class: 'stack' },
+      h('div', null,
+        h('h3', null, 'Kalkulatory PRO'),
+        h('p', { class: 'muted' }, 'Wydajność, straty, skala produkcji i pokrycie magazynowe.')
+      ),
+      yieldCard(),
+      h('div', { class: 'card' },
+        h('h3', null, 'Pokrycie magazynu'),
+        ...inv.slice(0, 12).map((x) =>
+          h('div', { class: 'row between' },
+            h('span', null, x.name),
+            h('span', { class: 'muted' }, fmt(x.quantity) + ' ' + x.unit)
+          )
+        )
+      )
+    );
   }
   function analytics(){const p=summary.priceChanges.slice(0,12);return h('div',{class:'stack'},h('div',{class:'results-grid'},h('div',{class:'result'},h('span',{class:'result-k'},'Ruchy'),h('strong',{class:'result-v'},summary.movements)),h('div',{class:'result'},h('span',{class:'result-k'},'Straty'),h('strong',{class:'result-v'},summary.waste)),h('div',{class:'result'},h('span',{class:'result-k'},'Dostawy'),h('strong',{class:'result-v'},summary.deliveries)),h('div',{class:'result'},h('span',{class:'result-k'},'Zamówienia'),h('strong',{class:'result-v'},summary.orders))),h('div',{class:'card'},h('h3',null,'Historia cen'),p.length?h('div',{class:'stack'},...p.map(x=>h('div',{class:'row between'},h('span',null,x.inventoryName),h('span',{class:x.change>0?'warn':''},fmt(x.price)+' zł/'+x.priceUnit+(x.change?' · '+(x.change>0?'+':'')+fmt(x.change):'')))):h('p',{class:'muted'},'Brak danych cenowych.'))));}
   function deliverySheet(){let supplierId='',supplierName='',documentNo='',items=[{name:'',quantity:'',unit:'kg',purchasePrice:'',priceUnit:'kg',lot:'',expiryAt:''}];const form=h('div',{class:'stack'},field('Dostawca',selectEl([['','Bez dostawcy'],...suppliers.map(x=>[x.id,x.name])],'',v=>{supplierId=v;supplierName=suppliers.find(x=>x.id===v)?.name||''})),field('Numer dokumentu',textInput({label:'Numer dokumentu',onInput:v=>documentNo=v})),h('div',{class:'card'},h('strong',null,'Pozycja dostawy'),...items.map(it=>h('div',{class:'stack'},textInput({label:'Produkt',onInput:v=>it.name=v}),h('div',{class:'grid-2'},textInput({type:'number',label:'Ilość',onInput:v=>it.quantity=v}),selectEl(units,'kg',v=>it.unit=v)),h('div',{class:'grid-2'},textInput({type:'number',label:'Cena zakupu',onInput:v=>it.purchasePrice=v}),selectEl(units,it.priceUnit,v=>it.priceUnit=v)),textInput({label:'Partia',onInput:v=>it.lot=v}),textInput({type:'date',label:'Termin',onInput:v=>it.expiryAt=v?new Date(v).getTime():''}))));openSheet({title:'Nowa dostawa',variant:'sheet',body:form,actions:[{label:'Anuluj',kind:'ghost'},{label:'Przyjmij',kind:'primary',icon:'check',onClick:async()=>{try{await receiveDelivery({supplierId,supplierName,documentNo,items});toast('Dostawa przyjęta 📦');paint();}catch(e){toast(e.message||'Nie udało się przyjąć dostawy',{type:'error'});return false;}}}]});}

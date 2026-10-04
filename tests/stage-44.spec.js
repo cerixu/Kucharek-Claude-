@@ -104,7 +104,8 @@ test('Stage 44: service worker aktywuje się i trzyma kompletny app-shell w cach
     };
   });
 
-  expect(audit.version).toMatch(/^kucharek-claude-1\.3\.71$/);
+  const currentAppVersion = await page.evaluate(async () => (await import('/util.js')).APP_VERSION);
+  expect(audit.version).toBe('kucharek-claude-' + currentAppVersion);
   expect(audit.coreCount).toBeGreaterThan(30);
   expect(audit.missing).toEqual([]);
   expect(audit.cacheNames.filter((x) => x.startsWith('kucharek-')).length).toBe(1);

@@ -43,7 +43,7 @@ test.describe('Stage 43A · Visual QA / iPhone glass', () => {
         overflow,
         topbar: cs('.topbar'),
         tabbar: cs('#tabbar'),
-        card: cs('.card'),
+        surface: cs('.card, .start-action, .start-recent-card, .recipe-card'),
         input: cs('.input'),
         tapTargets,
       };
@@ -66,7 +66,7 @@ test.describe('Stage 43A · Visual QA / iPhone glass', () => {
   test('shell is glassy, bounded and touch-safe', async ({ page }, testInfo) => {
     const audit = await auditShell(page);
     await page.screenshot({ path: testInfo.outputPath('43a-start.png'), fullPage: false });
-    expect(audit.card?.backdropFilter || '').toContain('blur');
+    expect(audit.surface?.backdropFilter || '').toContain('blur');
   });
 
   test('key iPhone screens stay inside the viewport', async ({ page }, testInfo) => {
@@ -76,7 +76,7 @@ test.describe('Stage 43A · Visual QA / iPhone glass', () => {
       const audit = await auditShell(page);
       expect(audit.topbar?.rect.width || 0).toBeLessThanOrEqual(audit.viewport.w + 1);
       expect(audit.tabbar?.rect.width || 0).toBeLessThanOrEqual(audit.viewport.w + 1);
-      const safeRoute = route.slice(2).replace(/[^a-z]/gi, '-') || 'root';
+      const safeRoute = route.slice(1).replace(/[^a-z]/gi, '-') || 'root';
       await page.screenshot({ path: testInfo.outputPath(`43a-${safeRoute}.png`), fullPage: false });
     }
   });

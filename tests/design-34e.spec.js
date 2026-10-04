@@ -7,6 +7,22 @@ test.describe('Stage 34E • visual system', () => {
     await expect(page.getByText('Kucharek', { exact: true }).first()).toBeVisible();
   });
 
+  test('Auto respektuje jasny i ciemny motyw urządzenia', async ({ page }) => {
+    await page.emulateMedia({ colorScheme: 'light' });
+    await page.goto('/');
+    await page.waitForFunction(() => window.__kucharzyna?.ready === true);
+    const light = await page.evaluate(() => getComputedStyle(document.documentElement).getPropertyValue('--34e-bg').trim());
+
+    await page.emulateMedia({ colorScheme: 'dark' });
+    await page.reload();
+    await page.waitForFunction(() => window.__kucharzyna?.ready === true);
+    const dark = await page.evaluate(() => getComputedStyle(document.documentElement).getPropertyValue('--34e-bg').trim());
+
+    expect(light).not.toBe('');
+    expect(dark).not.toBe('');
+    expect(light).not.toBe(dark);
+  });
+
   test('loads the 34E visual layer and preserves the main shell', async ({ page }) => {
     await expect(page.locator('link[href*="styles-34e.css"]')).toHaveCount(1);
     await expect(page.locator('#tabbar')).toBeVisible();

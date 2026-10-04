@@ -58,18 +58,38 @@ const OTHER = [
 ["zwiebel","cebula"],["zwiebeln","cebula"],["knoblauch","czosnek"],["öl","olej"],["olivenöl","oliwa z oliwek"],["butter","masło"],["mehl","mąka"],["zucker","cukier"],["salz","sól"],["pfeffer","pieprz"],["tomate","pomidor"],["sahne","śmietanka"],["milch","mleko"],["eier","jajka"],["ei","jajko"],["käse","ser"],["rindfleisch","wołowina"],["schweinefleisch","wieprzowina"],["hähnchen","kurczak"],["huhn","kurczak"],["fisch","ryba"],["wasser","woda"],["wein","wino"],["zitrone","cytryna"],["petersilie","natka pietruszki"],["basilikum","bazylia"],["rosmarin","rozmaryn"],["kartoffel","ziemniak"],["kartoffeln","ziemniaki"],["pilze","grzyby"],["reis","ryż"],["nudeln","makaron"],["mischen","mieszać"],["kochen","gotować"],["braten","smażyć"],["backen","piec"],["servieren","podawać"],["schneiden","pokroić"],["gehackt","posiekany"],["gerieben","starty"],["geschält","obrany"],
 ["cibule","cebula"],["česnek","czosnek"],["máslo","masło"],["mouka","mąka"],["cukr","cukier"],["sůl","sól"],["pepř","pieprz"],["rajče","pomidor"],["rajčata","pomidory"],["smetana","śmietanka"],["mléko","mleko"],["vejce","jajko"],["sýr","ser"],["hovězí","wołowina"],["vepřové","wieprzowina"],["kuře","kurczak"],["ryba","ryba"],["voda","woda"],["víno","wino"],["citron","cytryna"],["petržel","natka pietruszki"],["bazalka","bazylia"],["brambory","ziemniaki"],["houby","grzyby"],["rýže","ryż"],["těstoviny","makaron"],["vařit","gotować"],["míchat","mieszać"],["smažit","smażyć"],["péct","piec"],["přidat","dodać"],["podávat","podawać"],
 ];
+const EXTRA = [
+["with","z"],["without","bez"],["into","do"],["from","z"],["under","pod"],["through","przez"],["between","między"],["near","w pobliżu"],
+["head","główka"],["heads","główki"],["pan","patelnia"],["skillet","patelnia"],["pot","garnek"],["bowl","miska"],["plate","talerz"],["dish","naczynie"],
+["oven","piekarnik"],["stove","kuchenka"],["heat","ogień"],["liquid","płyn"],["scum","szumowiny"],["meat","mięso"],["stuffing","farsz"],["filling","nadzienie"],
+["sauce","sos"],["dough","ciasto"],["batter","ciasto"],["tray","blacha"],["lid","pokrywka"],["cover","przykrycie"],["surface","powierzchnia"],
+["shred","poszatkuj"],["shredded","poszatkowany"],["press","wyciśnij"],["squeeze","wyciśnij"],["prepare","przygotuj"],["prepared","przygotowany"],["select","wybierz"],
+["clean","oczyść"],["cleaned","oczyszczony"],["dry","osusz"],["dried","suszony"],["tie","zwiąż"],["tied","związany"],["sew","zszyj"],["sewn","zszyty"],
+["fasten","przymocuj"],["layer","układaj warstwami"],["repeat","powtórz"],["repeating","powtarzając"],["prevent","zapobiegaj"],["appears","pojawia się"],["appear","pojawić się"],
+["collect","zbierz"],["continue","kontynuuj"],["remaining","pozostały"],["nearly","prawie"],["separately","osobno"],["usually","zwykle"],["customary","zgodnie z tradycją"],
+["available","dostępny"],["desired","pożądany"],["ready","gotowy"],["done","gotowy"],["until done","aż będzie gotowe"],
+["shaking","potrząsając"],["shake","potrząśnij"],["rounds","plastry"],["round","plaster"],["whole","cały"],["part","część"],["parts","części"],
+["boiling","wrzący"],["boil","gotuj"],["salted","osolony"],["firmly","mocno"],["briefly","krótko"],["immediately","natychmiast"],["constantly","stale"],
+["smooth","gładki"],["mass","masa"],["amount","ilość"],["plenty","dużo"],["some","trochę"],["enough","wystarczająco"],["properly","właściwie"],
+["half","pół"],["quarter","ćwierć"],["third","jedna trzecia"],["fourth","jedna czwarta"],
+["cup of","szklanka"],["cups of","szklanki"],["tablespoon of","łyżka"],["tablespoons of","łyżki"],["teaspoon of","łyżeczka"],["teaspoons of","łyżeczki"],
+["pound of","funt"],["pounds of","funty"],["head of","główka"],["heads of","główki"],
+["and then","a następnie"],["and immediately","i natychmiast"],["and add","i dodaj"],["then add","następnie dodaj"],["then mix","następnie wymieszaj"],
+["add to","dodaj do"],["mix with","wymieszaj z"],["cook with","gotuj z"],["serve with","podawaj z"],["cover with","przykryj"],["pour with","polej"],
+];
+
 const C = {"Kuchnia Polska":"Kuchnia polska","Cucina Italiana":"Kuchnia włoska","Cocina Española":"Kuchnia hiszpańska","Cuisine Française":"Kuchnia francuska","Japanese Kitchen":"Kuchnia japońska","Chinese Kitchen":"Kuchnia chińska","Indian Kitchen":"Kuchnia indyjska","German Kitchen":"Kuchnia niemiecka","Česká kuchyně":"Kuchnia czeska"};
 const rx = s => new RegExp("(?<!\\p{L})"+String(s).replace(/[.*+?^$(){}|[\\]\\\\]/g,"\\\\$&")+"(?!\\p{L})","giu");
 const apply = (text, list) => {
   let out=String(text??"");
   for(const [a,b] of [...list].sort((x,y)=>y[0].length-x[0].length)) out=out.replace(rx(a),b);
-  return out.replace(/\\s{2,}/g," ").replace(/\\s+([,.;:!?])/g,"$1").trim();
+  return out.replace(/\\b(?:the|a|an)\\b/giu,"").replace(/\\s{2,}/g," ").replace(/\\s+([,.;:!?])/g,"$1").trim();
 };
 export function translateRecipe(recipe){
   const original=recipe.originalName||recipe.name||"";
-  const sections=Array.isArray(recipe.sections)?recipe.sections.map(s=>({...s,ingredients:Array.isArray(s.ingredients)?s.ingredients.map(i=>({...i,name:apply(i.name,[...P,...OTHER])})):s.ingredients})):recipe.sections;
-  const steps=Array.isArray(recipe.steps)?recipe.steps.map(s=>({...s,text:apply(s.text,[...P,...OTHER])})):recipe.steps;
+  const sections=Array.isArray(recipe.sections)?recipe.sections.map(s=>({...s,ingredients:Array.isArray(s.ingredients)?s.ingredients.map(i=>({...i,name:apply(i.name,[...P,...OTHER,...EXTRA])})):s.ingredients})):recipe.sections;
+  const steps=Array.isArray(recipe.steps)?recipe.steps.map(s=>({...s,text:apply(s.text,[...P,...OTHER,...EXTRA])})):recipe.steps;
   let name=String(recipe.name||original);
   for(const [a,b] of P) name=name.replace(new RegExp(String(a).replace(/[.*+?^$(){}|[\\]\\\\]/g,"\\\\$&"),"giu"),b);
-  return {...recipe,originalName:original,name:apply(name,OTHER),description:apply(recipe.description||"",[...P,...OTHER]),sections,steps,archiveCollectionName:C[recipe.archiveCollectionName]||recipe.archiveCollectionName,translationLanguage:"pl",translationVersion:1};
+  return {...recipe,originalName:original,name:apply(name,[...P,...OTHER,...EXTRA]),description:apply(recipe.description||"",[...P,...OTHER,...EXTRA]),sections,steps,archiveCollectionName:C[recipe.archiveCollectionName]||recipe.archiveCollectionName,translationLanguage:"pl",translationVersion:1};
 }

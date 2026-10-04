@@ -45,12 +45,9 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          if ! ldconfig -p 2>/dev/null | grep -q 'libevent-2.1.so.7'; then
-            sudo apt-get update
-            sudo apt-get install -y libevent-2.1-7t64 || sudo apt-get install -y libevent-2.1-7
-          else
-            echo "WebKit libevent dependency is present."
-          fi
+          sudo apt-get update
+          sudo apt-get install -y libevent-2.1-7t64 libopus0 || sudo apt-get install -y libevent-2.1-7 libopus0
+          echo "WebKit runtime dependencies installed."
 
       - name: Ensure Playwright browsers
         shell: bash

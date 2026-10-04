@@ -8,7 +8,7 @@ async function ready(page) {
 async function configureMockGateway(page) {
   await page.evaluate(async () => {
     const { setAIGatewayUrl, setAIGatewayToken } = await import('/ai.js');
-    await setAIGatewayUrl(location.origin + '/__ai');
+    await setAIGatewayUrl('https://test-gateway.invalid/__ai');
     setAIGatewayToken('test-gateway-token');
   });
 }

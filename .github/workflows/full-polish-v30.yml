@@ -75,8 +75,13 @@ jobs:
           NODE
       - name: Commit
         run: |
+          set -euo pipefail
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          cp recipe-library-data/part-*.js /tmp/translated-final/
+          git fetch origin main
+          git reset --hard origin/main
+          cp /tmp/translated-final/part-*.js recipe-library-data/
           git add recipe-library-data/part-*.js
           git commit -m 'Stage 54 generated v30: fully Polish recipe corpus'
-          git push
+          git push origin HEAD:main

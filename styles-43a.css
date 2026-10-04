@@ -394,3 +394,76 @@ textarea {
     background: var(--surface);
   }
 }
+
+
+/* ---------- 43A correction: active tab is one complete material ---------- */
+#tabbar{gap:4px;padding:5px}
+#tabbar .tab{
+  position:relative;
+  min-height:58px;height:58px;padding:5px 8px;
+  border-radius:18px;
+  justify-content:center;align-items:center;gap:2px;
+  background:transparent;box-shadow:none;
+  border:1px solid transparent;
+}
+#tabbar .tab.on{
+  background:linear-gradient(180deg,
+    color-mix(in srgb,var(--34e-accent) 24%,var(--34e-glass-strong)),
+    color-mix(in srgb,var(--34e-accent) 11%,var(--34e-glass-mid)));
+  border-color:color-mix(in srgb,var(--34e-accent) 28%,var(--43a-hairline));
+  box-shadow:0 9px 22px color-mix(in srgb,var(--34e-accent) 13%,transparent),
+             inset 0 1px 0 rgba(255,255,255,.20);
+  color:var(--34e-text);
+}
+#tabbar .tab-ico,
+#tabbar .tab.on .tab-ico{
+  width:26px;height:24px;border-radius:8px;
+  background:transparent;box-shadow:none;
+  color:currentColor;
+}
+#tabbar .tab.on .tab-ico{color:var(--34e-accent)}
+#tabbar .tab-label{line-height:1.05}
+#tabbar .tab:active{transform:scale(.975)}
+
+@media(max-width:380px){
+  #tabbar{gap:2px;padding:4px}
+  #tabbar .tab{min-height:56px;height:56px;padding-inline:5px;border-radius:17px}
+}
+
+/* ---------- 43A correction: hero hierarchy ---------- */
+.start-v2 .start-hero-content{padding:20px}
+.start-v2 .start-hero-bottom{
+  position:relative;z-index:2;
+  width:min(100%,430px);
+  margin-top:auto;
+  display:flex;flex-direction:column;align-items:flex-start;gap:12px;
+}
+.start-v2 .start-hero-copy{
+  width:100%;max-width:none;margin:0;padding:0;
+  display:flex;flex-direction:column;align-items:flex-start;gap:12px;
+}
+.start-v2 .start-hero-card h2{max-width:12ch;margin:0}
+.start-v2 .start-hero-recipe{
+  display:inline-flex;align-items:center;gap:7px;
+  max-width:min(100%,34ch);min-height:38px;
+  padding:7px 12px;
+  border:1px solid rgba(255,255,255,.18);
+  border-radius:13px;
+  background:linear-gradient(180deg,rgba(255,255,255,.14),rgba(255,255,255,.075));
+  color:#fff;
+  box-shadow:0 10px 24px rgba(0,0,0,.22),inset 0 1px 0 rgba(255,255,255,.16);
+  backdrop-filter:blur(18px) saturate(1.15);
+  -webkit-backdrop-filter:blur(18px) saturate(1.15);
+  font-size:.93rem;line-height:1.18;font-weight:760;
+  text-shadow:0 1px 12px rgba(0,0,0,.30);
+}
+.start-v2 .start-hero-recipe svg{flex:0 0 auto;color:var(--34e-accent-2)}
+.start-v2 .start-cook-btn{position:relative;z-index:2;margin:0;min-height:52px;padding-inline:18px}
+
+@media(max-width:380px){
+  .start-v2 .start-hero-content{padding:17px}
+  .start-v2 .start-hero-bottom{gap:10px}
+  .start-v2 .start-hero-copy{gap:10px}
+  .start-v2 .start-hero-recipe{min-height:36px;font-size:.87rem;padding-inline:10px}
+  .start-v2 .start-cook-btn{min-height:50px}
+}

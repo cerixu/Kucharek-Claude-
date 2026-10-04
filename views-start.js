@@ -78,11 +78,14 @@ export function startView() {
           h('div', { class: 'start-hero-top' },
             h('span', { class: 'start-kicker' }, 'Kucharek'),
             heroRecipe ? h('span', { class: 'start-hero-chip' }, icon('history', 14), 'Ostatnio gotowane') : null),
-          h('div', { class: 'start-hero-copy' },
-            h('h2', null, 'Co dziś gotujemy?'),
-            h('p', { class: 'start-hero-sub' },
-              heroRecipe ? heroRecipe.name : `${plural(all.length)} · wybierz coś na dziś`)),
-          button('Zacznij gotować', { kind: 'primary', icon: 'chef', cls: 'start-cook-btn', onClick: () => navigate(heroRecipe ? '/cook/' + encodeURIComponent(heroRecipe.id) : '/cook') }),
+          h('div', { class: 'start-hero-bottom' },
+            h('div', { class: 'start-hero-copy' },
+              h('h2', null, 'Co dziś gotujemy?'),
+              h('div', { class: 'start-hero-recipe' },
+                heroRecipe ? icon('chef', 16) : null,
+                h('span', null, heroRecipe ? heroRecipe.name : `${plural(all.length)} · wybierz coś na dziś`))),
+            button('Zacznij gotować', { kind: 'primary', icon: 'chef', cls: 'start-cook-btn', onClick: () => navigate(heroRecipe ? '/cook/' + encodeURIComponent(heroRecipe.id) : '/cook') })
+          ),
         )
       )
     );

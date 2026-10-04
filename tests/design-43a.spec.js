@@ -7,6 +7,10 @@ test.describe('Stage 43A · Visual QA / iPhone glass', () => {
     await page.goto('/');
     await page.waitForFunction(() => window.__kucharzyna?.ready === true, { timeout: 30000 });
     await expect(page.locator('.screen')).toBeVisible();
+    const hero = page.locator('.start-hero-card');
+    await expect(hero).toBeVisible();
+    await expect(hero.locator('.start-hero-recipe')).toBeVisible();
+    await expect(hero.getByRole('button', { name: 'Zacznij gotować' })).toBeVisible();
     expect(errors).toEqual([]);
   });
 
@@ -53,6 +57,11 @@ test.describe('Stage 43A · Visual QA / iPhone glass', () => {
     expect(result.overflow.body).toBeLessThanOrEqual(1);
     expect(result.topbar?.backdropFilter).toContain('blur');
     expect(result.tabbar?.backdropFilter).toContain('blur');
+    const active = await page.locator('#tabbar .tab.on').boundingBox();
+    await expect(page.locator('#tabbar .tab.on .tab-label')).toBeVisible();
+    await expect(page.locator('#tabbar .tab.on .tab-ico')).toBeVisible();
+    expect(active).not.toBeNull();
+    if (active) expect(active.height).toBeGreaterThanOrEqual(44);
 
     const importantTargets = result.tapTargets.filter((x) => /Start|Receptury|Gotuję|Magazyn|Więcej|Szukaj|Dodaj|Skanuj|Kalkulatory|Ustawienia/.test(x.label));
     for (const target of importantTargets) {

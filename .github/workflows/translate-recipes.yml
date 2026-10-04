@@ -36,6 +36,8 @@ jobs:
           git reset --hard origin/main
 
       - name: Translate 1700 records
+        id: translate
+        continue-on-error: true
         run: node scripts/translate-recipe-library.mjs
 
       - name: Validate generated corpus
@@ -43,9 +45,8 @@ jobs:
           node --check scripts/translate-recipe-library.mjs
           node -e "const fs=require('fs'); const files=fs.readdirSync('recipe-library-data').filter(x=>/^part-\\d\\d\\.js$/.test(x)); const n=files.reduce((a,f)=>a+(fs.readFileSync('recipe-library-data/'+f,'utf8').match(/rcp_archive_/g)||[]).length,0); if(n!==1700) throw new Error('Recipe count '+n); console.log('1700 records OK')"
 
-      - name: Commit translated corpus
-        env:
-          GH_TOKEN: ${{ github.token }}
+      - name: Commit translation checkpoint
+        if: always()
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
@@ -54,5 +55,13 @@ jobs:
             echo "No generated changes."
             exit 0
           fi
-          git commit -m "Stage 54 generated: Polish recipe corpus"
+          if [ "${{ steps.translate.outcome }}" = "success" ]; then
+            git commit -m "Stage 54 generated: Polish recipe corpus"
+          else
+            git commit -m "Stage 54 checkpoint: Polish recipe corpus"
+          fi
           git push
+
+      - name: Fail when translation is incomplete
+        if: steps.translate.outcome != 'success'
+        run: exit 1

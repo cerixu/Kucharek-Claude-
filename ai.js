@@ -7,21 +7,55 @@
 import { getSetting, setSetting, normalizeRecipe, blankRecipe } from './recipes.js';
 
 let gatewayToken = '';
+let gatewayTokenBinding = '';
+
+function gatewayIdentity(u) {
+  return u.origin + u.pathname.replace(/\/+$/, '');
+}
+
+function parseGatewayUrl(raw) {
+  const value = String(raw || '').trim();
+  if (!value) return null;
+  let u;
+  try { u = new URL(value); } catch (_) { throw new Error('Adres gatewaya jest niepoprawny.'); }
+  if (u.protocol !== 'https:') throw new Error('Gateway AI musi używać HTTPS.');
+  if (u.username || u.password) throw new Error('Adres gatewaya nie może zawierać danych logowania.');
+  if (u.search || u.hash) throw new Error('Adres gatewaya nie może zawierać parametrów ani fragmentu URL.');
+  const host = u.hostname.toLowerCase().replace(/^\[|\]$/g, '');
+  if (
+    host === 'localhost' || host.endsWith('.localhost') || host.endsWith('.local') ||
+    host === '0.0.0.0' || host === '::1' ||
+    /^127\./.test(host) || /^10\./.test(host) || /^192\.168\./.test(host) ||
+    /^169\.254\./.test(host) || /^172\.(1[6-9]|2\d|3[01])\./.test(host) ||
+    /^(fc|fd|fe80):/i.test(host)
+  ) throw new Error('Adres gatewaya wskazuje na lokalny lub prywatny host.');
+  u.hash = '';
+  u.search = '';
+  u.pathname = u.pathname.replace(/\/+$/, '') || '/';
+  return u;
+}
+
+export function normalizeAIGatewayUrl(url) {
+  const u = parseGatewayUrl(url);
+  return u ? u.href.replace(/\/+$/, '') : '';
+}
 
 export function getAIGatewayUrl() {
   return String(getSetting('aiGatewayUrl') || '').trim();
 }
 
 export function setAIGatewayUrl(url) {
-  return setSetting('aiGatewayUrl', String(url || '').trim().replace(/\/+$/, ''));
+  return setSetting('aiGatewayUrl', normalizeAIGatewayUrl(url));
 }
 
 export function setAIGatewayToken(token) {
   gatewayToken = String(token || '').trim();
+  gatewayTokenBinding = gatewayToken ? normalizeAIGatewayUrl(getAIGatewayUrl()) : '';
 }
 
 export function clearAIGatewayToken() {
   gatewayToken = '';
+  gatewayTokenBinding = '';
 }
 
 export function hasAIAccess() {
@@ -35,16 +69,16 @@ export function aiEnabled() {
 function gatewayBase() {
   const raw = getAIGatewayUrl();
   if (!raw) throw new Error('Ustaw najpierw adres Kucharek AI Gateway.');
-  let u;
-  try { u = new URL(raw); } catch (_) { throw new Error('Adres gatewaya jest niepoprawny.'); }
-  if (u.protocol !== 'https:') throw new Error('Gateway AI musi używać HTTPS.');
-  return u;
+  return parseGatewayUrl(raw);
 }
 
 async function request(path, body, { method = 'POST' } = {}) {
   if (!aiEnabled()) throw new Error('Kucharek AI jest wyłączony w Ustawieniach.');
   if (!gatewayToken) throw new Error('Brak tokenu AI. W Ustawieniach połącz Kucharek z Twoim gatewayem.');
   const u = gatewayBase();
+  if (!gatewayTokenBinding || gatewayTokenBinding !== gatewayIdentity(u)) {
+    throw new Error('Token AI jest przypisany do innego gatewaya. Wklej token ponownie.');
+  }
   u.pathname = u.pathname.replace(/\/+$/, '') + path;
 
   const res = await fetch(u.href, {

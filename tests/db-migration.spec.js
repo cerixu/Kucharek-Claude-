@@ -435,7 +435,7 @@ test('Food Cost: cena zakupu z Magazynu zasila koszt receptury', async ({ page }
   }, DB_NAME);
 
   expect(result.flourCost).toBeCloseTo(8, 10);
-  expect(result.total).toBeGreaterThan(8);
+  expect(result.total).toBeCloseTo(8, 10);
 });
 
 test('Food Cost: Magazyn poprawnie przelicza kg→g i l→ml', async ({ page }) => {

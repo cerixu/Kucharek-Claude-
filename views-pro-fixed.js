@@ -1,7 +1,7 @@
 import { h, screen, button, iconBtn, toast, field, textInput, selectEl, openSheet } from './ui.js';
 import { navigate } from './router.js';
 import { listInventory, loadInventory, subscribeInventory } from './inventory.js';
-import { listSuppliers, addSupplier, createPurchaseOrder, listPurchaseOrders, receiveDelivery, listDeliveries, recordWaste, startStocktake, updateStocktake, finalizeStocktake, listStocktakes, createProductionBatch, completeProductionBatch, planRecipe, analyticsSummary, adjustStockPro, wasteReport, salesDeplete, parseSalesCsv, importSalesCsv, reorderSuggestions, expiryAlerts, runInventoryAutopilot } from './pro.js';
+import { listSuppliers, addSupplier, createPurchaseOrder, listPurchaseOrders, receiveDelivery, listDeliveries, recordWaste, startStocktake, updateStocktake, finalizeStocktake, listStocktakes, listLots, createProductionBatch, completeProductionBatch, planRecipe, analyticsSummary, adjustStockPro, wasteReport, salesDeplete, parseSalesCsv, importSalesCsv, reorderSuggestions, expiryAlerts, runInventoryAutopilot } from './pro.js';
 import { listRecipes, getSetting, setSetting } from './recipes.js';
 
 const units=[['g','g'],['kg','kg'],['ml','ml'],['l','l'],['szt','szt'],['opak','opak']];

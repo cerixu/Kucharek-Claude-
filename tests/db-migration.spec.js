@@ -550,6 +550,8 @@ test('Food Cost UI: kalkulator pokazuje cenę z Magazynu', async ({ page }) => {
       steps: []
     }));
   });
+  await page.reload();
+  await page.waitForFunction(() => window.__kucharzyna?.ready === true);
   await page.goto('/#/calc/cost');
   await expect(page.getByLabel('Receptura')).toBeVisible();
   await page.getByLabel('Receptura').selectOption('e2e-ui-food-cost');

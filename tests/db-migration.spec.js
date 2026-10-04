@@ -92,7 +92,7 @@ test('migracja IndexedDB v1 → v5 zachowuje dane i rozdziela stores', async ({ 
   await openV1(page);
   await page.goto('/');
   await page.waitForTimeout(1000);
-  if (!await page.evaluate(() => window.__kucharzyna?.ready === true)) {
+  if (!await page.evaluate(() => window.__kucharek?.ready === true)) {
     const view = await page.locator('#view').innerText().catch(() => '');
     throw new Error(`App boot nie zakończył się. pageerror: ${pageErrors.join(' | ')} | view: ${view}`);
   }
@@ -279,7 +279,7 @@ test('Gotuję: zakończenie receptury odejmuje składniki z Magazynu', async ({ 
 
 test('Magazyn: powtarzające się składniki są sumowane bez podwójnego odejmowania', async ({ page }) => {
   await page.goto('/');
-  await page.waitForFunction(() => window.__kucharzyna?.ready === true);
+  await page.waitForFunction(() => window.__kucharek?.ready === true);
   const result = await page.evaluate(async () => {
     const mod = await import('/inventory.js');
     const item = await mod.saveInventoryItem({
@@ -551,7 +551,7 @@ test('Food Cost UI: kalkulator pokazuje cenę z Magazynu', async ({ page }) => {
     }));
   });
   await page.reload();
-  await page.waitForFunction(() => window.__kucharzyna?.ready === true);
+  await page.waitForFunction(() => window.__kucharek?.ready === true);
   await page.goto('/#/calc/cost');
   await expect(page.getByLabel('Receptura')).toBeVisible();
   await page.getByLabel('Receptura').selectOption('e2e-ui-food-cost');

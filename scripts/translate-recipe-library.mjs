@@ -144,7 +144,7 @@ async function translateRecipe(recipe, index) {
       text: String(parsed[`[[S:${si}]]`] || step.text || '').trim()
     })),
     translationLanguage: 'pl',
-    translationVersion: 2,
+    translationVersion: 10,
   };
   if (!next.name) throw new Error(`Pusta nazwa po tłumaczeniu: ${recipe.id}`);
   if ((index + 1) % 25 === 0) console.log(`Przetłumaczono ${index + 1}/1700`);

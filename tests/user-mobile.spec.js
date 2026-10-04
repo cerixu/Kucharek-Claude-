@@ -113,7 +113,7 @@ test('Stage 34B: numer wersji jest widoczny w Ustawieniach', async ({ page }) =>
   await page.goto('/#/settings');
   await page.waitForFunction(() => window.__kucharzyna?.ready === true);
   await expect(page.getByText('Wersja aplikacji', { exact: true })).toBeVisible();
-  await expect(page.getByText('1.3.38', { exact: true })).toBeVisible();
+  await expect(page.getByText('1.3.39', { exact: true })).toBeVisible();
 });
 
 
@@ -179,7 +179,7 @@ test.describe('Stage 34C: wspólny system wizualny', () => {
     await page.goto('/#/settings');
     await page.waitForFunction(() => window.__kucharzyna?.ready === true);
     await expect(page.getByText('Wersja aplikacji', { exact: true })).toBeVisible();
-    await expect(page.getByText('1.3.38', { exact: true })).toBeVisible();
+    await expect(page.getByText('1.3.39', { exact: true })).toBeVisible();
   });
 
   test('zrzuty kontrolne głównych ekranów powstają w QA', async ({ page }, testInfo) => {
@@ -188,5 +188,72 @@ test.describe('Stage 34C: wspólny system wizualny', () => {
       await page.waitForFunction(() => window.__kucharzyna?.ready === true);
       await page.screenshot({ path: testInfo.outputPath('visual-' + name + '-34C.png'), fullPage: false });
     }
+  });
+});
+
+  
+test.describe('Stage 34D: Magazyn UX', () => {
+  test('Magazyn pokazuje stan, filtry, listę produktów i automatykę', async ({ page }) => {
+    await page.goto('/#/inventory');
+    await page.waitForFunction(() => window.__kucharzyna?.ready === true);
+    await page.evaluate(async () => {
+      const { seedTestInventory } = await import('/inventory.js');
+      await seedTestInventory();
+    });
+    await page.reload();
+    await page.waitForFunction(() => window.__kucharzyna?.ready === true);
+
+    await expect(page.getByRole('heading', { name: 'Magazyn' })).toBeVisible();
+    await expect(page.locator('.inventory-summary-v2')).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Filtr: Brak' })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Filtr: Mało' })).toBeVisible();
+    await expect(page.getByRole('button', { name: /Automatyka/ })).toBeVisible();
+    await expect(page.locator('.inventory-product')).toHaveCount(8);
+  });
+
+  test('filtr Niskie i wejście w produkt działają jednym tapnięciem', async ({ page }) => {
+    await page.goto('/#/inventory');
+    await page.waitForFunction(() => window.__kucharzyna?.ready === true);
+    await page.evaluate(async () => {
+      const { seedTestInventory } = await import('/inventory.js');
+      await seedTestInventory();
+    });
+    await page.reload();
+    await page.waitForFunction(() => window.__kucharzyna?.ready === true);
+
+    await page.getByRole('button', { name: 'Niskie', exact: true }).click();
+    await expect(page.locator('.inventory-product.low, .inventory-product.empty')).not.toHaveCount(0);
+    await expect(page.locator('.inventory-product.ok')).toHaveCount(0);
+
+    const first = page.locator('.inventory-product').first();
+    const label = await first.locator('.inventory-product-main').getAttribute('aria-label');
+    expect(label).toMatch(/MAŁO|BRAK/);
+
+    await first.locator('.inventory-product-main').click();
+    await expect(page.getByRole('heading', { name: label?.split(' — ')[0] || '' })).toBeVisible();
+    await expect(page.getByText('Aktualny stan', { exact: true })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Edytuj dane' })).toBeVisible();
+  });
+
+  test('Automatyka jest schowana pod jednym wejściem i pokazuje oba przełączniki', async ({ page }) => {
+    await page.goto('/#/inventory');
+    await page.waitForFunction(() => window.__kucharzyna?.ready === true);
+    await page.getByRole('button', { name: /Automatyka/ }).click();
+    await expect(page.getByRole('heading', { name: 'Automatyzacja magazynu' })).toBeVisible();
+    await expect(page.getByText('Zużycie przy gotowaniu', { exact: true })).toBeVisible();
+    await expect(page.getByText('Sugestie zakupów', { exact: true })).toBeVisible();
+  });
+
+  test('Magazyn zachowuje iPhone tap targets oraz brak poziomego overflow', async ({ page }) => {
+    await page.goto('/#/inventory');
+    await page.waitForFunction(() => window.__kucharzyna?.ready === true);
+    const metrics = await page.evaluate(() => ({
+      overflow: document.documentElement.scrollWidth - document.documentElement.clientWidth,
+      action: document.querySelector('.inventory-product-actions .iconbtn')?.getBoundingClientRect().width || 0,
+      mainAction: document.querySelector('.inventory-product-main')?.getBoundingClientRect().height || 0,
+    }));
+    expect(metrics.overflow).toBeLessThanOrEqual(1);
+    if (metrics.action) expect(metrics.action).toBeGreaterThanOrEqual(40);
+    if (metrics.mainAction) expect(metrics.mainAction).toBeGreaterThanOrEqual(44);
   });
 });

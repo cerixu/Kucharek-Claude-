@@ -25,7 +25,11 @@ export function importView(query) {
   const qParam = (query && query.get && query.get('q')) || '';
 
   const searchIn = textInput({ value: qParam, label: 'Czego szukasz', placeholder: 'np. ciasto na pizzę neapolitańską', capitalize: 'none' });
-  const urlIn = textInput({ value: '', label: 'Adres strony z przepisem', placeholder: 'https://… (opcjonalnie, zapisze się jako źródło)', type: 'url', capitalize: 'none', inputmode: 'url' });
+  const urlIn = textInput({ value: '', label: 'Adres strony z przepisem', placeholder: 'https://…', type: 'url', capitalize: 'none', inputmode: 'url' });
+  const manualUrlIn = textInput({ value: '', label: 'Adres strony (źródło)', placeholder: 'https://…', type: 'url', capitalize: 'none', inputmode: 'url' });
+  const syncSourceUrl = (from, to) => { to.value = from.value; };
+  urlIn.addEventListener('input', () => syncSourceUrl(urlIn, manualUrlIn));
+  manualUrlIn.addEventListener('input', () => syncSourceUrl(manualUrlIn, urlIn));
   const textIn = textArea({ value: '', label: 'Wklejony przepis', rows: 8, placeholder: 'Wklej tutaj cały przepis: nazwa, składniki, przygotowanie…\n\nMożesz też wkleić kod HTML strony — rozpoznam dane przepisu.' });
   const preview = h('div', { class: 'stack' });
   const aiStatus = h('p', { class: 'muted small', 'aria-live': 'polite' });
@@ -45,6 +49,7 @@ export function importView(query) {
       if (!t.trim()) { toast('Schowek jest pusty'); return; }
       if (looksLikeUrl(t)) {
         urlIn.value = t.trim();
+        manualUrlIn.value = urlIn.value;
         toast('To adres strony — zapisałem go jako źródło. Skopiuj teraz tekst przepisu ze strony i wklej tutaj.', { ms: 5000 });
         return;
       }
@@ -70,7 +75,7 @@ export function importView(query) {
   async function importUrlWithAI() {
     const url = urlIn.value.trim();
     if (!url) { urlIn.focus(); toast('Wklej adres strony z przepisem', { type: 'error' }); return; }
-    if (!/^https:\\/\\//i.test(url)) { toast('Importer AI przyjmuje adres HTTPS', { type: 'error' }); return; }
+    if (!/^https:\/\//i.test(url)) { toast('Importer AI przyjmuje adres HTTPS', { type: 'error' }); return; }
     if (!navigator.onLine) { toast('Import z URL wymaga internetu', { type: 'error' }); return; }
     if (!hasAIAccess()) { toast('Najpierw skonfiguruj Kucharek AI w Ustawieniach', { type: 'error', ms: 5000 }); return; }
     const btn = c?.querySelector?.('[data-ai-import]') || null;
@@ -104,7 +109,7 @@ export function importView(query) {
   function recognize() {
     const text = textIn.value;
     if (!text.trim()) { toast('Najpierw wklej przepis', { type: 'error' }); textIn.focus(); return; }
-    const url = urlIn.value.trim();
+    const url = (manualUrlIn.value.trim() || urlIn.value.trim());
     try { parsed = parseRecipeText(text, { url: /^https?:\/\//i.test(url) ? url : '' }); }
     catch (e) { console.error(e); toast('Nie udało się rozpoznać przepisu', { type: 'error' }); return; }
     paintPreview();
@@ -163,7 +168,6 @@ export function importView(query) {
   }
 
   const c = s.content;
-  aiImportBtn = button('Importuj URL z AI', { kind: 'primary', lg: true, block: true, icon: 'sparkle', onClick: importUrlWithAI, aria: 'Importuj adres strony z AI' });
   c.append(
     h('section', { class: 'card stack' },
       h('h2', { class: 'card-title' }, icon('globe', 20), 'Znajdź przepis w internecie'),
@@ -181,7 +185,7 @@ export function importView(query) {
     h('section', { class: 'card stack' },
       h('h2', { class: 'card-title' }, icon('upload', 20), 'Wklej przepis ręcznie'),
       fileIn, textIn,
-      field('Adres strony (źródło)', urlIn),
+      field('Adres strony (źródło)', manualUrlIn),
       h('div', { class: 'row wrap gap' },
         button('Wklej ze schowka', { icon: 'copy', onClick: pasteFromClipboard }),
         button('Wczytaj plik', { icon: 'upload', kind: 'ghost', onClick: () => fileIn.click() }),

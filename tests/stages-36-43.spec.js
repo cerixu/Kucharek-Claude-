@@ -54,13 +54,13 @@ test.describe('Etapy 36–43: kontrakt funkcjonalny iPhone', () => {
   });
 
   test('39: Zakupy przyjmują pozycję z przepisu', async ({ page }) => {
+    await ready(page, '/shopping');
     const out = await page.evaluate(async () => {
       const { addItems, listShopping } = await import('/shopping.js');
       await addItems([{ name: 'Mąka QA', amount: 2, unit: 'kg', recipeId: 'e2e-stage', recipeName: 'QA' }]);
       return listShopping().some(x => x.name === 'Mąka QA' && !x.done);
     });
     expect(out).toBe(true);
-    await ready(page, '/shopping');
     await expect(page.getByText('Mąka QA', { exact: true })).toBeVisible();
   });
 

@@ -1,0 +1,49 @@
+name: Stage 54 — static Polish recipe translation
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/translate-recipe-library.mjs'
+      - 'recipe-library-data/**'
+      - '.github/workflows/translate-recipes.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  translate:
+    if: ${{ github.event_name == 'workflow_dispatch' || !startsWith(github.event.head_commit.message, 'Stage 54 generated:') }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Translate 1700 records
+        run: node scripts/translate-recipe-library.mjs
+
+      - name: Validate generated corpus
+        run: |
+          node --check scripts/translate-recipe-library.mjs
+          node -e "const fs=require('fs'); const files=fs.readdirSync('recipe-library-data').filter(x=>/^part-\\d\\d\\.js$/.test(x)); const n=files.reduce((a,f)=>a+(fs.readFileSync('recipe-library-data/'+f,'utf8').match(/rcp_archive_/g)||[]).length,0); if(n!==1700) throw new Error('Recipe count '+n); console.log('1700 records OK')"
+
+      - name: Commit translated corpus
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add recipe-library-data/part-*.js
+          if git diff --cached --quiet; then
+            echo "No generated changes."
+            exit 0
+          fi
+          git commit -m "Stage 54 generated: Polish recipe corpus"
+          git push

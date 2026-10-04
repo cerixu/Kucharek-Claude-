@@ -181,6 +181,9 @@ export function ingredientIcon(ing) {
   else if (/truskawk|strawberr/.test(n)) kind = 'strawberry';
   else if (/malin|raspberr/.test(n)) kind = 'raspberry';
   else if (/miód|honey/.test(n)) kind = 'honey';
+   else if (/musztard|mustard/.test(n)) kind = 'mustard';
+   else if (/jogurt|yogurt|kefir/.test(n)) kind = 'yogurt';
+   else if (/tahin|tahini|pasta sezam/.test(n)) kind = 'tahini';
   else if (/syrop|syrup/.test(n)) kind = 'syrup';
   else if (/bazyl|pietrusz|oregano|tymian|rozmaryn|kolendr|szczypior|herb|zioł/.test(n)) kind = 'herb';
   else if (/cukier|sugar/.test(n)) kind = 'sugar';
@@ -196,7 +199,7 @@ export function ingredientIcon(ing) {
   else if (/seler naci|seler łodyg|naci selera|łodyg[ai] selera|celery stalk|celery stem/.test(n)) kind = 'celery_stalk';
   else if (/seler/.test(n)) kind = 'celery';
   else if (/pietruszk[aę]|korzeń pietruszk|parsley root|parsnip/.test(n)) kind = 'parsley_root';
-  else if (/koperek|koper|dill/.test(n)) kind = 'dill';
+  else if (/koperek|koper|dill/.test(n)) kind = 'dill';
   else if (/mięt[aę]|mint/.test(n)) kind = 'mint';
   else if (/szczypior|szczypiorek|spring onion|scallion|green onion/.test(n)) kind = 'spring_onion';
   else if (/szałwi|sage/.test(n)) kind = 'sage';
@@ -279,6 +282,9 @@ export function ingredientIcon(ing) {
     raspberry:'M13 27c0-7 5-12 11-12s11 5 11 12c0 7-5 11-11 11s-11-4-11-11ZM18 24h.1M24 21h.1M30 27h.1M24 31h.1',
     honey:'M14 16h20v22H14zM18 16v-5h12v5M19 25c3 3 7 3 10 0M20 31h8',
     syrup:'M18 9h12v6l4 7v16H14V22l4-7V9ZM18 15h12M19 29h10',
+    mustard:'M17 14h14v5l3 5v14H14V24l3-5v-5ZM17 19h14M19 29h10',
+    yogurt:'M13 16h22l-2 22H15l-2-22ZM16 16V10h16v6M19 24h10',
+    tahini:'M15 15h18v23H15zM18 21h12M18 28h12',
 celery_stalk:'M18 39V13M24 39V10M30 39V15M18 22c-5-2-8-6-8-11M24 19c-4-2-6-5-6-9M30 24c5-2 8-6 8-11',
 spinach:'M24 39V24c-8-1-12-6-12-13 8 0 12 4 12 13 0-9 5-14 13-14 0 8-4 13-13 14',
 lettuce:'M10 28c4-8 8-12 14-12s10 4 14 12c-4 8-9 11-14 11S14 36 10 28ZM24 17v21M16 24c3 3 5 4 8 4s5-1 8-4',

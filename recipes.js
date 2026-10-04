@@ -44,6 +44,7 @@ export const DEFAULT_SETTINGS = {
   inventoryAutoShopping: true,
   inventoryAutoConsumption: true,
   seedLibraryVersion: 1,
+  archiveTranslationVersion: 0,
   aiEnabled: true,
   aiGatewayUrl: '',
 };
@@ -145,6 +146,7 @@ export async function loadAll() {
     await restoreSeeds();
     await setSetting('seedLibraryVersion', SEED_MEDIA_VERSION);
   }
+  await refreshArchiveTranslations();
   state.ready = true;
 }
 
@@ -510,7 +512,59 @@ async function removeLegacyLibrarySeeds() {
   return legacy.length;
 }
 
-export async function restoreSeeds({ forceMedia = false } = {}) {
+export const ARCHIVE_TRANSLATION_VERSION = 8;
+
+async function refreshArchiveTranslations() {
+  if (getSetting('archiveTranslationVersion') === ARCHIVE_TRANSLATION_VERSION) return 0;
+  const fresh = new Map(recipeLibrary(Date.now()).filter(r => String(r.id).startsWith('rcp_archive_')).map(r => [r.id, r]));
+  const updates = [];
+  for (const cur of state.recipes.values()) {
+    if (!String(cur.id).startsWith('rcp_archive_')) continue;
+    const src = fresh.get(cur.id);
+    if (!src) continue;
+    if (cur.translationVersion === ARCHIVE_TRANSLATION_VERSION) continue;
+    const currentSections = cur.sections || [];
+    const sections = (src.sections || []).map(fs => {
+      const cs = currentSections.find(s => s.id === fs.id);
+      const currentIngredients = cs?.ingredients || [];
+      return {
+        ...fs,
+        ...(cs || {}),
+        ingredients: (fs.ingredients || []).map(fi => {
+          const ci = currentIngredients.find(i => i.id === fi.id);
+          return { ...fi, ...(ci || {}), name: fi.name };
+        }),
+      };
+    });
+    const currentSteps = cur.steps || [];
+    const steps = (src.steps || []).map(fs => {
+      const cs = currentSteps.find(s => s.id === fs.id);
+      return { ...fs, ...(cs || {}), text: fs.text };
+    });
+    updates.push({
+      ...cur,
+      name: src.name,
+      originalName: src.originalName,
+      description: src.description,
+      archiveCollectionName: src.archiveCollectionName,
+      translationLanguage: 'pl',
+      translationVersion: ARCHIVE_TRANSLATION_VERSION,
+      sections,
+      steps,
+    });
+  }
+  if (!updates.length) {
+    await setSetting('archiveTranslationVersion', ARCHIVE_TRANSLATION_VERSION);
+    return 0;
+  }
+  await db.putMany('recipes', updates);
+  updates.forEach(r => state.recipes.set(r.id, normalizeRecipe(r)));
+  await setSetting('archiveTranslationVersion', ARCHIVE_TRANSLATION_VERSION);
+  emit('recipes');
+  return updates.length;
+}
+
+async function restoreSeeds({ forceMedia = false } = {}) {
   // seedRecipes() już zawiera całą bibliotekę 1200+. Nie generuj jej drugi raz.
   // Deduplikacja ID gwarantuje też pojedynczy zapis każdej receptury.
   const seeds=[...new Map(seedRecipes().map((r) => [r.id, r])).values()];

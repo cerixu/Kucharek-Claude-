@@ -4,7 +4,7 @@ test.use({ ...devices['iPhone 13'], browserName: 'chromium' });
 test.describe.configure({ mode: 'serial' });
 
 async function waitReady(page) {
-  await page.waitForFunction(() => window.__kucharzyna?.ready === true, { timeout: 30000 });
+  await page.waitForFunction(() => window.__kucharek?.ready === true, { timeout: 30000 });
 }
 
 async function swVersion(page) {

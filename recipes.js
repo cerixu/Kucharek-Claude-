@@ -29,6 +29,8 @@ export const ORIGINS = [
 
 /* ---------- Ustawienia domyślne ---------- */
 
+const SEED_MEDIA_VERSION = 12;
+
 export const DEFAULT_SETTINGS = {
   theme: 'auto',          // auto | light | dark
   mode: 'pro',            // pro | amateur
@@ -43,7 +45,7 @@ export const DEFAULT_SETTINGS = {
   inventoryAlerts: true,
   inventoryAutoShopping: true,
   inventoryAutoConsumption: true,
-  seedLibraryVersion: 1,
+  seedLibraryVersion: SEED_MEDIA_VERSION,
   archiveTranslationVersion: 0,
   aiEnabled: true,
   aiGatewayUrl: '',
@@ -137,16 +139,28 @@ export async function loadAll() {
   state.catalog = new Map(ings.map((i) => [i.id, i]));
   if (!cats.length) { await db.putMany('categories', DEFAULT_CATEGORIES); state.categories = [...DEFAULT_CATEGORIES]; }
   else state.categories = cats.sort((a, b) => a.order - b.order);
-  if (!getSetting('seeded')) {
-    if (!state.recipes.size) await restoreSeeds();
+  // Seed, migracje biblioteki i tłumaczenia nie mogą blokować pierwszego renderu.
+  if (!getSetting('seeded') && state.recipes.size) {
     await setSetting('seeded', true);
   }
-  if (getSetting('seedLibraryVersion') !== SEED_MEDIA_VERSION) {
-    await removeLegacyLibrarySeeds();
-    await restoreSeeds();
-    await setSetting('seedLibraryVersion', SEED_MEDIA_VERSION);
-  }
-  // Nie blokuj pierwszego renderu ciężkim odświeżaniem całego korpusu 1200+ receptur.\n  // Aplikacja ma wystartować natychmiast, a tłumaczenia zostaną zaktualizowane w tle.\n  refreshArchiveTranslations().catch((e) => console.warn('[Kucharek] Aktualizacja tłumaczeń w tle nie powiodła się:', e));\n  state.ready = true;
+  state.ready = true;
+
+  (async () => {
+    try {
+      if (!getSetting('seeded')) {
+        await restoreSeeds();
+        await setSetting('seeded', true);
+      }
+      if (getSetting('seedLibraryVersion') !== SEED_MEDIA_VERSION) {
+        await removeLegacyLibrarySeeds();
+        await restoreSeeds();
+        await setSetting('seedLibraryVersion', SEED_MEDIA_VERSION);
+      }
+      await refreshArchiveTranslations();
+    } catch (e) {
+      console.warn('[Kucharek] Aktualizacja biblioteki w tle nie powiodła się:', e);
+    }
+  })();
 }
 
 /* ---------- Kategorie ---------- */
@@ -385,7 +399,6 @@ export function allTags() {
 
 
 /* ---------- Biblioteka zdjęć startowych ---------- */
-const SEED_MEDIA_VERSION = 12;
 const PHOTO = Object.freeze({
   pizza:'https://photoshop-api.adobe.io/v2/short-url/urn:aaid:ps:US:19d098c7-f308-4416-951d-4d5bb6ed6cc4',
   carbonara:'https://photoshop-api.adobe.io/v2/short-url/urn:aaid:ps:US:995b5785-cd24-4bff-b5c2-ba36d567a827',

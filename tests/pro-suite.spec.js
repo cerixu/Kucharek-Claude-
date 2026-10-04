@@ -141,13 +141,14 @@ test('ETAP 20: przeterminowana partia jest oznaczona osobno',async({page})=>{awa
 test('ETAP 21: sugestie magazynu można zamienić w jedno zamówienie',async({page})=>{await reset(page);await page.goto('/#/inventory');await page.getByRole('button',{name:'PRO',exact:true}).click();await page.getByRole('button',{name:'Automatyzacje',exact:true}).click();await expect(page.locator('.pro-nav').getByRole('button',{name:'Automatyzacje',exact:true})).toBeVisible();await expect(page.getByText(/Utwórz zamówienie/).first()).toBeVisible();});
 test('ETAP 21: dostawa ma pola dokumentu i terminu ważności',async({page})=>{await reset(page);await page.goto('/#/inventory');await page.getByRole('button',{name:'PRO',exact:true}).click();await page.getByRole('button',{name:'Dostawy',exact:true}).click();await page.getByRole('button',{name:'Nowa dostawa',exact:true}).click();await expect(page.locator('input[aria-label="Numer dokumentu"]')).toBeVisible();await expect(page.locator('input[aria-label="Termin ważności"]')).toBeVisible();});
 
-test('ETAP 22: magazyn ma gotowy zestaw danych testowych',async({page})=>{await reset(page);const out=await page.evaluate(async()=>{const i=await import('/inventory.js');const added=await i.seedTestInventory();return{added:added.length,total:i.listInventory().length,low:i.listInventory().filter(x=>i.stockState(x)!=='ok').length};});expect(out.added).toBeGreaterThanOrEqual(6);expect(out.total).toBeGreaterThanOrEqual(6);expect(out.low).toBeGreaterThanOrEqual(6);await page.goto('/#/inventory');await expect(page.getByText('Automatyzacja',{exact:true})).toBeVisible();await expect(page.locator('.stock-row .stock-title').filter({hasText:'Mąka 00 test'})).toBeVisible();});
+test('ETAP 22: magazyn ma gotowy zestaw danych testowych',async({page})=>{await reset(page);const out=await page.evaluate(async()=>{const i=await import('/inventory.js');const added=await i.seedTestInventory();return{added:added.length,total:i.listInventory().length,low:i.listInventory().filter(x=>i.stockState(x)!=='ok').length};});expect(out.added).toBeGreaterThanOrEqual(6);expect(out.total).toBeGreaterThanOrEqual(6);expect(out.low).toBeGreaterThanOrEqual(6);await page.goto('/#/inventory');await expect(page.getByRole('button',{name:'Automatyka',exact:true})).toBeVisible();await expect(page.locator('.stock-row').filter({hasText:'Mąka 00 test'})).toBeVisible();});
 
 
 test('ETAP 23: Magazyn ma prostą automatyzację zużycia i zakupów',async({page})=>{
   await reset(page);
   await page.goto('/#/inventory');
-  await expect(page.getByText('Automatyzacja',{exact:true})).toBeVisible();
+  await page.getByRole('button',{name:'Automatyka',exact:true}).click();
+  await expect(page.getByRole('heading',{name:'Automatyzacja magazynu',exact:true})).toBeVisible();
   await expect(page.getByText('Zużycie przy gotowaniu',{exact:true})).toBeVisible();
   await expect(page.getByText('Sugestie zakupów',{exact:true})).toBeVisible();
   await expect(page.getByRole('button',{name:'Lista zakupów',exact:true})).toBeVisible();

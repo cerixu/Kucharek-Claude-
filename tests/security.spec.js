@@ -89,7 +89,7 @@ test.describe('Security & privacy', () => {
     await page.goto('/');
     await page.waitForFunction(() => window.__kucharzyna?.ready === true);
     const sw = await (await page.request.get('/sw.js')).text();
-    expect(sw).toContain("kucharek-claude-1.3.41");
+    expect(sw).toContain("kucharek-claude-1.3.42");
     expect(sw).toContain("'theme-init.js'");
   });
 });

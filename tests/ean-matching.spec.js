@@ -188,7 +188,9 @@ test('Etap 14: składniki używają ilustracji SVG zamiast kolorowych kółek',a
   await expect(el.locator('svg.ingredient-svg path')).toHaveAttribute('d', /.+/);
 });
 test('Etap 14: karta i hero korzystają ze zdjęcia potrawy',async({page})=>{
-  await reset(page);await page.goto('/#/recipes');
+  await page.route('https://photoshop-api.adobe.io/v2/short-url/**', async route => {
+    await route.fulfill({ status: 200, contentType: 'image/svg+xml', body: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 2 2"><rect width="2" height="2" fill="black"/></svg>' });
+  });await page.goto('/#/recipes');
   await expect(page.locator('.rcard .recipe-visual').first()).toHaveAttribute('src',/^(https?:\/\/|data:image\/svg\+xml)/);
   await page.getByRole('link',{name:'Pizza Napoletana'}).click();
   await expect(page.locator('.hero-photo.recipe-visual')).toHaveAttribute('src',/^(https?:\/\/|data:image\/svg\+xml)/);

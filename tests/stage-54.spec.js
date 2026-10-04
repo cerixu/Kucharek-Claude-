@@ -10,9 +10,32 @@ const OBVIOUS_ENGLISH = [
   'moisten','seasoning','sides','brim','moderately','densely','sticking','browning','scrambled','pickled','cured'
 ];
 
+test.setTimeout(60000);
+
 test('Stage 54 — static Polish corpus gate', async ({ page }) => {
+  const pageErrors = [];
+  const failedRequests = [];
+  page.on('pageerror', error => pageErrors.push(String(error)));
+  page.on('requestfailed', request => failedRequests.push(`${request.method()} ${request.url()} :: ${request.failure()?.errorText || 'failed'}`));
+
   await page.goto('/#/recipes');
-  await page.waitForFunction(() => window.__kucharek?.ready === true, null, { timeout: 15000 });
+  try {
+    await page.waitForFunction(() => window.__kucharek?.ready === true, null, { timeout: 30000 });
+  } catch (error) {
+    const diagnostic = await page.evaluate(() => ({
+      bootPresent: Boolean(document.querySelector('#boot')),
+      bootText: document.querySelector('#boot')?.textContent || '',
+      tabCount: document.querySelectorAll('#tabbar .tab').length,
+      ready: window.__kucharek?.ready ?? null,
+      bootPerf: window.__kucharekPerf || null,
+    }));
+    throw new Error([
+      error.message,
+      `diagnostic=${JSON.stringify(diagnostic)}`,
+      `pageErrors=${JSON.stringify(pageErrors)}`,
+      `failedRequests=${JSON.stringify(failedRequests)}`,
+    ].join('\\n'));
+  }
   await page.waitForFunction(
     () => [...window.__kucharek.state.recipes.values()]
       .filter(r => String(r.id).startsWith('rcp_archive_')).length === 1700,

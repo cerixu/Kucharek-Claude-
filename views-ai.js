@@ -83,7 +83,7 @@ export function openRecipeAiSheet({ openSheet, recipe, currentStep = '' }) {
     body,
     actions: [
       { label: 'Zamknij', kind: 'ghost' },
-      { label: 'Zapytaj', kind: 'primary', icon: 'sparkle', onClick: () => { void ask(); return false; }, close: false, onClick: () => { void ask(); return false; } }
+      { label: 'Zapytaj', kind: 'primary', icon: 'sparkle', onClick: () => { void ask(); return false; }, close: false }
     ]
   });
   const send = sheet.panel.querySelector('.panel-foot button:last-child');

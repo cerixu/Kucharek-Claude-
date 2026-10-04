@@ -1,5 +1,6 @@
 import { test, expect } from '@playwright/test';
 
+// Final Stage 50 gate: real archive corpus + UI search + provenance checks.
 test.describe('Stage 50 — real recipe corpus', () => {
   test('contains >1200 real archive recipes, deduped and structured', async ({ page }) => {
     await page.goto('/');

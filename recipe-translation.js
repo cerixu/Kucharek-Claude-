@@ -102,4 +102,56 @@ export function translateRecipe(recipe){
   const steps=Array.isArray(recipe.steps)?recipe.steps.map(s=>({...s,text:apply(s.text)})):recipe.steps;
   const name=apply(recipe.name||original);
   return {...recipe,originalName:original,name,description:apply(recipe.description||""),sections,steps,archiveCollectionName:C[recipe.archiveCollectionName]||recipe.archiveCollectionName,translationLanguage:"pl",translationVersion:1};
+}const SENTENCE = [
+  ["Shred the cabbage","Poszatkuj kapustę"],
+  ["salt it well","dobrze posól"],
+  ["press out the liquid","mocno odciśnij płyn"],
+  ["Mince the onions","Posiekaj cebulę"],
+  ["peel and chop the sour apples","obierz i pokrój kwaśne jabłka"],
+  ["remove the feet from the frog legs","usuń stopy z udek żabich"],
+  ["Dip in beaten egg","Zanurz w roztrzepanym jajku"],
+  ["then coat with grated bread","następnie obtocz w tartej bułce"],
+  ["Fry in butter or fat","Smaż na maśle lub tłuszczu"],
+  ["serve on a platter","podawaj na półmisku"],
+  ["Pour water over","Zalej wodą"],
+  ["add several peppercorns","dodaj kilka ziaren pieprzu"],
+  ["add a few bay leaves","dodaj kilka liści laurowych"],
+  ["cook for an hour and a half","gotuj przez półtorej godziny"],
+  ["cook further until","gotuj dalej, aż"],
+  ["season with","dopraw"],
+  ["bring to a boil and serve","doprowadź do wrzenia i podawaj"],
+  ["prepare beef broth","przygotuj bulion wołowy"],
+  ["cook until it is soft","gotuj, aż zmięknie"],
+  ["before serving","przed podaniem"],
+];
+const SENTENCE_REGEX = SENTENCE.map(([from,to]) => [new RegExp(from,"giu"),to]);
+const SORTED_TERMS = [...P, ...OTHER, ...EXTRA]
+  .sort((a,b) => b[0].length - a[0].length);
+const TERM_MAP = new Map(SORTED_TERMS.map(([from,to]) => [from.toLowerCase(),to]));
+const TOKEN_RE = new RegExp("(^|[^A-Za-zÀ-ž])(" + SORTED_TERMS.map(([from]) => from).join("|") + ")(?=$|[^A-Za-zÀ-ž])", "giu");
+const TEXT_CACHE = new Map();
+const CACHE_LIMIT = 16000;
+
+function apply(text) {
+  const key = String(text ?? "");
+  const hit = TEXT_CACHE.get(key);
+  if (hit !== undefined) return hit;
+  let out = key;
+  for (const [re,to] of SENTENCE_REGEX) out = out.replace(re,to);
+  out = out.replace(TOKEN_RE, (full, prefix, term) => prefix + (TERM_MAP.get(term.toLowerCase()) ?? term));
+  out = out.replace(/\b(?:the|a|an)\b\s*/giu,"")
+    .replace(/\s{2,}/g," ")
+    .replace(/\s+([,.;:!?])/g,"$1")
+    .trim();
+  if (TEXT_CACHE.size >= CACHE_LIMIT) TEXT_CACHE.clear();
+  TEXT_CACHE.set(key,out);
+  return out;
+}
+
+export function translateRecipe(recipe){
+  const original=recipe.originalName||recipe.name||"";
+  const sections=Array.isArray(recipe.sections)?recipe.sections.map(s=>({...s,ingredients:Array.isArray(s.ingredients)?s.ingredients.map(i=>({...i,name:apply(i.name)})):s.ingredients})):recipe.sections;
+  const steps=Array.isArray(recipe.steps)?recipe.steps.map(s=>({...s,text:apply(s.text)})):recipe.steps;
+  const name=apply(recipe.name||original);
+  return {...recipe,originalName:original,name,description:apply(recipe.description||""),sections,steps,archiveCollectionName:C[recipe.archiveCollectionName]||recipe.archiveCollectionName,translationLanguage:"pl",translationVersion:1};
 }

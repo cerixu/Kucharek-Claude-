@@ -3,7 +3,7 @@ import { test, expect } from '@playwright/test';
 test.describe('Stage 48 · final iPhone dock', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/');
-    await page.waitForFunction(() => window.__kucharzyna?.ready === true, { timeout: 30000 });
+    await page.waitForFunction(() => window.__kucharek?.ready === true, { timeout: 30000 });
     await expect(page.locator('#tabbar')).toBeVisible();
   });
 
@@ -51,7 +51,7 @@ test.describe('Stage 48 · final iPhone dock', () => {
   test('dock remains bounded on the key mobile routes', async ({ page }) => {
     for (const route of ['/', '/recipes', '/cook', '/inventory', '/shopping', '/calc', '/settings']) {
       await page.goto('/#' + (route === '/' ? '' : route));
-      await page.waitForFunction(() => window.__kucharzyna?.ready === true);
+      await page.waitForFunction(() => window.__kucharek?.ready === true);
       const result = await page.evaluate(() => {
         const root = document.documentElement;
         const bar = document.querySelector('#tabbar');

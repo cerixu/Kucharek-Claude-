@@ -122,4 +122,19 @@ test.describe('Kucharek AI', () => {
     expect(received?.recipe?.name).toBeTruthy();
     expect(typeof received?.currentStep).toBe('string');
   });
+  test('gateway AI odrzuca niezabezpieczony adres HTTP', async ({ page }) => {
+    await ready(page);
+    const message = await page.evaluate(async () => {
+      const { setAIGatewayUrl, setAIGatewayToken, testAIGateway } = await import('/ai.js');
+      await setAIGatewayUrl('http://example.com/ai');
+      setAIGatewayToken('test-gateway-token');
+      try {
+        await testAIGateway();
+        return 'NO_ERROR';
+      } catch (e) {
+        return String(e?.message || e);
+      }
+    });
+    expect(message).toContain('HTTPS');
+  });
 });

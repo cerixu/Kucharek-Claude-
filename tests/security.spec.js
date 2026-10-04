@@ -4,19 +4,19 @@ const DB = 'kucharzyna-claude-db';
 
 async function reset(page) {
   await page.goto('/');
-  await page.waitForFunction(() => window.__kucharzyna?.ready === true);
+  await page.waitForFunction(() => window.__kucharek?.ready === true);
   await page.evaluate(async () => {
     const { db, STORES } = await import('/db.js');
     for (const store of Object.keys(STORES)) await db.clear(store);
   });
   await page.reload();
-  await page.waitForFunction(() => window.__kucharzyna?.ready === true);
+  await page.waitForFunction(() => window.__kucharek?.ready === true);
 }
 
 test.describe('Security & privacy', () => {
   test('CSP i polityka referrera są obecne, a skrypty są wyłącznie lokalne', async ({ page }) => {
     await page.goto('/');
-    await page.waitForFunction(() => window.__kucharzyna?.ready === true);
+    await page.waitForFunction(() => window.__kucharek?.ready === true);
 
     const csp = await page.locator('meta[http-equiv="Content-Security-Policy"]').getAttribute('content');
     expect(csp).toContain("default-src 'self'");
@@ -61,7 +61,7 @@ test.describe('Security & privacy', () => {
       await patchRecipe(recipeId, { sourceUrl: 'https://example.com/source' }, { touch: false });
     }, id);
     await page.reload();
-    await page.waitForFunction(() => window.__kucharzyna?.ready === true);
+    await page.waitForFunction(() => window.__kucharek?.ready === true);
     const link = page.locator('a.ext');
     await expect(link).toHaveAttribute('href', 'https://example.com/source');
     await expect(link).toHaveAttribute('rel', 'noopener noreferrer');
@@ -87,7 +87,7 @@ test.describe('Security & privacy', () => {
 
   test('service worker cache zawiera lokalny initializer CSP', async ({ page }) => {
     await page.goto('/');
-    await page.waitForFunction(() => window.__kucharzyna?.ready === true);
+    await page.waitForFunction(() => window.__kucharek?.ready === true);
     const sw = await (await page.request.get('/sw.js')).text();
     const appVersion = await page.evaluate(async () => (await import('/util.js')).APP_VERSION);
     expect(sw).toContain(`kucharek-claude-${appVersion}`);

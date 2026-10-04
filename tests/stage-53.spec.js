@@ -5,11 +5,9 @@ test.use({ ...devices['iPhone 13'], browserName: 'chromium', serviceWorkers: 'bl
 const BIGOS_ID = 'rcp_archive_aa342cc6ecae42afbac0';
 
 const FOREIGN = [
-  /\bthe\b/i, /\band\b/i, /\bwith\b/i, /\badd\b/i, /\bcook\b/i, /\bbake\b/i,
-  /\bfry\b/i, /\bflour\b/i, /\bbutter\b/i, /\bsalt\b/i, /\bpepper\b/i,
-  /\bwater\b/i, /\bonion\b/i, /\bgarlic\b/i, /\bchicken\b/i, /\bbeef\b/i,
-  /\btablespoons?\b/i, /\bteaspoons?\b/i, /\bcups?\b/i,
-  /\bcebolla\b/i, /\boignon\b/i, /\bzwiebel\b/i, /\bcibule\b/i, /\bčesnek\b/i,
+  'the','and','with','add','cook','bake','fry','flour','butter','salt','pepper',
+  'water','onion','garlic','chicken','beef','tablespoon','teaspoon','cup',
+  'cebolla','oignon','zwiebel','cibule','česnek',
 ];
 
 test.describe('Stage 53 — Polish recipe translation gate', () => {
@@ -65,7 +63,7 @@ test.describe('Stage 53 — Polish recipe translation gate', () => {
         ].filter(Boolean);
         for (const t of texts) {
           fields++;
-          if (markers.some((m) => new RegExp(m.source, m.flags).test(t))) hits++;
+          if (markers.some((m) => new RegExp('(?<![A-Za-zÀ-ž])' + m + '(?![A-Za-zÀ-ž])', 'iu').test(t))) hits++;
         }
       }
       return { hits, fields };

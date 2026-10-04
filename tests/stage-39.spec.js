@@ -3,7 +3,7 @@ import { test, expect } from '@playwright/test';
 test.describe('Stage 39: Zakupy', () => {
   test('dodawanie łączy duplikaty i zachowuje jednostkę', async ({ page }) => {
     await page.goto('/');
-    await page.waitForFunction(() => window.__kucharzyna?.ready === true);
+    await page.waitForFunction(() => window.__kucharek?.ready === true);
     const out = await page.evaluate(async () => {
       const s = await import('/shopping.js');
       await s.addItems([
@@ -20,7 +20,7 @@ test.describe('Stage 39: Zakupy', () => {
 
   test('oznaczenie kupione zasila Magazyn i zamyka pozycję', async ({ page }) => {
     await page.goto('/');
-    await page.waitForFunction(() => window.__kucharzyna?.ready === true);
+    await page.waitForFunction(() => window.__kucharek?.ready === true);
     const out = await page.evaluate(async () => {
       const s = await import('/shopping.js');
       const i = await import('/inventory.js');
@@ -39,7 +39,7 @@ test.describe('Stage 39: Zakupy', () => {
 
   test('ekran Zakupy udostępnia grupowanie i czyszczenie kupionych', async ({ page }) => {
     await page.goto('/#/shopping');
-    await page.waitForFunction(() => window.__kucharzyna?.ready === true);
+    await page.waitForFunction(() => window.__kucharek?.ready === true);
     await expect(page.getByText('Zakupy', { exact:true })).toBeVisible();
     await page.getByRole('button', { name:'Więcej opcji' }).click();
     await expect(page.getByText('Grupowanie', { exact:true })).toBeVisible();

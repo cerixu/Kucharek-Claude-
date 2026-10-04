@@ -10,9 +10,10 @@ import path from 'node:path';
 
 const ROOT = process.cwd();
 const PARTS = Array.from({length: 9}, (_, i) => path.join(ROOT, 'recipe-library-data', `part-${String(i + 1).padStart(2, '0')}.js`));
-const CONCURRENCY = 5;
-const MAX_RETRIES = 4;
-const DELAY_MS = 80;
+const CONCURRENCY = 2;
+const MAX_RETRIES = 8;
+const DELAY_MS = 450;
+const MAX_PAYLOAD_CHARS = 2800;
 
 const sleep = (ms) => new Promise(r => setTimeout(r, ms));
 
@@ -61,8 +62,8 @@ async function googleTranslate(text) {
   for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
     try {
       const res = await fetch(url, {
-        headers: { 'User-Agent': 'Mozilla/5.0 Kucharek/1.0' },
-        signal: AbortSignal.timeout(25000)
+        headers: { 'User-Agent': 'Mozilla/5.0 Kucharek/1.0', 'Accept': 'application/json,text/plain,*/*' },
+        signal: AbortSignal.timeout(30000)
       });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
@@ -71,7 +72,9 @@ async function googleTranslate(text) {
       return translated;
     } catch (e) {
       last = e;
-      await sleep(DELAY_MS * (2 ** attempt) + Math.round(Math.random() * 50));
+      const backoff = Math.min(30000, 1500 * (2 ** attempt)) + Math.round(Math.random() * 500);
+      console.warn(`Tłumaczenie retry ${attempt + 1}/${MAX_RETRIES}: ${e.message}; czekam ${backoff} ms`);
+      await sleep(backoff);
     }
   }
   throw last || new Error('Tłumaczenie nie powiodło się');
@@ -93,15 +96,35 @@ async function translateRecipe(recipe, index) {
   for (const [si, step] of (recipe.steps || []).entries()) {
     push(`[[S:${si}]]`, step.text || '');
   }
-  const payload = fields.join('\n');
-  let translated = await googleTranslate(payload);
-  let parsed = extractTranslatedMarkers(translated, markers);
-  if (!parsed) {
-    // Retry with one request per field only when the service modified markers.
-    parsed = {};
-    for (const marker of markers) {
-      const source = fields.find(v => v.startsWith(marker))?.slice(marker.length) || '';
+  const batches = [];
+  let batch = [];
+  let batchLen = 0;
+  for (let i = 0; i < fields.length; i++) {
+    const part = fields[i];
+    if (batch.length && batchLen + part.length + 1 > MAX_PAYLOAD_CHARS) {
+      batches.push(batch);
+      batch = [];
+      batchLen = 0;
+    }
+    batch.push(part);
+    batchLen += part.length + 1;
+  }
+  if (batch.length) batches.push(batch);
+
+  const parsed = {};
+  for (const b of batches) {
+    const translated = await googleTranslate(b.join('\n'));
+    const part = extractTranslatedMarkers(translated, b.map(v => v.slice(0, v.indexOf(']]') + 2)));
+    if (part) {
+      Object.assign(parsed, part);
+      continue;
+    }
+    // Last-resort field-by-field retry when the translator modifies markers.
+    for (const field of b) {
+      const marker = field.slice(0, field.indexOf(']]') + 2);
+      const source = field.slice(marker.length);
       parsed[marker] = await googleTranslate(source);
+      await sleep(DELAY_MS);
     }
   }
 

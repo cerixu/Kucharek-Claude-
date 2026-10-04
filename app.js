@@ -4,7 +4,7 @@
    ========================================================================== */
 import { openDB } from './db.js?v=20261002-1616';
 import { loadAll, state, subscribe, getSetting } from './recipes.js';
-import { h, icon, toast, $ } from './ui.js';
+import { h, icon, toast, $, openSheet, button } from './ui.js';
 import { route, startRouter, navigate } from './router.js';
 import { registerSW, requestPersist } from './pwa.js';
 
@@ -19,6 +19,7 @@ import { importView } from './views-import.js';
 import { settingsView } from './views-settings.js';
 import { historyView } from './views-history.js';
 import { inventoryView } from './views-inventory.js';
+import { cookHubView } from './views-cook-hub.js';
 
 let proModulePromise;
 const loadProModule = () => proModulePromise ||= import('./views-pro-fixed.js?v=20261002-20');
@@ -52,20 +53,51 @@ dark.addEventListener && dark.addEventListener('change', () => { if (getSetting(
 const TABS = [
   ['start', 'Start', 'home', '/'],
   ['recipes', 'Receptury', 'book', '/recipes'],
-  ['calc', 'Kalkulatory', 'calc', '/calc'],
-  ['shopping', 'Zakupy', 'cart', '/shopping'],
+  ['cook', 'Gotuję', 'chef', '/cook'],
   ['inventory', 'Magazyn', 'list', '/inventory'],
-  ['settings', 'Ustawienia', 'sliders', '/settings'],
+  ['more', 'Więcej', 'more', null],
 ];
+
+function openMoreMenu() {
+  openSheet({
+    title: 'Więcej',
+    variant: 'sheet',
+    body: h('div', { class: 'more-grid' },
+      button('Zakupy', { icon: 'cart', block: true, onClick: () => navigate('/shopping', { replace: true }) }),
+      button('Historia gotowania', { icon: 'history', block: true, onClick: () => navigate('/history', { replace: true }) }),
+      button('Kalkulatory', { icon: 'calc', block: true, onClick: () => navigate('/calc', { replace: true }) }),
+      button('Centrum PRO', { icon: 'coins', block: true, onClick: () => navigate('/pro', { replace: true }) }),
+      button('Ustawienia', { icon: 'sliders', block: true, onClick: () => navigate('/settings', { replace: true }) })
+    ),
+  });
+}
 
 function buildTabbar() {
   const bar = $('#tabbar');
   bar.replaceChildren(...TABS.map(([id, label, ico, path]) => {
-    const a = h('a', { href: '#' + path, class: 'tab', dataset: { tab: id }, 'aria-label': label,
-      onClick: (e) => { e.preventDefault(); navigate(path, { replace: true }); } },
-      h('span', { class: 'tab-ico' }, icon(ico, 24), id === 'shopping' ? h('span', { class: 'badge', id: 'cart-badge', hidden: true }) : null),
+    if (id === 'more') {
+      return h('button', {
+        type: 'button',
+        class: 'tab',
+        dataset: { tab: id },
+        'aria-label': label,
+        'aria-haspopup': 'dialog',
+        onClick: openMoreMenu,
+      },
+        h('span', { class: 'tab-ico' }, icon(ico, 23)),
+        h('span', { class: 'tab-label' }, label));
+    }
+    return h('a', {
+      href: '#' + path,
+      class: 'tab',
+      dataset: { tab: id },
+      'aria-label': label,
+      onClick: (e) => { e.preventDefault(); navigate(path, { replace: true }); },
+    },
+      h('span', { class: 'tab-ico' }, icon(ico, 23),
+        id === 'recipes' ? null : null,
+        id === 'shopping' ? h('span', { class: 'badge', id: 'cart-badge', hidden: true }) : null),
       h('span', { class: 'tab-label' }, label));
-    return a;
   }));
   updateBadge();
 }
@@ -133,21 +165,22 @@ function watchNetwork() {
 
 route('/', () => startView(), { tab: 'start' });
 route('/recipes', (p, q) => recipesView(q), { tab: 'recipes' });
-route('/history', () => historyView(), { tab: 'recipes' });
+route('/history', () => historyView(), { tab: 'more' });
 route('/recipe/:id', (p) => detailView(p), { tab: 'recipes' });
 route('/edit/:id', (p) => editorView(p), { tab: 'recipes', tabs: false });
 route('/new', (p, q) => editorView({ id: null }, q), { tab: 'recipes', tabs: false });
-route('/cook/:id', (p) => cookView(p), { tab: 'recipes', tabs: false });
+route('/cook/:id', (p) => cookView(p), { tab: 'cook', tabs: false });
 route('/import', (p, q) => importView(q), { tab: 'recipes' });
-route('/calc', () => calcView({}), { tab: 'calc' });
-route('/calc/:kind', (p, q) => calcView(p, q), { tab: 'calc' });
-route('/shopping', () => shoppingView(), { tab: 'shopping' });
+route('/calc', () => calcView({}), { tab: 'more' });
+route('/calc/:kind', (p, q) => calcView(p, q), { tab: 'more' });
+route('/shopping', () => shoppingView(), { tab: 'more' });
+route('/cook', () => cookHubView(), { tab: 'cook' });
 route('/inventory', () => inventoryView(), { tab: 'inventory' });
 route('/pro', async () => {
   const { proView } = await loadProModule();
   return proView();
-}, { tab: 'inventory' });
-route('/settings', () => settingsView(), { tab: 'settings' });
+}, { tab: 'more' });
+route('/settings', () => settingsView(), { tab: 'more' });
 
 /* ---------- Start ---------- */
 

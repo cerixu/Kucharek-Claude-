@@ -138,12 +138,17 @@ const NAME_MAP = [
 ];
 
 function cleanRecipeName(text) {
-  let n=String(text??"").replace(/^["“”]+|["“”]+$/g,"").trim();
+  let n=String(text ?? "").replace(/^["“”]+|["“”]+$/g,"").trim();
   const colon=n.indexOf(":");
   if(colon>0) n=n.slice(0,colon).trim();
   const paren=n.indexOf("(");
   if(paren>0) n=n.slice(0,paren).trim();
-  for(const [a,b] of NAME_MAP.sort((x,y)=>y[0].length-x[0].length)) n=n.replace(new RegExp(String(a).replace(/[.*+?^$(){}|[\\]\\]/g,"\\\\const C = {"),"giu"),b);
+  for(const [a,b] of NAME_MAP) n=n.replace(new RegExp(a.replace(/[.*+?^$(){}|[\\]\\]/g,"\\\\$&"),"giu"),b);
+  n=apply(n).replace(/\s*[-–—]\s*$/,"").replace(/\s{2,}/g," ").trim();
+  return n;
+}
+
+const C = {"),"giu"),b);
   n=apply(n,MORE);
   n=n.replace(/\s*[-–—]\s*$/,"").replace(/\s{2,}/g," ").trim();
   return n;
@@ -173,7 +178,7 @@ const SENTENCE = [
   ["before serving","przed podaniem"],
 ];
 const SENTENCE_REGEX = SENTENCE.map(([from,to]) => [new RegExp(from,"giu"),to]);
-const SORTED_TERMS = [...P, ...OTHER, ...EXTRA]
+const SORTED_TERMS = [...P, ...OTHER, ...EXTRA, ...MORE]
   .sort((a,b) => b[0].length - a[0].length);
 const TERM_MAP = new Map(SORTED_TERMS.map(([from,to]) => [from.toLowerCase(),to]));
 const TOKEN_RE = new RegExp("(^|[^A-Za-zÀ-ž])(" + SORTED_TERMS.map(([from]) => from).join("|") + ")(?=$|[^A-Za-zÀ-ž])", "giu");
@@ -200,6 +205,6 @@ export function translateRecipe(recipe){
   const original=recipe.originalName||recipe.name||"";
   const sections=Array.isArray(recipe.sections)?recipe.sections.map(s=>({...s,ingredients:Array.isArray(s.ingredients)?s.ingredients.map(i=>({...i,name:apply(i.name)})):s.ingredients})):recipe.sections;
   const steps=Array.isArray(recipe.steps)?recipe.steps.map(s=>({...s,text:apply(s.text)})):recipe.steps;
-  const name=apply(recipe.name||original);
-  return {...recipe,originalName:original,name,description:apply(recipe.description||""),sections,steps,archiveCollectionName:C[recipe.archiveCollectionName]||recipe.archiveCollectionName,translationLanguage:"pl",translationVersion:1};
+  const name=cleanRecipeName(recipe.name||original);
+  return {...recipe,originalName:original,name,description:apply(recipe.description||""),sections,steps,archiveCollectionName:C[recipe.archiveCollectionName]||recipe.archiveCollectionName,translationLanguage:"pl",translationVersion:3};
 }

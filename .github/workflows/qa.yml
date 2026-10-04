@@ -77,10 +77,34 @@ jobs:
             echo "Playwright browser binaries restored from cache."
           fi
 
+      - name: Select QA scope
+        id: qa_scope
+        shell: bash
+        env:
+          COMMIT_MESSAGE: ${{ github.event.head_commit.message || '' }}
+        run: |
+          case "$COMMIT_MESSAGE" in
+            "Stage 37:"*) echo "test_file=tests/stage-37.spec.js" >> "$GITHUB_OUTPUT" ;;
+            "Stage 38:"*) echo "test_file=tests/stage-38.spec.js" >> "$GITHUB_OUTPUT" ;;
+            "Stage 39:"*) echo "test_file=tests/stage-39.spec.js" >> "$GITHUB_OUTPUT" ;;
+            "Stage 40:"*) echo "test_file=tests/stage-40.spec.js" >> "$GITHUB_OUTPUT" ;;
+            "Stage 41:"*) echo "test_file=tests/stage-41.spec.js" >> "$GITHUB_OUTPUT" ;;
+            "Stage 42:"*) echo "test_file=tests/stage-42.spec.js" >> "$GITHUB_OUTPUT" ;;
+            "Stage 43:"*) echo "test_file=__FULL__" >> "$GITHUB_OUTPUT" ;;
+            *) echo "test_file=" >> "$GITHUB_OUTPUT" ;;
+          esac
+
       - name: Run E2E
         env:
           CI: true
-        run: npm test -- --reporter=line
+          TEST_FILE: ${{ steps.qa_scope.outputs.test_file }}
+        shell: bash
+        run: |
+          if [ "$TEST_FILE" = "__FULL__" ] || [ -z "$TEST_FILE" ]; then
+            npm test -- --reporter=line
+          else
+            npm test -- --reporter=line "$TEST_FILE"
+          fi
 
       - name: Upload Playwright results
         if: always()

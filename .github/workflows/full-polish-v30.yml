@@ -1,0 +1,82 @@
+name: Stage 54 — full Polish corpus v30
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/translate-recipe-corpus-v30.mjs'
+      - '.github/workflows/full-polish-v30.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  translate:
+    if: github.event_name == 'workflow_dispatch' || !startsWith(github.event.head_commit.message, 'Stage 54 generated v30:')
+    strategy:
+      fail-fast: false
+      matrix:
+        part: [1,2,3,4,5,6,7,8,9]
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Translate part
+        env:
+          PART_INDEX: ${{ matrix.part }}
+          BASE_COMMIT: 4ebf8ac64d3f9e86c9077cd63c2b84127ee8db77
+        run: node scripts/translate-recipe-corpus-v30.mjs
+      - uses: actions/upload-artifact@v4
+        with:
+          name: translated-part-${{ matrix.part }}
+          path: translated-output/part-*.js
+
+  assemble:
+    if: github.event_name == 'workflow_dispatch' || !startsWith(github.event.head_commit.message, 'Stage 54 generated v30:')
+    needs: translate
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: translated-part-*
+          path: /tmp/translated
+          merge-multiple: true
+      - name: Install Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Assemble and validate
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(find /tmp/translated -maxdepth 1 -name 'part-*.js' | wc -l)" -eq 9
+          mkdir -p recipe-library-data
+          cp /tmp/translated/part-*.js recipe-library-data/
+          node --check scripts/translate-recipe-corpus-v30.mjs
+          node --input-type=module <<'NODE'
+          import fs from 'node:fs';
+          const files=Array.from({length:9},(_,i)=>'recipe-library-data/part-'+String(i+1).padStart(2,'0')+'.js');
+          const rows=files.flatMap(f=>{const s=fs.readFileSync(f,'utf8'),a=s.indexOf('['),b=s.lastIndexOf(']');return JSON.parse(s.slice(a,b+1));});
+          if(rows.length!==1700) throw new Error('Liczba receptur '+rows.length);
+          if(new Set(rows.map(r=>r.id)).size!==1700) throw new Error('Duplikaty ID');
+          if(rows.filter(r=>r.translationLanguage==='pl' && Number(r.translationVersion)>=30).length!==1700) throw new Error('Nieprzetłumaczone rekordy');
+          const badName=rows.filter(r=>/[():\[\]{};]/.test(r.name));
+          if(badName.length) throw new Error('Nazwy z zakazanymi znakami: '+badName.length);
+          console.log('1700/1700 PL OK');
+          NODE
+      - name: Commit
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add recipe-library-data/part-*.js
+          git commit -m 'Stage 54 generated v30: fully Polish recipe corpus'
+          git push

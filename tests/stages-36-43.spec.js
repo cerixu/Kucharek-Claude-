@@ -26,7 +26,7 @@ test.describe('Etapy 36–43: kontrakt funkcjonalny iPhone', () => {
   test('36: szczegóły receptury pokazują domyślnie jedną porcję i przeliczanie', async ({ page }) => {
     await ready(page, '/recipe/rcp_seed_pizza');
     await expect(page.getByText('1 porcja', { exact: true }).first()).toBeVisible();
-    await expect(page.getByRole('button', { name: 'Przelicz' })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Przelicz', exact: true })).toBeVisible();
   });
 
   test('37: Gotuję ma postęp, przeliczanie i minutnik', async ({ page }) => {
@@ -40,12 +40,15 @@ test.describe('Etapy 36–43: kontrakt funkcjonalny iPhone', () => {
   test('38: Magazyn zapisuje stratę i raport tygodniowy', async ({ page }) => {
     await ready(page, '/inventory');
     const out = await page.evaluate(async () => {
-      const { saveInventoryItem } = await import('/inventory.js');
+      const { saveInventoryItem, reloadInventory, findInventoryByName } = await import('/inventory.js');
       const { recordWaste, wasteReport } = await import('/pro.js');
-      const item = await saveInventoryItem({ id: 'e2e-stage38', name: 'Rukola QA', quantity: 5, unit: 'kg', purchasePrice: 20, priceUnit: 'kg' });
+      await saveInventoryItem({ id: 'e2e-stage38', name: 'Rukola QA', quantity: 5, unit: 'kg', purchasePrice: 20, priceUnit: 'kg' });
+      const item = findInventoryByName('Rukola QA');
       const row = await recordWaste(item.id, 1, 'zepsucie', 'QA');
+      await reloadInventory();
+      const current = findInventoryByName('Rukola QA');
       const report = await wasteReport();
-      return { remaining: row.after, cost: row.costValue, entries: report.totalEntries, totalCost: report.totalCost };
+      return { remaining: current.quantity, cost: row.costValue, entries: report.totalEntries, totalCost: report.totalCost };
     });
     expect(out.remaining).toBe(4);
     expect(out.cost).toBeCloseTo(20, 6);
@@ -56,9 +59,10 @@ test.describe('Etapy 36–43: kontrakt funkcjonalny iPhone', () => {
   test('39: Zakupy przyjmują pozycję z przepisu', async ({ page }) => {
     await ready(page, '/shopping');
     const out = await page.evaluate(async () => {
-      const { addItems, listShopping } = await import('/shopping.js');
+      const { addItems } = await import('/shopping.js');
+      const { state } = await import('/recipes.js');
       await addItems([{ name: 'Mąka QA', amount: 2, unit: 'kg', recipeId: 'e2e-stage', recipeName: 'QA' }]);
-      return listShopping().some(x => x.name === 'Mąka QA' && !x.done);
+      return state.shopping.some(x => x.name === 'Mąka QA' && !x.done);
     });
     expect(out).toBe(true);
     await expect(page.getByText('Mąka QA', { exact: true })).toBeVisible();
@@ -83,7 +87,8 @@ test.describe('Etapy 36–43: kontrakt funkcjonalny iPhone', () => {
 
   test('42–43: Amator/Pro i Liquid Glass nie psują mobilnego viewportu', async ({ page }) => {
     await ready(page, '/settings');
-    await expect(page.getByText('Tryb aplikacji', { exact: true })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Amator', exact: true })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Pro', exact: true })).toBeVisible();
     await page.getByRole('button', { name: 'Amator', exact: true }).click();
     await expect(page.locator('html[data-mode="amateur"]')).toHaveCount(1);
     await page.getByRole('button', { name: 'Pro', exact: true }).click();

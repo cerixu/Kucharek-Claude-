@@ -48,26 +48,27 @@ jobs:
           npx playwright install-deps chromium webkit
           echo "Playwright-managed browser dependencies installed."
 
-      - name: Ensure Playwright browsers
+      - name: Ensure Playwright browsers (cache-safe)
         shell: bash
         run: |
           set -euo pipefail
           need_install=0
-          node <<'NODE'
+          if ! node <<'NODE'
           const { chromium, webkit } = require('playwright');
           const fs = require('fs');
+          let missing = false;
           for (const [name, browser] of [['chromium', chromium], ['webkit', webkit]]) {
             const path = browser.executablePath();
             if (!fs.existsSync(path)) {
               console.log(`Missing ${name}: ${path}`);
-              process.exitCode = 2;
+              missing = true;
             } else {
               console.log(`Found ${name}: ${path}`);
             }
           }
+          process.exit(missing ? 2 : 0);
           NODE
-          status=$?
-          if [ "$status" -ne 0 ]; then
+          then
             need_install=1
           fi
           if [ "$need_install" -eq 1 ]; then

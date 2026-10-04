@@ -473,55 +473,48 @@ function acceptRecipe(recipe) {
   return true;
 }
 
-function addFromPool(pool, predicate = () => true) {
-  while (pool.cursor < pool.files.length) {
-    const file = pool.files[pool.cursor++];
-    const recipe = buildRecipe(pool, file);
-    if (!recipe || !predicate(recipe)) continue;
-    if (acceptRecipe(recipe)) return true;
-  }
-  return false;
-}
+function chooseFromPool(pool, quota) {
+  const candidates = pool.files.map((file) => buildRecipe(pool, file)).filter(Boolean);
+  const chosen = new Set();
 
-// Quotas keep the corpus genuinely multi-cuisine instead of taking the first
-// alphabetical slice of every collection. Polish anchors also guarantee that
-// everyday searches such as "pierogi" exist in the shipped offline corpus.
-for (const pool of pools) {
-  const quota = QUOTAS.get(pool.slug) || 0;
-  if (!quota) continue;
-
-  const mustInclude = pool.slug === 'kuchnia-polska'
+  const anchors = pool.slug === 'kuchnia-polska'
     ? [/pierogi/i, /żurek|zurek/i, /bigos/i, /barszcz/i, /schabowy/i, /sernik/i]
     : [];
 
-  for (const re of mustInclude) {
-    if (selected.filter((r) => r.archiveCollection === pool.slug).length >= quota) break;
-    addFromPool(pool, (recipe) => re.test(recipe.name));
+  for (const re of anchors) {
+    const anchor = candidates.find((recipe, index) => !chosen.has(index) && re.test(recipe.name));
+    if (!anchor) continue;
+    const index = candidates.indexOf(anchor);
+    if (acceptRecipe(anchor)) chosen.add(index);
   }
 
-  const remaining = quota - selected.filter((r) => r.archiveCollection === pool.slug).length;
-  if (remaining <= 0) continue;
+  const remaining = quota - [...chosen].length;
+  if (remaining <= 0) return [...chosen];
 
-  const files = pool.files.slice(pool.cursor);
-  const stride = files.length / Math.max(remaining, 1);
-  for (let i = 0; i < remaining && pool.cursor < pool.files.length; i += 1) {
-    const targetIndex = Math.min(
-      pool.files.length - 1,
-      Math.floor(pool.cursor + i * stride)
-    );
-    while (pool.cursor < targetIndex) pool.cursor += 1;
-    if (!addFromPool(pool)) break;
+  const stride = candidates.length / remaining;
+  for (let i = 0; i < candidates.length && [...chosen].length < quota; i += 1) {
+    const target = Math.min(candidates.length - 1, Math.floor(i * stride));
+    const recipe = candidates[target];
+    if (!recipe) continue;
+    if (chosen.has(target)) continue;
+    if (acceptRecipe(recipe)) chosen.add(target);
   }
+
+  // Fill gaps from every remaining candidate, keeping the quota hard.
+  for (let i = 0; i < candidates.length && [...chosen].length < quota; i += 1) {
+    if (chosen.has(i)) continue;
+    if (acceptRecipe(candidates[i])) chosen.add(i);
+  }
+  return [...chosen];
 }
 
-// Fill any quota gaps from the same pools, then fail hard below 1201.
 for (const pool of pools) {
   const quota = QUOTAS.get(pool.slug) || 0;
-  while (selected.filter((r) => r.archiveCollection === pool.slug).length < quota) {
-    if (!addFromPool(pool)) break;
-  }
+  if (!quota) continue;
+  const before = selected.length;
+  chooseFromPool(pool, Math.min(quota, pool.files.length));
+  console.log(pool.slug + ': selected ' + (selected.length - before) + ' / ' + quota);
 }
-
 
 if (selected.length < 1201) {
   throw new Error('Only ' + selected.length + ' unique recipes were built. Need more than 1200.');

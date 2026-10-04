@@ -294,6 +294,7 @@ test('Magazyn: powtarzające się składniki są sumowane bez podwójnego odejmo
     await new Promise((resolve, reject) => { tx.oncomplete = resolve; tx.onerror = () => reject(tx.error); });
     db.close();
     const mod = await import('/inventory.js');
+    await mod.loadInventory();
     const recipe = {
       id: 'e2e-dup-recipe',
       name: 'Test duplikatów',
@@ -556,5 +557,5 @@ test('Food Cost UI: kalkulator pokazuje cenę z Magazynu', async ({ page }) => {
   await expect(page.getByLabel('Receptura')).toBeVisible();
   await page.getByLabel('Receptura').selectOption('e2e-ui-food-cost');
   await expect(page.getByText('Magazyn: 8,00 zł/kg')).toBeVisible();
-  await expect(page.getByText('8,00 zł')).toBeVisible();
+  await expect(page.locator('.results-grid .result-v').filter({ hasText: '8,00 zł' }).first()).toBeVisible();
 });

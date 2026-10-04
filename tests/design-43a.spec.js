@@ -5,7 +5,7 @@ test.describe('Stage 43A · Visual QA / iPhone glass', () => {
     const errors = [];
     page.on('pageerror', (err) => errors.push(String(err)));
     await page.goto('/');
-    await page.waitForFunction(() => window.__kucharzyna?.ready === true, { timeout: 30000 });
+    await page.waitForFunction(() => window.__kucharek?.ready === true, { timeout: 30000 });
     await expect(page.locator('.screen')).toBeVisible();
     const hero = page.locator('.start-hero-card');
     await expect(hero).toBeVisible();
@@ -81,7 +81,7 @@ test.describe('Stage 43A · Visual QA / iPhone glass', () => {
   test('key iPhone screens stay inside the viewport', async ({ page }, testInfo) => {
     for (const route of ['/recipes', '/cook', '/inventory', '/shopping', '/calc', '/settings']) {
       await page.goto('/#' + route);
-      await page.waitForFunction(() => window.__kucharzyna?.ready === true);
+      await page.waitForFunction(() => window.__kucharek?.ready === true);
       const audit = await auditShell(page);
       expect(audit.topbar?.rect.width || 0).toBeLessThanOrEqual(audit.viewport.w + 1);
       expect(audit.tabbar?.rect.width || 0).toBeLessThanOrEqual(audit.viewport.w + 1);
@@ -121,7 +121,7 @@ test.describe('Stage 43A · Visual QA / iPhone glass', () => {
     for (const scheme of ['light', 'dark']) {
       await page.emulateMedia({ colorScheme: scheme });
       await page.reload();
-      await page.waitForFunction(() => window.__kucharzyna?.ready === true);
+      await page.waitForFunction(() => window.__kucharek?.ready === true);
       const values = await page.evaluate(() => {
         const root = getComputedStyle(document.documentElement);
         const top = getComputedStyle(document.querySelector('.topbar'));

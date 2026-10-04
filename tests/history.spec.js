@@ -3,7 +3,7 @@ import { test, expect } from '@playwright/test';
 test.describe('Historia gotowania', () => {
   test('ma szybki dostęp z Receptur i pokazuje zapisane gotowanie', async ({ page }) => {
     await page.goto('/');
-    await page.waitForFunction(() => window.__kucharzyna?.ready === true);
+    await page.waitForFunction(() => window.__kucharek?.ready === true);
 
     const fixture = await page.evaluate(async () => {
       const { db } = await import('/db.js');
@@ -75,7 +75,7 @@ test.describe('Historia gotowania', () => {
 
   test('pusta historia ma bezpieczny stan pusty', async ({ page }) => {
     await page.goto('/');
-    await page.waitForFunction(() => window.__kucharzyna?.ready === true);
+    await page.waitForFunction(() => window.__kucharek?.ready === true);
     await page.evaluate(async () => {
       const { db } = await import('/db.js');
       await db.clear('cookHistory');

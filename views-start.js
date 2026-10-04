@@ -1,6 +1,6 @@
 /* ==========================================================================
    views-start.js — ekran Start: szybkie akcje, stan kuchni, ostatnie receptury.
-   Etap 34A: prostsza hierarchia informacji, iPhone-first.
+   Etap 34B: docelowy Start, hierarchia wizualna i spójność Liquid Glass, iPhone-first.
    ========================================================================== */
 import { h, icon, screen, button, emptyState } from './ui.js';
 import { navigate } from './router.js';
@@ -70,13 +70,17 @@ export function startView() {
 
     kids.push(
       h('section', { class: 'start-hero-card' },
-        heroRecipe ? h('div', { class: 'start-hero-photo' }, recipeVisual(heroRecipe, '', { hero: true })) : null,
+        heroRecipe ? h('div', { class: 'start-hero-backdrop' }, recipeVisual(heroRecipe, '', { hero: true })) : null,
+        heroRecipe ? h('div', { class: 'start-hero-image' }, recipeVisual(heroRecipe, '', { hero: true })) : null,
         h('div', { class: 'start-hero-scrim' }),
         h('div', { class: 'start-hero-content' },
-          h('span', { class: 'start-kicker' }, 'Kucharek'),
-          h('h2', null, 'Co dziś gotujemy?'),
-          h('p', { class: 'start-hero-sub' },
-            heroRecipe ? `Ostatnio: ${heroRecipe.name}` : `${plural(all.length)} · wszystko pod ręką`),
+          h('div', { class: 'start-hero-top' },
+            h('span', { class: 'start-kicker' }, 'Kucharek'),
+            heroRecipe ? h('span', { class: 'start-hero-chip' }, icon('history', 14), 'Ostatnio gotowane') : null),
+          h('div', { class: 'start-hero-copy' },
+            h('h2', null, 'Co dziś gotujemy?'),
+            h('p', { class: 'start-hero-sub' },
+              heroRecipe ? heroRecipe.name : `${plural(all.length)} · wszystko pod ręką`)),
           button('Zacznij gotować', { kind: 'primary', icon: 'chef', cls: 'start-cook-btn', onClick: () => navigate(heroRecipe ? '/cook/' + encodeURIComponent(heroRecipe.id) : '/cook') }),
         )
       )
@@ -160,3 +164,4 @@ export function startView() {
     },
   };
 }
+

@@ -213,6 +213,9 @@ test.describe('Stage 34D: Magazyn UX', () => {
     await page.goto('/#/inventory');
     await page.waitForFunction(() => window.__kucharzyna?.ready === true);
     await stableEvaluate(page, async () => {
+      const { db } = await import('/db.js');
+      await db.clear('inventory');
+      await db.clear('inventoryLog');
       const { seedTestInventory } = await import('/inventory.js');
       await seedTestInventory();
     });

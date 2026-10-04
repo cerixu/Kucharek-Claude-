@@ -13,10 +13,15 @@ export function proView(){
  let tab=new URLSearchParams(location.hash.split('?')[1]||'').get('tab')||'dashboard',unsub;
  const nav=(id,label)=>button(label,{sm:true,kind:tab===id?'primary':'ghost',onClick:()=>{tab=id;render();}});
  async function render(){
-  const menu=h('div',{class:'pro-nav'},nav('dashboard','Dashboard'),nav('delivery','Dostawy'),nav('orders','Zamówienia'),nav('production','Produkcja'),nav('planning','Planowanie'),nav('analytics','Analityka'),nav('waste','Straty'),nav('stocktakes','Inwentaryzacje'),nav('automation','Automatyzacje'));
+  const menu=h('div',{class:'pro-nav'},nav('dashboard','Dashboard'),nav('delivery','Dostawy'),nav('orders','Zamówienia'),nav('production','Produkcja'),nav('planning','Planowanie'),nav('analytics','Analityka'),nav('waste','Straty'),nav('stocktakes','Inwentaryzacje'),nav('lots','Partie i terminy'),nav('automation','Automatyzacje'));
   if(tab==='waste'){
     s.content.replaceChildren(menu,h('div',{class:'stack'},h('div',{class:'card'},h('h3',null,'Raport strat'),h('p',{class:'muted'},'Ładuję raport tygodniowy…'))));
     try{s.content.replaceChildren(menu,await wasteView());}catch(e){console.error(e);s.content.replaceChildren(menu,h('div',{class:'card'},h('h3',null,'Raport strat'),h('p',{class:'muted'},'Nie udało się wczytać raportu strat.')));}
+    return;
+  }
+  if(tab==='lots'){
+    s.content.replaceChildren(menu,h('div',{class:'stack'},h('div',{class:'card'},h('h3',null,'Partie i terminy ważności'),h('p',{class:'muted'},'Ładuję partie…'))));
+    try{s.content.replaceChildren(menu,await lotsView());}catch(e){console.error(e);s.content.replaceChildren(menu,h('div',{class:'card'},h('h3',null,'Partie i terminy ważności'),h('p',{class:'muted'},'Nie udało się wczytać partii.')));}
     return;
   }
   if(tab==='stocktakes'){
@@ -104,6 +109,35 @@ export function proView(){
   );
  }
 
+ async function lotsView(){
+  const rows=await listLots();
+  const deliveries=await listDeliveries();
+  const deliveryMap=new Map(deliveries.map(d=>[d.id,d]));
+  let filter='all';
+  const host=h('div',{class:'stack'});
+  const now=Date.now(), soonLimit=now+7*86400000;
+  const getState=(x)=>x.expiryAt&&x.expiryAt<now?'expired':x.expiryAt&&x.expiryAt<=soonLimit?'soon':'normal';
+  const renderLots=()=>{
+    const filtered=rows.filter(x=>filter==='all'||getState(x)===filter);
+    const visible=filtered.length?filtered.map(x=>{
+      const state=getState(x), d=x.deliveryId?deliveryMap.get(x.deliveryId):null;
+      const expiry=x.expiryAt?new Date(x.expiryAt).toLocaleDateString('pl-PL',{day:'2-digit',month:'2-digit',year:'numeric'}):'Brak terminu';
+      const label=state==='expired'?'PRZETERMINOWANA':state==='soon'?'WKRÓTCE':x.expiryAt? 'W TERMINIE':'BEZ TERMINU';
+      return h('div',{class:'card'},
+        h('div',{class:'row between'},
+          h('div',null,h('strong',null,x.inventoryName||'Produkt'),h('p',{class:'muted'},x.lot?'Partia: '+x.lot:'Partia: brak numeru')),
+          h('strong',{class:state==='expired'?'danger-text':''},label)
+        ),
+        h('div',{class:'row between'},h('span',null,'Ilość'),h('strong',null,money(x.quantity)+' '+(x.unit||''))),
+        h('div',{class:'row between'},h('span',null,'Termin ważności'),h('strong',{class:state==='expired'?'danger-text':''},expiry)),
+        d?h('p',{class:'muted'},'Dostawa: '+(d.documentNo||'bez numeru')+' · '+new Date(d.at||d.createdAt).toLocaleDateString('pl-PL')):h('p',{class:'muted'},'Źródło dostawy: brak danych')
+      );
+    }):[h('div',{class:'card'},h('p',{class:'muted'},'Brak partii dla wybranego filtra.'))];
+    host.replaceChildren(h('div',{class:'row between wrap'},button('Wszystkie',{sm:true,kind:filter==='all'?'primary':'ghost',onClick:()=>{filter='all';renderLots();}}),button('Wkrótce',{sm:true,kind:filter==='soon'?'primary':'ghost',onClick:()=>{filter='soon';renderLots();}}),button('Przeterminowane',{sm:true,kind:filter==='expired'?'primary':'ghost',onClick:()=>{filter='expired';renderLots();}})),h('div',{class:'card'},h('h3',null,'Partie i terminy ważności'),h('p',{class:'muted'},rows.length+' part'+(rows.length===1?'ia':rows.length<5?'ie':'ii')+' · Wkrótce = 7 dni')), ...visible);
+  };
+  renderLots();
+  return host;
+ }
  async function wasteView(){
   const r=await wasteReport();
   const range=new Date(r.start).toLocaleDateString('pl-PL',{day:'2-digit',month:'2-digit'})+'–'+new Date(r.end).toLocaleDateString('pl-PL',{day:'2-digit',month:'2-digit'});

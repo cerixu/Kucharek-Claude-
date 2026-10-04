@@ -39,7 +39,9 @@ test.describe('Stage 39: Zakupy', () => {
 
   test('ekran Zakupy udostępnia grupowanie i czyszczenie kupionych', async ({ page }) => {
     await page.goto('/#/shopping');
+    await page.waitForFunction(() => window.__kucharzyna?.ready === true);
     await expect(page.getByText('Zakupy', { exact:true })).toBeVisible();
+    await page.getByRole('button', { name:'Więcej opcji' }).click();
     await expect(page.getByText('Grupowanie', { exact:true })).toBeVisible();
     await expect(page.getByRole('button', { name:'Wyczyść kupione' })).toBeVisible();
   });

@@ -25,8 +25,8 @@ export function parseNum(v) {
   if (!s) return null;
   s = s.replace(/[½⅓⅔¼¾⅛⅜⅝⅞]/g, (m) => ' ' + VULGAR[m]).replace(/\s+/g, ' ').trim();
   let m;
-  if ((m = s.match(/^(d+) (d+)/(d+)$/))) return m[3] === '0' ? null : +m[1] + m[2] / m[3];
-  if ((m = s.match(/^(d+)/(d+)$/))) return m[2] === '0' ? null : m[1] / m[2];
+  if ((m = s.match(/^([0-9]+) ([0-9]+)[/]([0-9]+)$/))) return m[3] === '0' ? null : +m[1] + m[2] / m[3];
+  if ((m = s.match(/^([0-9]+)[/]([0-9]+)$/))) return m[2] === '0' ? null : m[1] / m[2];
   s = s.replace(/\s/g, '').replace(',', '.');
   if (/^[-+]?(\d+\.?\d*|\.\d+)$/.test(s)) return parseFloat(s);
   return null;

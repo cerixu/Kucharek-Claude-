@@ -308,6 +308,23 @@ test.describe('Stage 34F: redesign iPhone + real user flows', () => {
     expect(box.height).toBeLessThan(page.viewportSize().height*0.82);
   });
 
+  test('Hero nie powiela nazwy dania w grafice tła', async ({ page }) => {
+    await page.goto('/');
+    await page.waitForFunction(() => window.__kucharzyna?.ready === true);
+    const heroImg = page.locator('.start-hero-image img').first();
+    await expect(heroImg).toBeVisible();
+    const src = await heroImg.getAttribute('src');
+    expect(src).toBeTruthy();
+    if (src?.startsWith('data:image/svg+xml')) {
+      const svg = decodeURIComponent(src.split(',', 2)[1] || '');
+      const recipeName = await page.locator('.start-hero-card').innerText();
+      const lines = recipeName.split('\\n').map(x=>x.trim()).filter(Boolean);
+      const dishName = lines.at(-1);
+      expect(dishName).toBeTruthy();
+      expect(svg).not.toContain(dishName);
+    }
+  });
+
   test('Import łączy instrukcję i wklejanie w jednym panelu', async ({ page }) => {
     await page.goto('/#/import');
     await page.waitForFunction(() => window.__kucharzyna?.ready === true);

@@ -557,5 +557,5 @@ test('Food Cost UI: kalkulator pokazuje cenę z Magazynu', async ({ page }) => {
   await expect(page.getByLabel('Receptura')).toBeVisible();
   await page.getByLabel('Receptura').selectOption('e2e-ui-food-cost');
   await expect(page.getByText('Magazyn: 8,00 zł/kg')).toBeVisible();
-  await expect(page.getByText('8,00 zł')).toBeVisible();
+  await expect(page.locator('.result').filter({ hasText: 'Koszt receptury' }).locator('.result-v')).toContainText('8,00');
 });

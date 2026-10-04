@@ -221,7 +221,9 @@ const FINAL_CLEANUP = [
 ["zwiebel","cebula"],["zwiebeln","cebula"],["knoblauch","czosnek"],["öl","olej"],["olivenöl","oliwa z oliwek"],["mehl","mąka"],["zucker","cukier"],["salz","sól"],["pfeffer","pieprz"],["sahne","śmietanka"],["milch","mleko"],["eier","jajka"],["ei","jajko"],["käse","ser"],["rindfleisch","wołowina"],["schweinefleisch","wieprzowina"],["hähnchen","kurczak"],["huhn","kurczak"],["fisch","ryba"],["wasser","woda"],["wein","wino"],["zitrone","cytryna"],["petersilie","natka pietruszki"],["basilikum","bazylia"],["rosmarin","rozmaryn"],["kartoffel","ziemniak"],["kartoffeln","ziemniaki"],["pilze","grzyby"],["reis","ryż"],["nudeln","makaron"],["mischen","mieszać"],["kochen","gotować"],["braten","smażyć"],["backen","piec"],["servieren","podawać"],["schneiden","pokroić"],["gehackt","posiekany"],["gerieben","starty"],["geschält","obrany"],
 ["cibule","cebula"],["česnek","czosnek"],["máslo","masło"],["mouka","mąka"],["cukr","cukier"],["sůl","sól"],["pepř","pieprz"],["rajče","pomidor"],["rajčata","pomidory"],["smetana","śmietanka"],["mléko","mleko"],["vejce","jajka"],["sýr","ser"],["hovězí","wołowina"],["vepřové","wieprzowina"],["kuře","kurczak"],["ryba","ryba"],["voda","woda"],["víno","wino"],["citron","cytryna"],["petržel","natka pietruszki"],["bazalka","bazylia"],["brambory","ziemniaki"],["houby","grzyby"],["rýže","ryż"],["těstoviny","makaron"],["vařit","gotować"],["míchat","mieszać"],["smažit","smażyć"],["péct","piec"],["přidat","dodać"],["podávat","podawać"]
 ];
-const ALL_TERMS = [...P, ...OTHER, ...EXTRA, ...MORE, ...FINAL_CLEANUP].sort((a,b)=>b[0].length-a[0].length);
+const SHORT_SAFE = new Set(["a","an","i","of","in","for","on","to","and","or","it","is","be","by","if","as","at","the","up","off","out","not","no"]);
+const RAW_TERMS = [...P, ...OTHER, ...EXTRA, ...MORE, ...FINAL_CLEANUP];
+const ALL_TERMS = RAW_TERMS.filter(([a]) => a.length >= 3 || SHORT_SAFE.has(a.toLowerCase())).sort((a,b)=>b[0].length-a[0].length);
 const escapeRegex = (s) => String(s).replace(/[.*+?^$(){}|[\\]\\]/g, "\\$&");
 const TOKEN_RE = new RegExp("(?<!\\p{L})(" + ALL_TERMS.map(([a])=>escapeRegex(a)).join("|") + ")(?!\\p{L})","giu");
 const TERM_MAP = new Map(ALL_TERMS.map(([a,b])=>[a.toLowerCase(),b]));
@@ -270,6 +272,6 @@ export function translateRecipe(recipe) {
     steps,
     archiveCollectionName:C[recipe.archiveCollectionName]||recipe.archiveCollectionName,
     translationLanguage:"pl",
-    translationVersion:5
+    translationVersion:6
   };
 }

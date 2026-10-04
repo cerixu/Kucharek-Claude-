@@ -79,30 +79,7 @@ const EXTRA = [
 ];
 
 const C = {"Kuchnia Polska":"Kuchnia polska","Cucina Italiana":"Kuchnia włoska","Cocina Española":"Kuchnia hiszpańska","Cuisine Française":"Kuchnia francuska","Japanese Kitchen":"Kuchnia japońska","Chinese Kitchen":"Kuchnia chińska","Indian Kitchen":"Kuchnia indyjska","German Kitchen":"Kuchnia niemiecka","Česká kuchyně":"Kuchnia czeska"};
-const SORTED_TERMS = [...P, ...OTHER, ...EXTRA].sort((a,b) => b[0].length - a[0].length);
-const TERM_MAP = new Map(SORTED_TERMS);
-const TOKEN_RE = new RegExp("(^|[^A-Za-zÀ-ž])(" + SORTED_TERMS.map(([from]) => from).join("|") + ")(?=$|[^A-Za-zÀ-ž])", "giu");
-const TEXT_CACHE = new Map();
-const CACHE_LIMIT = 16000;
-
-function apply(text) {
-  const key = String(text ?? "");
-  const hit = TEXT_CACHE.get(key);
-  if (hit !== undefined) return hit;
-  let out = key.replace(TOKEN_RE, (full, prefix, term) => prefix + TERM_MAP.get(term.toLowerCase()));
-  out = out.replace(/\\s{2,}/g," ").replace(/\\s+([,.;:!?])/g,"$1").trim();
-  if (TEXT_CACHE.size >= CACHE_LIMIT) TEXT_CACHE.clear();
-  TEXT_CACHE.set(key,out);
-  return out;
-}
-
-export function translateRecipe(recipe){
-  const original=recipe.originalName||recipe.name||"";
-  const sections=Array.isArray(recipe.sections)?recipe.sections.map(s=>({...s,ingredients:Array.isArray(s.ingredients)?s.ingredients.map(i=>({...i,name:apply(i.name)})):s.ingredients})):recipe.sections;
-  const steps=Array.isArray(recipe.steps)?recipe.steps.map(s=>({...s,text:apply(s.text)})):recipe.steps;
-  const name=apply(recipe.name||original);
-  return {...recipe,originalName:original,name,description:apply(recipe.description||""),sections,steps,archiveCollectionName:C[recipe.archiveCollectionName]||recipe.archiveCollectionName,translationLanguage:"pl",translationVersion:1};
-}const SENTENCE = [
+const SENTENCE = [
   ["Shred the cabbage","Poszatkuj kapustę"],
   ["salt it well","dobrze posól"],
   ["press out the liquid","mocno odciśnij płyn"],

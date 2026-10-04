@@ -2,7 +2,7 @@
    app.js — start aplikacji: baza, ustawienia, motyw, nawigacja dolna,
    obsługa klawiatury iOS (visualViewport), trasy, service worker.
    ========================================================================== */
-import { openDB } from './db.js?v=20261005-58-1.3.91';
+import { openDB } from './db.js?v=20261005-58-1.3.92';
 import { loadAll, state, subscribe, getSetting } from './recipes.js';
 import { h, icon, toast, $, openSheet, button } from './ui.js';
 import { route, startRouter, navigate } from './router.js';
@@ -22,7 +22,7 @@ import { inventoryView } from './views-inventory.js';
 import { cookHubView } from './views-cook-hub.js';
 
 let proModulePromise;
-const loadProModule = () => proModulePromise ||= import('./views-pro-fixed.js?v=20261005-58-1.3.91');
+const loadProModule = () => proModulePromise ||= import('./views-pro-fixed.js?v=20261005-59-1.3.92');
 
 const root = document.documentElement;
 const bootStartedAt = performance.now();
@@ -96,8 +96,7 @@ function buildTabbar() {
       onClick: (e) => { e.preventDefault(); navigate(path, { replace: true }); },
     },
       h('span', { class: 'tab-ico' }, icon(ico, 23),
-        id === 'recipes' ? null : null,
-        id === 'shopping' ? h('span', { class: 'badge', id: 'cart-badge', hidden: true }) : null),
+      ),
       h('span', { class: 'tab-label' }, label));
   }));
   updateBadge();

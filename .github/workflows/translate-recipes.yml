@@ -35,6 +35,14 @@ jobs:
           git fetch origin main
           git reset --hard origin/main
 
+      - name: Restore original recipe corpus
+        run: |
+          SOURCE_COMMIT="2403fac8b9076e920bfbad29896f80507710439b"
+          git fetch origin "$SOURCE_COMMIT" --depth=1
+          for f in recipe-library-data/part-*.js; do
+            git show "$SOURCE_COMMIT:$f" > "$f"
+          done
+
       - name: Translate 1700 records
         id: translate
         continue-on-error: true

@@ -58,13 +58,8 @@ const POST_FIXES = [
 function postFix(text) {
   let s = String(text == null ? '' : text);
   for (const [from, to] of POST_FIXES) {
-    const re = new RegExp('(?<!\\p{L})' + from.replace(/[.*+?^$(){}|[\\]\\\\]/g, '\\\\function cleanName(value) {
-  let s = String(value == null ? '' : value);
-  s = s.replaceAll('\\', '').replaceAll('"', '');
-  for (const ch of ['(', ')', '[', ']', '{', '}', ':', ';']) s = s.split(ch).join(' ');
-  for (let i = 0; i < 5; i++) s = s.replaceAll('  ', ' ');
-  return s.trim();
-}') + '(?!\\p{L})', 'giu');
+    const escaped = from.replace(/[.*+?^$(){}|[\\]\\]/g, '\\$&');
+    const re = new RegExp('(?<!\\p{L})' + escaped + '(?!\\p{L})', 'giu');
     s = s.replace(re, to);
   }
   return s.replace(/\\s{2,}/g, ' ').replace(/\\s+([,.;:!?])/g, '$1').trim();

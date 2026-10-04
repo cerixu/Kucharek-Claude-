@@ -77,7 +77,7 @@ export function startView() {
           h('h2', null, 'Co dziś gotujemy?'),
           h('p', { class: 'start-hero-sub' },
             heroRecipe ? `Ostatnio: ${heroRecipe.name}` : `${plural(all.length)} · wszystko pod ręką`),
-          button('Zacznij gotować', { kind: 'primary', icon: 'chef', cls: 'start-cook-btn', onClick: () => navigate(heroRecipe ? '/recipe/' + encodeURIComponent(heroRecipe.id) : '/cook') }),
+          button('Zacznij gotować', { kind: 'primary', icon: 'chef', cls: 'start-cook-btn', onClick: () => navigate(heroRecipe ? '/cook/' + encodeURIComponent(heroRecipe.id) : '/cook') }),
         )
       )
     );

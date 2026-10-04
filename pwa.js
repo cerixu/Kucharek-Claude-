@@ -1,7 +1,8 @@
 /* ==========================================================================
    pwa.js — rejestracja service workera, wykrywanie nowej wersji,
    stan offline/instalacji, trwały magazyn.
-   Nowa wersja NIE podmienia się po cichu: użytkownik klika „Odśwież”.
+   Nowa wersja zostaje w waiting, a użytkownik dostaje „Odśwież”.
+   Dopiero kliknięcie użytkownika aktywuje nowy service worker i przeładowuje aplikację.
    ========================================================================== */
 import { toast } from './ui.js';
 
@@ -46,20 +47,12 @@ export async function registerSW() {
   if (!registration) return null;
   const hadController = !!navigator.serviceWorker.controller;
 
-  if (registration?.waiting && hadController) {
-    // W tej aplikacji aktualizacje są bezpieczne do przeładowania:
-    // dane robocze są w IndexedDB, a zmiana wersji ma być widoczna od razu.
-    userAskedForUpdate = true;
-    registration.waiting.postMessage({ type: 'SKIP_WAITING' });
-  }
+  if (registration?.waiting && hadController) promptUpdate(registration.waiting);
   registration.addEventListener('updatefound', () => {
     const nw = registration.installing;
     if (!nw) return;
     nw.addEventListener('statechange', () => {
-      if (nw.state === 'installed' && navigator.serviceWorker.controller) {
-        userAskedForUpdate = true;
-        nw.postMessage({ type: 'SKIP_WAITING' });
-      }
+      if (nw.state === 'installed' && navigator.serviceWorker.controller) promptUpdate(nw);
     });
   });
 

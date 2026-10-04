@@ -45,9 +45,8 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          sudo apt-get update
-          sudo apt-get install -y libevent-2.1-7t64 libopus0 libgstreamer-plugins-base1.0-0 gstreamer1.0-gl || sudo apt-get install -y libevent-2.1-7 libopus0 libgstreamer-plugins-base1.0-0
-          echo "WebKit runtime dependencies installed."
+          npx playwright install-deps chromium webkit
+          echo "Playwright-managed browser dependencies installed."
 
       - name: Ensure Playwright browsers
         shell: bash

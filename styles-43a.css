@@ -561,3 +561,212 @@ a,
 .seg button {
   min-height: 44px;
 }
+
+
+/* ==========================================================================
+   Stage 52 · Recipe quality layer
+   Czytelność, proporcje i iPhone-first hierarchy. Nie zmienia logiki.
+   ========================================================================== */
+
+.screen.detail .content {
+  gap: 14px;
+  padding-bottom: max(28px, env(safe-area-inset-bottom, 0px));
+}
+
+.screen.detail .hero-photo.recipe-visual {
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  max-height: 430px;
+  margin: 0;
+  border-radius: 24px;
+  object-fit: cover;
+  background: var(--surface-2);
+  box-shadow:
+    0 18px 42px rgba(0,0,0,.25),
+    inset 0 1px 0 rgba(255,255,255,.08);
+}
+
+.screen.detail .detail-head {
+  gap: 12px;
+  padding: 2px 1px;
+}
+
+.screen.detail .detail-head > .row {
+  gap: 7px;
+}
+
+.screen.detail .detail-head .pill,
+.screen.detail .detail-head .trad-big {
+  min-height: 32px;
+  box-sizing: border-box;
+}
+
+.screen.detail .desc {
+  margin: 0;
+  max-width: 58ch;
+  font-size: .98rem;
+  line-height: 1.48;
+}
+
+.screen.detail .facts {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0,1fr));
+  gap: 7px;
+}
+
+.screen.detail .fact {
+  min-width: 0;
+  min-height: 40px;
+  box-sizing: border-box;
+  padding: 7px 10px;
+  justify-content: flex-start;
+  border: 1px solid var(--43a-hairline);
+  border-radius: 14px;
+  background:
+    linear-gradient(180deg, var(--43a-glass-top), var(--43a-glass-low));
+  color: var(--text);
+  font-size: .78rem;
+  font-weight: 720;
+  line-height: 1.2;
+  box-shadow: inset 0 1px 0 var(--43a-highlight);
+}
+
+.screen.detail .fact svg {
+  flex: 0 0 auto;
+  color: var(--34e-accent);
+}
+
+.screen.detail .actions-primary .btn {
+  min-height: 54px;
+  border-radius: 18px;
+  font-weight: 850;
+  letter-spacing: .02em;
+}
+
+.screen.detail .actions-row {
+  grid-template-columns: repeat(2, minmax(0,1fr));
+  gap: 8px;
+}
+
+.screen.detail .actions-row .btn {
+  min-height: 60px;
+  padding: 8px 6px;
+  border-radius: 17px;
+  font-size: .8rem;
+  line-height: 1.1;
+}
+
+.screen.detail .ingredients {
+  overflow: hidden;
+}
+
+.screen.detail .ingredients .card-title,
+.screen.detail section.card > .card-title {
+  margin-bottom: 10px;
+}
+
+.screen.detail .ing-section + .ing-section {
+  margin-top: 12px;
+  padding-top: 4px;
+  border-top: 1px solid var(--43a-hairline);
+}
+
+.screen.detail .ing-section .tape {
+  margin: 2px 0 2px;
+  padding: 5px 0 7px;
+  color: var(--muted);
+  font-size: .68rem;
+  font-weight: 850;
+  letter-spacing: .11em;
+  text-transform: uppercase;
+}
+
+.screen.detail .ing {
+  min-height: 54px;
+  gap: 10px;
+  padding: 7px 0;
+}
+
+.screen.detail .ingredient-icon {
+  flex: 0 0 40px;
+  width: 40px;
+  height: 40px;
+  border-radius: 13px;
+  border: 1px solid var(--43a-hairline);
+  background:
+    radial-gradient(circle at 30% 18%, rgba(255,255,255,.12), transparent 48%),
+    linear-gradient(180deg, var(--43a-glass-top), var(--43a-glass-low));
+  box-shadow: inset 0 1px 0 var(--43a-highlight);
+}
+
+.screen.detail .ingredient-icon svg {
+  width: 29px;
+  height: 29px;
+}
+
+.screen.detail .ing-name {
+  font-size: .96rem;
+  font-weight: 690;
+  line-height: 1.28;
+}
+
+.screen.detail .ing-qty {
+  min-width: 62px;
+  justify-content: flex-end;
+}
+
+.screen.detail .ing-qty .amt {
+  font-size: 1.14rem;
+  font-weight: 830;
+}
+
+.screen.detail .ing-qty .unit {
+  font-size: .78rem;
+  font-weight: 740;
+}
+
+.screen.detail .kind {
+  display: inline-block;
+  margin-left: 5px;
+  font-size: .61rem;
+}
+
+.screen.detail ol.steps > li {
+  gap: 10px;
+  padding: 1px 0;
+}
+
+.screen.detail ol.steps > li::before {
+  flex: 0 0 34px;
+  width: 34px;
+  height: 34px;
+  border-radius: 12px;
+}
+
+.screen.detail .step-text {
+  padding-top: 2px;
+  font-size: .98rem;
+  line-height: 1.52;
+}
+
+.screen.detail .meta-foot {
+  padding-top: 6px;
+}
+
+@media (max-width: 390px) {
+  .screen.detail .facts {
+    grid-template-columns: 1fr;
+  }
+
+  .screen.detail .hero-photo.recipe-visual {
+    border-radius: 20px;
+  }
+
+  .screen.detail .ing-name {
+    font-size: .93rem;
+  }
+
+  .screen.detail .ing-qty {
+    min-width: 56px;
+  }
+}

@@ -18,7 +18,7 @@ test.describe('Test użytkownika: iPhone', () => {
 
   test('start → receptury → historia → powrót działa jak użytkownik', async ({ page }) => {
     await page.goto('/');
-    await page.waitForFunction(() => window.__kucharzyna?.ready === true);
+    await page.waitForFunction(() => window.__kucharek?.ready === true);
 
     await expect(page.getByText('Kucharek', { exact: true }).first()).toBeVisible();
 
@@ -36,7 +36,7 @@ test.describe('Test użytkownika: iPhone', () => {
 
   test('dolna nawigacja nie znika na ekranie mobilnym', async ({ page }) => {
     await page.goto('/#/recipes');
-    await page.waitForFunction(() => window.__kucharzyna?.ready === true);
+    await page.waitForFunction(() => window.__kucharek?.ready === true);
 
     const tabs = page.locator('#tabbar');
     await expect(tabs).toBeVisible();
@@ -49,7 +49,7 @@ test.describe('Test użytkownika: iPhone', () => {
 
   test('wyszukiwarka zachowuje fokus podczas pisania', async ({ page }) => {
     await page.goto('/#/recipes');
-    await page.waitForFunction(() => window.__kucharzyna?.ready === true);
+    await page.waitForFunction(() => window.__kucharek?.ready === true);
     await expect(page.locator('input.search-input')).toBeVisible();
 
     const input = page.locator('input.search-input');
@@ -64,7 +64,7 @@ test.describe('Test użytkownika: iPhone', () => {
 test.describe('Stage 34A: nowy UX iPhone', () => {
   test('Start ma nową hierarchię i główne akcje', async ({ page }) => {
     await page.goto('/');
-    await page.waitForFunction(() => window.__kucharzyna?.ready === true);
+    await page.waitForFunction(() => window.__kucharek?.ready === true);
 
     await expect(page.locator('.start-hero-card')).toBeVisible();
     await expect(page.getByRole('button', { name: 'Zacznij gotować' })).toBeVisible();
@@ -75,7 +75,7 @@ test.describe('Stage 34A: nowy UX iPhone', () => {
 
   test('dolny dock ma pięć głównych miejsc i Więcej', async ({ page }) => {
     await page.goto('/');
-    await page.waitForFunction(() => window.__kucharzyna?.ready === true);
+    await page.waitForFunction(() => window.__kucharek?.ready === true);
 
     const labels = await page.locator('#tabbar .tab-label').allTextContents();
     expect(labels).toEqual(['Start', 'Receptury', 'Gotuję', 'Magazyn', 'Więcej']);
@@ -89,7 +89,7 @@ test.describe('Stage 34A: nowy UX iPhone', () => {
 
   test('zakładka Gotuję prowadzi do prostego wyboru receptury', async ({ page }) => {
     await page.goto('/');
-    await page.waitForFunction(() => window.__kucharzyna?.ready === true);
+    await page.waitForFunction(() => window.__kucharek?.ready === true);
 
     await page.getByRole('link', { name: 'Gotuję' }).click();
     await expect(page).toHaveURL(/#\/cook$/);
@@ -100,7 +100,7 @@ test.describe('Stage 34A: nowy UX iPhone', () => {
   test('główne widoki nie powodują poziomego overflow', async ({ page }) => {
     for (const path of ['/', '/recipes', '/cook', '/inventory']) {
       await page.goto('/#' + path);
-      await page.waitForFunction(() => window.__kucharzyna?.ready === true);
+      await page.waitForFunction(() => window.__kucharek?.ready === true);
       const overflow = await stableEvaluate(page, () => document.documentElement.scrollWidth - document.documentElement.clientWidth);
       expect(overflow).toBeLessThanOrEqual(1);
     }
@@ -110,7 +110,7 @@ test.describe('Stage 34A: nowy UX iPhone', () => {
   
 test('Stage 34B: Start ma docelowy hero, wyszukiwanie i spójną warstwę wizualną', async ({ page }) => {
   await page.goto('/');
-  await page.waitForFunction(() => window.__kucharzyna?.ready === true);
+  await page.waitForFunction(() => window.__kucharek?.ready === true);
 
   await expect(page.locator('.start-hero-backdrop')).toBeVisible();
   await expect(page.locator('.start-hero-image')).toBeVisible();
@@ -125,7 +125,7 @@ test('Stage 34B: Start ma docelowy hero, wyszukiwanie i spójną warstwę wizual
 
 test('Stage 34B: numer wersji jest widoczny w Ustawieniach', async ({ page }) => {
   await page.goto('/#/settings');
-  await page.waitForFunction(() => window.__kucharzyna?.ready === true);
+  await page.waitForFunction(() => window.__kucharek?.ready === true);
   await expect(page.getByText('Wersja aplikacji', { exact: true })).toBeVisible();
   const appVersion = await page.evaluate(async () => (await import('/util.js')).APP_VERSION);
   await expect(page.getByText(appVersion, { exact: true })).toBeVisible();
@@ -137,13 +137,13 @@ test.describe('Stage 34C: wspólny system wizualny', () => {
   test('auto-theme ma kontrast zgodny z motywem urządzenia', async ({ page }) => {
     await page.emulateMedia({ colorScheme: 'light' });
     await page.goto('/');
-    await page.waitForFunction(() => window.__kucharzyna?.ready === true);
+    await page.waitForFunction(() => window.__kucharek?.ready === true);
     const lightGlass = await page.evaluate(() => getComputedStyle(document.documentElement).getPropertyValue('--glass-bg').trim());
     expect(lightGlass).toContain('255');
 
     await page.emulateMedia({ colorScheme: 'dark' });
     await page.reload();
-    await page.waitForFunction(() => window.__kucharzyna?.ready === true);
+    await page.waitForFunction(() => window.__kucharek?.ready === true);
     const darkGlass = await page.evaluate(() => getComputedStyle(document.documentElement).getPropertyValue('--glass-bg').trim());
     expect(darkGlass).toContain('28');
   });
@@ -151,7 +151,7 @@ test.describe('Stage 34C: wspólny system wizualny', () => {
   test('główne ekrany używają wspólnej geometrii i iPhone tap targets', async ({ page }) => {
     for (const path of ['/', '/recipes', '/inventory', '/settings']) {
       await page.goto('/#' + path);
-      await page.waitForFunction(() => window.__kucharzyna?.ready === true);
+      await page.waitForFunction(() => window.__kucharek?.ready === true);
 
       await expect(page.locator('.screen .topbar')).toBeVisible();
 
@@ -180,7 +180,7 @@ test.describe('Stage 34C: wspólny system wizualny', () => {
   test('główne widoki mają zerowy poziomy overflow po finalnym stylowaniu', async ({ page }) => {
     for (const path of ['/', '/recipes', '/cook', '/inventory', '/settings']) {
       await page.goto('/#' + path);
-      await page.waitForFunction(() => window.__kucharzyna?.ready === true);
+      await page.waitForFunction(() => window.__kucharek?.ready === true);
       const metrics = await page.evaluate(() => ({
         overflow: document.documentElement.scrollWidth - document.documentElement.clientWidth,
         viewportWidth: window.innerWidth,
@@ -192,7 +192,7 @@ test.describe('Stage 34C: wspólny system wizualny', () => {
 
   test('ustawienia pokazują aktualną wersję 34C', async ({ page }) => {
     await page.goto('/#/settings');
-    await page.waitForFunction(() => window.__kucharzyna?.ready === true);
+    await page.waitForFunction(() => window.__kucharek?.ready === true);
     await expect(page.getByText('Wersja aplikacji', { exact: true })).toBeVisible();
     const appVersion = await page.evaluate(async () => (await import('/util.js')).APP_VERSION);
   await expect(page.getByText(appVersion, { exact: true })).toBeVisible();
@@ -201,7 +201,7 @@ test.describe('Stage 34C: wspólny system wizualny', () => {
   test('zrzuty kontrolne głównych ekranów powstają w QA', async ({ page }, testInfo) => {
     for (const [name, path] of [['start','/'], ['recipes','/recipes'], ['inventory','/inventory'], ['settings','/settings']]) {
       await page.goto('/#' + path);
-      await page.waitForFunction(() => window.__kucharzyna?.ready === true);
+      await page.waitForFunction(() => window.__kucharek?.ready === true);
       await page.screenshot({ path: testInfo.outputPath('visual-' + name + '-34C.png'), fullPage: false });
     }
   });
@@ -211,7 +211,7 @@ test.describe('Stage 34C: wspólny system wizualny', () => {
 test.describe('Stage 34D: Magazyn UX', () => {
   test('Magazyn pokazuje stan, filtry, listę produktów i automatykę', async ({ page }) => {
     await page.goto('/#/inventory');
-    await page.waitForFunction(() => window.__kucharzyna?.ready === true);
+    await page.waitForFunction(() => window.__kucharek?.ready === true);
     await stableEvaluate(page, async () => {
       const { db } = await import('/db.js');
       await db.clear('inventory');
@@ -220,7 +220,7 @@ test.describe('Stage 34D: Magazyn UX', () => {
       await seedTestInventory();
     });
     await page.reload();
-    await page.waitForFunction(() => window.__kucharzyna?.ready === true);
+    await page.waitForFunction(() => window.__kucharek?.ready === true);
 
     await expect(page.getByRole('heading', { name: 'Magazyn' })).toBeVisible();
     await expect(page.locator('.inventory-summary-v2')).toBeVisible();
@@ -232,13 +232,13 @@ test.describe('Stage 34D: Magazyn UX', () => {
 
   test('filtr Niskie i wejście w produkt działają jednym tapnięciem', async ({ page }) => {
     await page.goto('/#/inventory');
-    await page.waitForFunction(() => window.__kucharzyna?.ready === true);
+    await page.waitForFunction(() => window.__kucharek?.ready === true);
     await stableEvaluate(page, async () => {
       const { seedTestInventory } = await import('/inventory.js');
       await seedTestInventory();
     });
     await page.reload();
-    await page.waitForFunction(() => window.__kucharzyna?.ready === true);
+    await page.waitForFunction(() => window.__kucharek?.ready === true);
 
     await page.getByRole('button', { name: 'Niskie', exact: true }).click();
     await expect(page.locator('.inventory-product.low, .inventory-product.empty')).not.toHaveCount(0);
@@ -256,7 +256,7 @@ test.describe('Stage 34D: Magazyn UX', () => {
 
   test('Automatyka jest schowana pod jednym wejściem i pokazuje oba przełączniki', async ({ page }) => {
     await page.goto('/#/inventory');
-    await page.waitForFunction(() => window.__kucharzyna?.ready === true);
+    await page.waitForFunction(() => window.__kucharek?.ready === true);
     await page.getByRole('button', { name: /Automatyka/ }).click();
     await expect(page.getByRole('heading', { name: 'Automatyzacja magazynu' })).toBeVisible();
     await expect(page.getByText('Zużycie przy gotowaniu', { exact: true })).toBeVisible();
@@ -265,7 +265,7 @@ test.describe('Stage 34D: Magazyn UX', () => {
 
   test('Magazyn zachowuje iPhone tap targets oraz brak poziomego overflow', async ({ page }) => {
     await page.goto('/#/inventory');
-    await page.waitForFunction(() => window.__kucharzyna?.ready === true);
+    await page.waitForFunction(() => window.__kucharek?.ready === true);
     const metrics = await page.evaluate(() => ({
       overflow: document.documentElement.scrollWidth - document.documentElement.clientWidth,
       action: document.querySelector('.inventory-product-actions .iconbtn')?.getBoundingClientRect().width || 0,
@@ -281,7 +281,7 @@ test.describe('Stage 34D: Magazyn UX', () => {
 test.describe('Stage 34F: redesign iPhone + real user flows', () => {
   test('Gotuję renderuje prawdziwe karty i otwiera tryb gotowania', async ({ page }) => {
     await page.goto('/#/cook');
-    await page.waitForFunction(() => window.__kucharzyna?.ready === true);
+    await page.waitForFunction(() => window.__kucharek?.ready === true);
     await expect(page.getByRole('heading', { name: 'Wybierz recepturę' })).toBeVisible();
     await expect(page.locator('.cook-hub-list')).not.toContainText('[object Object]');
     await expect(page.locator('.cook-hub-card')).not.toHaveCount(0);
@@ -291,20 +291,20 @@ test.describe('Stage 34F: redesign iPhone + real user flows', () => {
 
   test('Magazyn ma ikonę składnika na każdym widocznym produkcie', async ({ page }) => {
     await page.goto('/#/inventory');
-    await page.waitForFunction(() => window.__kucharzyna?.ready === true);
+    await page.waitForFunction(() => window.__kucharek?.ready === true);
     await stableEvaluate(page, async () => {
       const { saveInventoryItem } = await import('/inventory.js');
       await saveInventoryItem({ id:'e2e-34f-icon', name:'Pecorino Romano UI', quantity:2, unit:'kg', minQuantity:0, targetQuantity:3, purchasePrice:55, priceUnit:'kg', ean:'', category:'Nabiał', aliases:[] });
     });
     await page.reload();
-    await page.waitForFunction(() => window.__kucharzyna?.ready === true);
+    await page.waitForFunction(() => window.__kucharek?.ready === true);
     await expect(page.locator('.inventory-product').first()).toBeVisible();
     expect(await page.locator('.inventory-product-visual .ingredient-icon svg').count()).toBeGreaterThan(0);
   });
 
   test('Więcej jest kompaktowym sheetem', async ({ page }) => {
     await page.goto('/');
-    await page.waitForFunction(() => window.__kucharzyna?.ready === true);
+    await page.waitForFunction(() => window.__kucharek?.ready === true);
     await page.getByRole('button', { name: 'Więcej' }).click();
     const panel=page.locator('.overlay.sheet .panel').last();
     await expect(panel).toBeVisible();
@@ -315,7 +315,7 @@ test.describe('Stage 34F: redesign iPhone + real user flows', () => {
 
   test('Hero nie powiela nazwy dania w grafice tła', async ({ page }) => {
     await page.goto('/');
-    await page.waitForFunction(() => window.__kucharzyna?.ready === true);
+    await page.waitForFunction(() => window.__kucharek?.ready === true);
     const heroImg = page.locator('.start-hero-image img').first();
     await expect(heroImg).toBeVisible();
     const src = await heroImg.getAttribute('src');
@@ -332,7 +332,7 @@ test.describe('Stage 34F: redesign iPhone + real user flows', () => {
 
   test('Import łączy instrukcję i wklejanie w jednym panelu', async ({ page }) => {
     await page.goto('/#/import');
-    await page.waitForFunction(() => window.__kucharzyna?.ready === true);
+    await page.waitForFunction(() => window.__kucharek?.ready === true);
     await expect(page.locator('.import-workflow-card')).toBeVisible();
     await expect(page.getByLabel('Wklejony przepis', { exact: true })).toBeVisible();
     await expect(page.getByRole('button', { name: 'Rozpoznaj przepis' })).toBeVisible();

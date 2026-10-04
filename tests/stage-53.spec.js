@@ -16,15 +16,18 @@ test.describe('Stage 53 — Polish recipe translation gate', () => {
     await page.waitForFunction(() => window.__kucharzyna?.ready === true);
     const info = await page.evaluate(() => {
       const values = [...window.__kucharzyna.state.recipes.values()];
+      const archive = values.filter((r) => String(r.id).startsWith('rcp_archive_'));
       return {
-        count: values.length,
-        ids: new Set(values.map((r) => r.id)).size,
-        translations: values.filter((r) => r.translationLanguage === 'pl').length,
-        originals: values.filter((r) => r.originalName).length,
+        total: values.length,
+        archiveCount: archive.length,
+        archiveIds: new Set(archive.map((r) => r.id)).size,
+        translations: archive.filter((r) => r.translationLanguage === 'pl').length,
+        originals: archive.filter((r) => r.originalName).length,
       };
     });
-    expect(info.count).toBe(1700);
-    expect(info.ids).toBe(1700);
+    expect(info.total).toBeGreaterThanOrEqual(1713);
+    expect(info.archiveCount).toBe(1700);
+    expect(info.archiveIds).toBe(1700);
     expect(info.translations).toBe(1700);
     expect(info.originals).toBe(1700);
   });

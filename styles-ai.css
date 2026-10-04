@@ -49,3 +49,13 @@
   background: color-mix(in srgb, var(--34e-glass-soft) 90%, transparent);
 }
 .ai-settings-status svg { color: var(--34e-accent); flex: 0 0 auto; }
+
+.ai-setup-guide { border: 1px solid var(--34e-stroke-soft); border-radius: 18px; background: color-mix(in srgb, var(--34e-glass) 88%, transparent); overflow: hidden; }
+.ai-setup-guide > summary { cursor: pointer; list-style: none; display:flex; align-items:center; gap:8px; padding:13px 14px; font-size:.94rem; }
+.ai-setup-guide > summary::-webkit-details-marker { display:none; }
+.ai-guide-body { padding: 0 13px 14px; }
+.ai-step { padding: 11px 0; border-top: 1px solid var(--34e-stroke-soft); }
+.ai-step b { display:block; margin-bottom:4px; }
+.ai-step p { margin:4px 0; }
+.ai-step code { display:block; overflow:auto; padding:8px 10px; border-radius:10px; background: color-mix(in srgb, var(--34e-bg) 75%, transparent); font-size:.78rem; }
+.ai-guide-body .notice.warning { margin-top: 4px; }

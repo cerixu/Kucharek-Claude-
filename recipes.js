@@ -7,7 +7,16 @@
    ========================================================================== */
 import { db, kv } from './db.js';
 import { uid, norm, fmtAmount, fmtMinutes, fmtDateTime, flagEmoji } from './util.js';
-import { recipeLibrary } from './recipe-library.js';
+const ARCHIVE_MODULE_VERSION = '20261005-60-1.3.93';
+let archiveLibraryPromise = null;
+
+async function getRecipeLibrary() {
+  if (!archiveLibraryPromise) {
+    archiveLibraryPromise = import(`./recipe-library.js?v=${ARCHIVE_MODULE_VERSION}`);
+  }
+  const mod = await archiveLibraryPromise;
+  return mod.recipeLibrary;
+}
 
 /* ---------- Kategorie i kraje ---------- */
 
@@ -46,6 +55,7 @@ export const DEFAULT_SETTINGS = {
   inventoryAutoShopping: true,
   inventoryAutoConsumption: true,
   seedLibraryVersion: SEED_MEDIA_VERSION,
+  archiveSeeded: false,
   archiveTranslationVersion: 0,
   aiEnabled: true,
   aiGatewayUrl: '',
@@ -139,11 +149,11 @@ export async function loadAll() {
   state.catalog = new Map(ings.map((i) => [i.id, i]));
   if (!cats.length) { await db.putMany('categories', DEFAULT_CATEGORIES); state.categories = [...DEFAULT_CATEGORIES]; }
   else state.categories = cats.sort((a, b) => a.order - b.order);
-  // Na świeżej instalacji pierwszy seed musi zakończyć się przed ready,
-  // żeby aplikacja nie pokazała pustej biblioteki. W istniejącej bazie ciężkie
-  // migracje i tłumaczenia nie mogą blokować startu.
+  // Pierwszy render nie może czekać na 5+ MB archiwum receptur.
+  // Na świeżej instalacji zapisujemy tylko lekki pakiet bazowy; pełne archiwum
+  // 1700 receptur jest ładowane po ustawieniu state.ready, w tle.
   if (!getSetting('seeded') && !state.recipes.size) {
-    await restoreSeeds();
+    await restoreSeeds({ includeArchive: false });
     await setSetting('seeded', true);
   } else if (!getSetting('seeded')) {
     await setSetting('seeded', true);
@@ -153,9 +163,13 @@ export async function loadAll() {
 
   (async () => {
     try {
-      if (getSetting('seedLibraryVersion') !== SEED_MEDIA_VERSION) {
+      const seedVersionChanged = getSetting('seedLibraryVersion') !== SEED_MEDIA_VERSION;
+      if (seedVersionChanged) {
         await removeLegacyLibrarySeeds();
-        await restoreSeeds();
+      }
+      if (!getSetting('archiveSeeded') || seedVersionChanged) {
+        await restoreSeeds({ includeArchive: true });
+        await setSetting('archiveSeeded', true);
         await setSetting('seedLibraryVersion', SEED_MEDIA_VERSION);
       }
       await refreshArchiveTranslations();
@@ -530,6 +544,7 @@ export const ARCHIVE_TRANSLATION_VERSION = 20;
 
 async function refreshArchiveTranslations() {
   if (getSetting('archiveTranslationVersion') === ARCHIVE_TRANSLATION_VERSION) return 0;
+  const recipeLibrary = await getRecipeLibrary();
   const fresh = new Map(recipeLibrary(Date.now()).filter(r => String(r.id).startsWith('rcp_archive_')).map(r => [r.id, r]));
   const updates = [];
   for (const cur of state.recipes.values()) {
@@ -578,12 +593,18 @@ async function refreshArchiveTranslations() {
   return updates.length;
 }
 
-async function restoreSeeds({ forceMedia = false } = {}) {
-  // seedRecipes() już zawiera całą bibliotekę 1200+. Nie generuj jej drugi raz.
-  // Deduplikacja ID gwarantuje też pojedynczy zapis każdej receptury.
-  const seeds=[...new Map(seedRecipes().map((r) => [r.id, r])).values()];
-  const missing=seeds.filter(r=>!state.recipes.has(r.id));
-  const mediaUpdates=seeds.filter(r=>{
+async function restoreSeeds({ forceMedia = false, includeArchive = true } = {}) {
+  // Lekki pakiet startowy jest dostępny bez pobierania całego archiwum.
+  // Pełne 1700 receptur można bezpiecznie doładować już po starcie aplikacji.
+  const baseSeeds = seedRecipes();
+  const seeds = [...new Map(baseSeeds.map((r) => [r.id, r])).values()];
+  if (includeArchive) {
+    const recipeLibrary = await getRecipeLibrary();
+    recipeLibrary(Date.now()).forEach((r) => seeds.push(r));
+  }
+  const deduped=[...new Map(seeds.map((r) => [r.id, r])).values()];
+  const missing=deduped.filter(r=>!state.recipes.has(r.id));
+  const mediaUpdates=deduped.filter(r=>{
     if(!state.recipes.has(r.id)||!r.photo)return false;
     const cur=state.recipes.get(r.id);
     const legacyMedia=/^https:\/\/images\.unsplash\.com\//.test(cur.photo||'');

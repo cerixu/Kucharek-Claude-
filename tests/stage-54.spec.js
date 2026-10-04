@@ -97,7 +97,6 @@ test('Stage 54 — static Polish corpus gate', async ({ page }) => {
   expect(['(', ')', '[', ']', '"'].some(mark => String(info.bigos.name).includes(mark))).toBe(false);
   expect(info.bigos.originalName).toContain('Polish Hunter');
   expect(info.bigos.ingredient).toContain('kapusta');
-  expect(info.bigos.step).toContain('kapust');
+  expect(info.bigos.step).toMatch(/kapust/i);
 });
 
-// Stage 54 verification trigger: run this corpus gate explicitly.

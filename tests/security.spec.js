@@ -27,6 +27,13 @@ test.describe('Security & privacy', () => {
     expect(await page.locator('meta[name="referrer"]').getAttribute('content')).toBe('no-referrer');
     expect(await page.locator('script:not([src])').count()).toBe(0);
     expect(await page.locator('script[src^="http://"], script[src^="https://"]').count()).toBe(0);
+
+    await page.evaluate(() => {
+      const s = document.createElement('script');
+      s.textContent = 'window.__csp_inline_executed = true';
+      document.head.appendChild(s);
+    });
+    expect(await page.evaluate(() => window.__csp_inline_executed === true)).toBe(false);
   });
 
   test('niebezpieczny URL źródła nie staje się linkiem javascript', async ({ page }) => {

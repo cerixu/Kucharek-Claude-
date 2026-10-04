@@ -539,7 +539,7 @@ async function removeLegacyLibrarySeeds() {
   return legacy.length;
 }
 
-export const ARCHIVE_TRANSLATION_VERSION = 20;
+export const ARCHIVE_TRANSLATION_VERSION = 30;
 
 async function refreshArchiveTranslations() {
   if (getSetting('archiveTranslationVersion') === ARCHIVE_TRANSLATION_VERSION) return 0;
@@ -592,7 +592,7 @@ async function refreshArchiveTranslations() {
   return updates.length;
 }
 
-async function restoreSeeds({ forceMedia = false, includeArchive = true } = {}) {
+export async function restoreSeeds({ forceMedia = false, includeArchive = true } = {}) {
   // Lekki pakiet startowy jest dostępny bez pobierania całego archiwum.
   // Pełne 1700 receptur można bezpiecznie doładować już po starcie aplikacji.
   const baseSeeds = seedRecipes();

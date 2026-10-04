@@ -30,7 +30,7 @@ test('Stage 54 — static Polish corpus gate', async ({ page }) => {
       'iu'
     );
 
-    const dirtyNames = rs.filter(r => /[():\\[\\]"]/u.test(r.name)).length;
+    const dirtyNames = rs.filter(r => ['(', ')', '[', ']', '"'].some(mark => String(r.name).includes(mark))).length;
     const englishHits = [];
 
     for (const r of rs) {
@@ -71,7 +71,7 @@ test('Stage 54 — static Polish corpus gate', async ({ page }) => {
   expect(info.dirtyNames).toBe(0);
   expect(info.englishHits).toEqual([]);
   expect(info.bigos.name).toBe('Bigos');
-  expect(info.bigos.name).not.toMatch(/[():\\[\\]"]/u);
+  expect(['(', ')', '[', ']', '"'].some(mark => String(info.bigos.name).includes(mark))).toBe(false);
   expect(info.bigos.originalName).toContain('Polish Hunter');
   expect(info.bigos.ingredient).toContain('kapusta');
   expect(info.bigos.step).toContain('kapust');

@@ -3,7 +3,7 @@ import { test, expect } from '@playwright/test';
 test.describe('Stage 49 · ingredient icon coverage', () => {
   test('known culinary ingredients map to dedicated icons', async ({ page }) => {
     await page.goto('/');
-    await page.waitForFunction(() => window.__kucharzyna?.ready === true, { timeout: 30000 });
+    await page.waitForFunction(() => window.__kucharek?.ready === true, { timeout: 30000 });
 
     const result = await page.evaluate(async () => {
       const mod = await import('./components.js');
@@ -38,7 +38,7 @@ test.describe('Stage 49 · ingredient icon coverage', () => {
 
   test('unknown ingredients receive safe category fallbacks', async ({ page }) => {
     await page.goto('/#inventory');
-    await page.waitForFunction(() => window.__kucharzyna?.ready === true, { timeout: 30000 });
+    await page.waitForFunction(() => window.__kucharek?.ready === true, { timeout: 30000 });
 
     const result = await page.evaluate(async () => {
       const mod = await import('./components.js');

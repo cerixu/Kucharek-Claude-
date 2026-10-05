@@ -113,6 +113,7 @@ jobs:
             "Stage 54:"*) echo "test_files=tests/stage-54.spec.js" >> "$GITHUB_OUTPUT" ;;
             "Stage 55:"*) echo "test_files=tests/stage-55.spec.js" >> "$GITHUB_OUTPUT" ;;
             "Stage 56:"*) echo "test_files=tests/stage-56.spec.js" >> "$GITHUB_OUTPUT" ;;
+            "Stage 57:"*) echo "test_files=tests/stage-57.spec.js" >> "$GITHUB_OUTPUT" ;;
             "Optimize Stage 54 corpus gate"*) echo "test_files=tests/stage-54.spec.js" >> "$GITHUB_OUTPUT" ;;
             "Wait for background archive before corpus assertions"*) echo "test_files=tests/startup.spec.js tests/stage-54.spec.js" >> "$GITHUB_OUTPUT" ;;
             "Fix startup:"*) echo "test_files=tests/startup.spec.js" >> "$GITHUB_OUTPUT" ;;

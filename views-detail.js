@@ -20,6 +20,8 @@ import { openAddToShopping, addMissingFromRecipe } from './shopping.js';
 import { hostOf } from './importer.js';
 import { db } from './db.js';
 import { openRecipeAiSheet } from './views-ai.js';
+import { loadInventory, listInventory } from './inventory.js';
+import { pantrySummary } from './kitchen.js?v=20261005-63-1.3.96';
 
 const KIND_LABEL = { flour: 'mąka', water: 'woda', salt: 'sól', yeast: 'drożdże', fat: 'tłuszcz', other: '' };
 const servingsText = (n) => Number(n) === 1 ? '1 porcja' : `${fmtNum(n, 1)} porcji`;
@@ -46,6 +48,8 @@ export function detailView({ id }) {
 
   let scaled = null;          // przeliczona kopia (niezapisana) albo null
   let scaleLabel = '';
+  let pantry = null;
+  let pantryLoading = true;
 
   let skipPaint = false;
   const amateur = () => getSetting('mode') === 'amateur';
@@ -58,6 +62,47 @@ export function detailView({ id }) {
     right: h('div', { class: 'row' }, heartSlot, iconBtn('more', 'Więcej', () => openMore())), cls: 'detail',
   });
   const titleEl = s.top.querySelector('.topbar-title');
+
+  /* ----- Magazyn / inteligentne dopasowanie ----- */
+
+  function pantryCard(r) {
+    if (amateur()) return null;
+    if (pantryLoading) {
+      return h('section', { class: 'card pantry-card' },
+        h('div', { class: 'row between' },
+          h('h2', { class: 'card-title' }, icon('list', 20), 'Magazyn'),
+          h('span', { class: 'muted small' }, 'Sprawdzam…')
+        ),
+        h('p', { class: 'muted small' }, 'Dopasowuję składniki receptury do aktualnego stanu Magazynu.')
+      );
+    }
+    const p = pantry || pantrySummary(r, listInventory());
+    const missingNames = p.missing.slice(0, 4).map((i) => i.name);
+    return h('section', { class: 'card pantry-card' },
+      h('div', { class: 'row between' },
+        h('h2', { class: 'card-title' }, icon('list', 20), 'Magazyn'),
+        h('span', { class: 'pill soft' }, `${p.haveCount}/${p.totalCount}`)
+      ),
+      h('div', { class: 'pantry-score' },
+        h('div', { class: 'pantry-score-main' },
+          h('strong', { class: 'num' }, `${p.percent}%`),
+          h('span', { class: 'muted small' }, 'składników rozpoznanych w magazynie')
+        ),
+        p.missingCount
+          ? h('div', { class: 'pantry-missing' },
+              h('span', { class: 'muted small' }, 'Brakuje: '),
+              h('strong', null, missingNames.join(', ') + (p.missingCount > missingNames.length ? '…' : '')))
+          : h('div', { class: 'pantry-ok' }, icon('check', 17), h('span', null, 'Masz wszystkie składniki potrzebne do receptury.'))
+      ),
+      h('div', { class: 'row wrap gap' },
+        p.missingCount ? button('Dodaj braki do zakupów', { icon: 'cart', onClick: async () => {
+          const res = await addMissingFromRecipe(r, 1);
+          toast(res.count ? `Dodano ${res.count} braków do zakupów` : 'Magazyn pokrywa całą recepturę');
+        } }) : null,
+        button('Otwórz Magazyn', { icon: 'list', kind: 'ghost', onClick: () => navigate('/inventory') })
+      )
+    );
+  }
 
   /* ----- Przeliczanie ----- */
 
@@ -425,6 +470,7 @@ export function detailView({ id }) {
     kids.push(h('div', { class: 'actions-primary' },
       button('GOTUJĘ', { kind: 'primary', lg: true, block: true, icon: 'chef', onClick: () => navigate('/cook/' + id) })));
     kids.push(cookingHistoryCard());
+    kids.push(pantryCard(r));
 
     kids.push(h('div', { class: 'actions-row' },
       button('Zapytaj AI', { icon: 'sparkle', onClick: () => openRecipeAiSheet({ openSheet, recipe: cur() }) }),
@@ -467,6 +513,7 @@ export function detailView({ id }) {
   }
 
   paint();
+  loadInventory().then(() => { pantry = pantrySummary(cur(), listInventory()); pantryLoading = false; paint(); }).catch(() => { pantryLoading = false; paint(); });
   const unsub = subscribe((t) => {
     if (skipPaint) return;
     if (t === 'recipes' || t === 'settings' || t === 'categories') {

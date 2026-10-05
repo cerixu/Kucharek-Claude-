@@ -375,8 +375,18 @@ export function translateRecipe(recipe) {
 
 
 /* ---------- Etap 61: końcowa normalizacja polskiego archiwum ---------- */
+const ARCHIVE_TAG_FIXES = new Map([
+  ['italy','włochy'],['spain','hiszpania'],['france','francja'],['germany','niemcy'],['czech','czechy'],
+  ['japan','japonia'],['china','chiny'],['india','indie'],['korea','korea'],['thailand','tajlandia'],['vietnam','wiet-nam'],
+  ['portugal','portugalia'],['greece','grecja'],['turkey','turcja'],['usa','stany zjednoczone'],['united-states','stany zjednoczone'],
+  ['mexico','meksyk'],['peru','peru'],['brazil','brazylia'],['argentina','argentyna'],['poland','polska'],
+  ['cucina-italiana','kuchnia włoska'],['cocina-espanola','kuchnia hiszpańska'],['cuisine-francaise','kuchnia francuska'],
+  ['japanese-kitchen','kuchnia japońska'],['chinese-kitchen','kuchnia chińska'],['indian-kitchen','kuchnia indyjska'],
+  ['german-kitchen','kuchnia niemiecka'],['ceska-kuchyne','kuchnia czeska'],['public-domain','domena publiczna'],['archive','archiwum']
+]);
 const ARCHIVE_NAME_FIXES = new Map([
   ["Angielskie Muffins", "Muffiny angielskie"],
+  ["The Cups", "Kubeczki"],
   ["Boiled Rifatto all'English", "Gotowane rifatto po angielsku"],
   ["Catup", "Ketchup"],
   ["Nogg jajeczny", "Napój jajeczny"],
@@ -396,6 +406,11 @@ const ARCHIVE_TEXT_FIXES = [
   [/\bConsommé à la Duchesse\b/gi, "klarowny bulion po książęcemu"],
   [/\bHomary à la Newburg\b/gi, "homary po newburgsku"],
 ];
+
+export function normalizeArchivePolishTag(value) {
+  const raw = String(value ?? '').trim();
+  return ARCHIVE_TAG_FIXES.get(raw.toLowerCase()) || normalizeArchivePolishText(raw);
+}
 
 export function normalizeArchivePolishText(value) {
   let out = String(value ?? '');

@@ -21,7 +21,7 @@ import { hostOf } from './importer.js';
 import { db } from './db.js';
 import { openRecipeAiSheet } from './views-ai.js';
 import { loadInventory, listInventory } from './inventory.js';
-import { pantrySummary } from './kitchen.js?v=20261005-63-1.3.96';
+import { pantrySummary } from './kitchen.js?v=20261005-63-1.5.3';
 
 const KIND_LABEL = { flour: 'mąka', water: 'woda', salt: 'sól', yeast: 'drożdże', fat: 'tłuszcz', other: '' };
 const servingsText = (n) => Number(n) === 1 ? '1 porcja' : `${fmtNum(n, 1)} porcji`;

@@ -7,7 +7,7 @@
    ========================================================================== */
 import { db, kv } from './db.js';
 import { uid, norm, fmtAmount, fmtMinutes, fmtDateTime, flagEmoji } from './util.js';
-const ARCHIVE_MODULE_VERSION = '20261005-60-1.3.94';
+const ARCHIVE_MODULE_VERSION = '20261005-61-1.4.4';
 let archiveLibraryPromise = null;
 
 async function getRecipeLibrary() {
@@ -539,7 +539,7 @@ async function removeLegacyLibrarySeeds() {
   return legacy.length;
 }
 
-export const ARCHIVE_TRANSLATION_VERSION = 30;
+export const ARCHIVE_TRANSLATION_VERSION = 31;
 
 async function refreshArchiveTranslations() {
   if (getSetting('archiveTranslationVersion') === ARCHIVE_TRANSLATION_VERSION) return 0;

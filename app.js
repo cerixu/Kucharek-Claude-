@@ -2,11 +2,12 @@
    app.js — start aplikacji: baza, ustawienia, motyw, nawigacja dolna,
    obsługa klawiatury iOS (visualViewport), trasy, service worker.
    ========================================================================== */
-import { openDB } from './db.js?v=20261005-58-1.3.94';
+import { openDB } from './db.js?v=20261005-58-1.3.95';
 import { loadAll, state, subscribe, getSetting } from './recipes.js';
 import { h, icon, toast, $, openSheet, button } from './ui.js';
 import { route, startRouter, navigate } from './router.js';
 import { registerSW, requestPersist } from './pwa.js';
+import { initTimers, mountTimerPill, openTimersSheet } from './timers.js?v=20261005-62-1.3.95';
 
 import { startView } from './views-start.js';
 import { recipesView } from './views-recipes.js';
@@ -22,7 +23,7 @@ import { inventoryView } from './views-inventory.js';
 import { cookHubView } from './views-cook-hub.js';
 
 let proModulePromise;
-const loadProModule = () => proModulePromise ||= import('./views-pro-fixed.js?v=20261005-59-1.3.94');
+const loadProModule = () => proModulePromise ||= import('./views-pro-fixed.js?v=20261005-59-1.3.95');
 
 const root = document.documentElement;
 const bootStartedAt = performance.now();
@@ -196,6 +197,9 @@ async function boot() {
     if (type === 'settings') applyAppearance();
   });
   buildTabbar();
+  initTimers();
+  const appHost = document.querySelector('#app');
+  if (appHost) mountTimerPill(appHost, () => openTimersSheet());
   watchViewport();
   watchNetwork();
   startRouter($('#view'), (path, meta) => { setActiveTab(meta); });

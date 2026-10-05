@@ -3,7 +3,7 @@
    localStorage, więc po przeładowaniu/powrocie do aplikacji nadal odliczają.
    Dźwięk i wibracja działają, gdy aplikacja jest na ekranie.
    ========================================================================== */
-import { h, icon, button, openSheet, numInput, textInput, field } from './ui.js';
+import { h, icon, button, toast, openSheet, numInput, textInput, field } from './ui.js';
 import { uid, fmtClock } from './util.js';
 
 const KEY = 'k:timers';
@@ -55,9 +55,7 @@ export function beep(times = 6) {
 
 function alarm(t) {
   beep();
-  document.dispatchEvent(new CustomEvent('kucharek-timer-ended', {
-    detail: { timer: t }
-  }));
+  toast(`Minutnik: koniec${t.label ? ' — ' + t.label : ''}!`, { sticky: true, action: { label: 'OK', fn: () => stopTimer(t.id) } });
 }
 
 function ensureTick() {
@@ -250,7 +248,7 @@ export function openTimersSheet() {
           icon: 'timer',
           onClick: () => {
             if (!(minutes > 0)) {
-              document.dispatchEvent(new CustomEvent('kucharek-timer-error', { detail: { message: 'Wpisz liczbę minut' } }));
+              toast('Wpisz liczbę minut', { type: 'error' });
               return false;
             }
             startTimer(Math.round(minutes * 60), label.trim());

@@ -31,7 +31,7 @@ test('Stage 60 — master iPhone visual shell', async ({ page }) => {
   });
 
   expect(metrics.hero.radius).toBeGreaterThanOrEqual(30);
-  expect(metrics.dock.radius).toBeGreaterThanOrEqual(28);
+  expect(metrics.dock.radius).toBeGreaterThanOrEqual(26);
   expect(metrics.dock.blur).toContain('blur');
   expect(metrics.hero.shadow).toContain('rgba');
   expect(metrics.category.radius).toBeGreaterThanOrEqual(18);

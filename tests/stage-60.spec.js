@@ -10,7 +10,7 @@ test('Stage 60 — master iPhone visual shell', async ({ page }) => {
   await page.goto('/#/');
   await page.waitForFunction(() => window.__kucharek?.ready === true, null, { timeout: 30000 });
   const version = await page.evaluate(async () => (await import('./util.js')).APP_VERSION);
-  expect(version).toBe('1.4.2');
+  expect(version).toBe('1.4.3');
 
   await expect(page.locator('.start-brand')).toBeVisible();
   await expect(page.locator('.start-category-scroller')).toBeVisible();

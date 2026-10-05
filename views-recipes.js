@@ -17,7 +17,7 @@ const SORTS = [
 ];
 
 // Stan widoku zostaje w pamięci, więc po powrocie z receptury lista wygląda tak samo.
-const vs = { q: '', chip: 'all', tag: '', maxTime: 0, favOnly: false, origin: '', visibleCount: 40 };
+const vs = { q: '', chip: 'all', tag: '', maxTime: 0, favOnly: false, visibleCount: 40 };
 
 const activeTime = (r) => (r.prepTime || 0) + (r.cookTime || 0);
 

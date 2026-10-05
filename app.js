@@ -21,6 +21,7 @@ import { settingsView } from './views-settings.js';
 import { historyView } from './views-history.js';
 import { inventoryView } from './views-inventory.js';
 import { cookHubView } from './views-cook-hub.js';
+import { worldView } from './views-world.js';
 
 let proModulePromise;
 const loadProModule = () => proModulePromise ||= import('./views-pro-fixed.js?v=20261005-59-1.3.97');
@@ -155,6 +156,7 @@ function watchNetwork() {
 
 route('/', () => startView(), { tab: 'start' });
 route('/recipes', (p, q) => recipesView(q), { tab: 'recipes' });
+route('/world', () => worldView(), { tab: 'recipes' });
 route('/history', () => historyView(), { tab: 'more' });
 route('/recipe/:id', (p) => detailView(p), { tab: 'recipes' });
 route('/edit/:id', (p) => editorView(p), { tab: 'recipes', tabs: false });

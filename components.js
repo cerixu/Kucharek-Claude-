@@ -47,22 +47,64 @@ export function heartBtn(r, onToggle) {
 }
 
 function visualKind(r) {
-  const text = String(r.name || '').toLowerCase();
-  if (/pizza|focaccia|ciasto|chleb|bułk|pieczyw/.test(text)) return 'bakery';
-  if (/makaron|pasta|spaghetti|carbonara|lasagn/.test(text)) return 'pasta';
-  if (/sałat|warzyw|zupa|sos|krem/.test(text)) return 'fresh';
+  const name = String(r.name || '').toLowerCase();
+  const category = String(catName(r.category) || '').toLowerCase();
+  const ingredients = allIngredients(r).map((i) => String(i?.name || '').toLowerCase()).join(' ');
+  const hay = name + ' ' + category + ' ' + ingredients;
+
+  if (/cocktail|koktajl|drink|spritz|martini|mojito|negroni|daiquiri/.test(hay) || /cocktail/.test(category)) return 'cocktail';
+  if (/pizza|focaccia/.test(hay)) return 'pizza';
+  if (/ramen|udon|soba|noodle|noodle|pad thai|pho\b/.test(hay)) return 'noodles';
+  if (/sushi|maki\b|nigiri|sashimi/.test(hay)) return 'sushi';
+  if (/curry|masala|tikka|dal\b|vindaloo/.test(hay)) return 'curry';
+  if (/burger|cheeseburger|hamburger/.test(hay)) return 'burger';
+  if (/stek|wołow|polędwic|rostbef|entrecote|schab|karków|żeber/.test(hay)) return 'meat';
+  if (/łosoś|tuńczy|dorsz|halibut|pstrąg|ryba|krewet|małż|kalmar/.test(hay)) return 'fish';
+  if (/sałat|coleslaw|tabbouleh|warzyw/.test(hay)) return 'salad';
+  if (/zupa|ramen|pho\b|bulion|krem\b/.test(hay) || /zupy/.test(category)) return 'soup';
+  if (/tiramisu|sernik|ciasto|tarta|brownie|panna cotta|cr[eè]me|deser|lody|muffin|cake|cookie/.test(hay)) return 'dessert';
+  if (/makaron|pasta|spaghetti|carbonara|lasagn|tagliatelle|gnocchi/.test(hay)) return 'pasta';
+  if (/chleb|bułk|brioche|croissant|bagiet|pieczyw/.test(hay)) return 'bakery';
+  if (/sos|pesto|rag[uù]|majonez|dip|vinaigrette/.test(hay)) return 'sauce';
   return 'dish';
 }
 
+function artSvg(kind) {
+  const common = { plate: '<ellipse cx="600" cy="440" rx="320" ry="200" fill="#0a0c0f" stroke="#343840" stroke-width="5"/><ellipse cx="600" cy="430" rx="265" ry="155" fill="#13161a" stroke="#252a30" stroke-width="3"/>' };
+  const art = {
+    pizza: common.plate + '<circle cx="600" cy="430" r="150" fill="#c96b38"/><circle cx="600" cy="430" r="126" fill="#d58a4b"/><circle cx="555" cy="390" r="18" fill="#8d3428"/><circle cx="650" cy="405" r="20" fill="#8d3428"/><circle cx="620" cy="475" r="19" fill="#8d3428"/><circle cx="565" cy="490" r="15" fill="#f1dfb0"/><path d="M520 435c32-14 128-14 160 0" fill="none" stroke="#f3e8c5" stroke-width="7" stroke-linecap="round"/>',
+    bakery: common.plate + '<path d="M440 475c20-98 90-150 160-150s140 52 160 150c-65 38-255 38-320 0Z" fill="#b97845"/><path d="M490 390c45-28 74-29 115-8M570 362c38-18 74-9 116 18M520 440c45-22 86-20 130 3" fill="none" stroke="#e7c18b" stroke-width="12" stroke-linecap="round"/>',
+    pasta: common.plate + '<path d="M430 435c50-95 120-70 170 10s120 100 170-5" fill="none" stroke="#d9a34f" stroke-width="28" stroke-linecap="round"/><path d="M465 455c50-84 112-55 160 18s110 83 155-2" fill="none" stroke="#bd7a36" stroke-width="10" opacity=".9"/>',
+    noodles: common.plate + '<path d="M430 390c65-45 120 30 175 72s112 70 170 2M430 435c65-45 120 30 175 72s112 70 170 2M445 485c52-35 98 18 150 50s112 42 162-5" fill="none" stroke="#d7a54d" stroke-width="16" stroke-linecap="round"/><circle cx="520" cy="365" r="15" fill="#b75a38"/><circle cx="685" cy="360" r="13" fill="#6c9141"/>',
+    sushi: common.plate + '<g transform="rotate(-8 600 430)"><rect x="445" y="365" width="90" height="55" rx="12" fill="#f1eee2"/><rect x="535" y="365" width="90" height="55" rx="12" fill="#f1eee2"/><rect x="625" y="365" width="90" height="55" rx="12" fill="#f1eee2"/><rect x="445" y="425" width="90" height="55" rx="12" fill="#244c38"/><rect x="535" y="425" width="90" height="55" rx="12" fill="#c77b5c"/><rect x="625" y="425" width="90" height="55" rx="12" fill="#244c38"/></g>',
+    curry: common.plate + '<ellipse cx="600" cy="435" rx="175" ry="105" fill="#b86b31"/><circle cx="530" cy="425" r="30" fill="#dda44a"/><circle cx="600" cy="465" r="28" fill="#e0b65a"/><circle cx="670" cy="418" r="32" fill="#c97e37"/><path d="M500 380c50-35 135-37 200 7" fill="none" stroke="#e5c27b" stroke-width="8" stroke-linecap="round"/>',
+    burger: common.plate + '<rect x="470" y="365" width="260" height="46" rx="23" fill="#c78948"/><rect x="485" y="408" width="230" height="18" rx="8" fill="#6e9445"/><rect x="485" y="428" width="230" height="55" rx="20" fill="#713b2f"/><rect x="490" y="482" width="220" height="20" rx="9" fill="#d6a154"/><path d="M500 365c10-42 60-62 100-62s90 20 100 62Z" fill="#bd7740"/>',
+    meat: common.plate + '<path d="M445 430c15-85 90-130 180-115 65 11 118 56 130 118-43 54-105 85-176 79-70-6-118-36-134-82Z" fill="#8d4d43"/><path d="M485 425c60-35 126-42 190-12M510 465c48-28 96-28 155-7" fill="none" stroke="#d48772" stroke-width="10" stroke-linecap="round"/>',
+    fish: common.plate + '<path d="M400 430c76-76 185-88 286-18l62 18-62 18c-101 70-210 58-286-18Z" fill="#698d92"/><path d="M400 430l-60-48M400 430l-60 48" stroke="#9fb8ba" stroke-width="14" stroke-linecap="round"/><circle cx="655" cy="418" r="7" fill="#101214"/>',
+    salad: common.plate + '<circle cx="500" cy="430" r="62" fill="#718f4e"/><circle cx="575" cy="390" r="58" fill="#96a95b"/><circle cx="645" cy="430" r="64" fill="#557642"/><circle cx="590" cy="475" r="56" fill="#c2a05e"/><circle cx="535" cy="470" r="18" fill="#d55f42"/><circle cx="665" cy="380" r="16" fill="#d55f42"/>',
+    soup: common.plate + '<path d="M435 395h330l-25 115H460Z" fill="#9a6749"/><ellipse cx="600" cy="395" rx="165" ry="35" fill="#bf8052"/><path d="M510 392c45-25 125-25 180 0M540 420c40-20 80-20 120 0" fill="none" stroke="#e0b177" stroke-width="8" stroke-linecap="round"/>',
+    dessert: common.plate + '<path d="M485 500h230l-28-150H513Z" fill="#b97765"/><path d="M525 350h150l-18-55H543Z" fill="#d7ad79"/><circle cx="570" cy="385" r="10" fill="#7b4d40"/><circle cx="630" cy="415" r="10" fill="#7b4d40"/>',
+    sauce: common.plate + '<path d="M470 390h260v120H470Z" fill="#9c4f3b"/><ellipse cx="600" cy="390" rx="130" ry="30" fill="#c06745"/><path d="M520 405c40 22 120 22 160 0" fill="none" stroke="#e1a16f" stroke-width="7"/>',
+    cocktail: '<path d="M460 320h280l-105 120v88h35v24H530v-24h35v-88Z" fill="#14171b" stroke="#89909b" stroke-width="5"/><path d="M505 355h190l-95 100Z" fill="#bd5d6d" opacity=".9"/><circle cx="655" cy="343" r="22" fill="#d8a043"/><path d="M690 320c26-20 35-44 32-68" fill="none" stroke="#62834d" stroke-width="8" stroke-linecap="round"/>',
+    dish: common.plate + '<ellipse cx="600" cy="435" rx="180" ry="105" fill="#363c42"/><circle cx="530" cy="420" r="25" fill="#8c969f"/><circle cx="600" cy="470" r="32" fill="#6f7b84"/><circle cx="670" cy="415" r="22" fill="#a8adb1"/>'
+  };
+  return art[kind] || art.dish;
+}
+
 export function recipeGraphicData(r, { hero = false } = {}) {
-  const label = String(r.name || catName(r.category) || 'Receptura').slice(0, 34).replace(/[&<>]/g, '');
+  const esc = (value) => String(value || '').slice(0, 34).replace(/[&<>]/g, '');
+  const label = esc(r.name || catName(r.category) || 'Receptura');
   const kind = visualKind(r);
-  const title = kind === 'bakery' ? 'PIECZYWO' : kind === 'pasta' ? 'MAKARON' : kind === 'fresh' ? 'WARZYWA · SOSY' : 'RECEPTURA';
+  const titles = {
+    pizza: 'PIZZA', bakery: 'PIECZYWO', pasta: 'MAKARON', noodles: 'MAKARON · AZJA',
+    sushi: 'SUSHI', curry: 'CURRY', burger: 'BURGER', meat: 'MIĘSO', fish: 'RYBY',
+    salad: 'SAŁATKA', soup: 'ZUPA', dessert: 'DESER', sauce: 'SOS', cocktail: 'KOKTAJL', dish: 'RECEPTURA'
+  };
   const footer = hero ? '' : `<text x="600" y="690" text-anchor="middle" fill="#f5f5f2" font-family="system-ui,sans-serif" font-size="48" font-weight="800">${label}</text><text x="600" y="735" text-anchor="middle" fill="#8f949c" font-family="system-ui,sans-serif" font-size="18" letter-spacing="3">KUCHAREK</text>`;
-  const categoryLabel = hero ? '' : title;
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 800"><defs><linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#17191c"/><stop offset="1" stop-color="#08090b"/></linearGradient><radialGradient id="gl"><stop stop-color="#ffffff" stop-opacity=".16"/><stop offset="1" stop-color="#ffffff" stop-opacity="0"/></radialGradient></defs><rect width="1200" height="800" fill="url(%23bg)"/><circle cx="980" cy="130" r="360" fill="url(%23gl)"/><circle cx="180" cy="700" r="300" fill="#fff" opacity=".035"/><ellipse cx="600" cy="440" rx="300" ry="190" fill="#0b0c0e" stroke="#3a3d42" stroke-width="5"/><ellipse cx="600" cy="430" rx="245" ry="145" fill="#111317" stroke="#292c31" stroke-width="3"/><path d="M420 410c55-75 120-95 180-58 48-48 126-25 168 34 36 51 24 101-28 127-86 42-254 35-319-12-35-25-35-57-1-91z" fill="#22262b"/><circle cx="515" cy="410" r="24" fill="#8d939b"/><circle cx="590" cy="370" r="18" fill="#666b73"/><circle cx="675" cy="423" r="28" fill="#9a9fa6"/><circle cx="720" cy="475" r="15" fill="#5e636a"/><text x="600" y="105" text-anchor="middle" fill="#aeb3ba" font-family="system-ui,sans-serif" font-size="20" font-weight="800" letter-spacing="6">${categoryLabel}</text>${footer}</svg>`;
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 800"><defs><linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#17191c"/><stop offset="1" stop-color="#08090b"/></linearGradient><radialGradient id="gl"><stop stop-color="#ffffff" stop-opacity=".16"/><stop offset="1" stop-color="#ffffff" stop-opacity="0"/></radialGradient></defs><rect width="1200" height="800" fill="url(%23bg)"/><circle cx="980" cy="130" r="360" fill="url(%23gl)"/><circle cx="180" cy="700" r="300" fill="#fff" opacity=".035"/><text x="600" y="105" text-anchor="middle" fill="#aeb3ba" font-family="system-ui,sans-serif" font-size="20" font-weight="800" letter-spacing="6">${titles[kind]}</text>${artSvg(kind)}${footer}</svg>`;
   return 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
 }
+
 export function ingredientIcon(ing) {
   const n = String(ing?.name || '').toLowerCase();
   let kind = 'generic';

@@ -9,13 +9,13 @@
    ZMIANA WERSJI: podbij VERSION (i APP_VERSION w util.js) przy każdej
    aktualizacji plików, żeby urządzenia wykryły nową wersję.
    ========================================================================== */
-const VERSION = 'kucharek-claude-1.3.98';
+const VERSION = 'kucharek-claude-1.3.99';
 const NETWORK_TIMEOUT = 3500;
 
 const CORE = [
   './',
   'index.html',
-  'styles.css', 'styles-34e.css', 'styles-ai.css', 'styles-34f.css', 'styles-43a.css', 'styles-58.css',
+  'styles.css', 'styles-34e.css', 'styles-ai.css', 'styles-34f.css', 'styles-43a.css', 'styles-58.css', 'assets/luxury/steak.svg', 'assets/luxury/pizza.svg', 'assets/luxury/carbonara.svg', 'assets/luxury/ramen.svg', 'assets/luxury/burger.svg',
   'manifest.webmanifest',
   'app.js', 'ai.js', 'views-ai.js', 'router.js', 'pwa.js', 'ui.js', 'util.js', 'db.js', 'recipes.js', 'calculator.js', 'importer.js', 'backup.js',
   'components.js', 'shopping.js', 'inventory.js', 'barcode-decoder.js', 'barcode-scanner.js', 'pro.js', 'pro-calculators.js',

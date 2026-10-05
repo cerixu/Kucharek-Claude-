@@ -539,7 +539,7 @@ async function removeLegacyLibrarySeeds() {
   return legacy.length;
 }
 
-export const ARCHIVE_TRANSLATION_VERSION = 33;
+export const ARCHIVE_TRANSLATION_VERSION = 34;
 
 async function refreshArchiveTranslations() {
   if (getSetting('archiveTranslationVersion') === ARCHIVE_TRANSLATION_VERSION) return 0;

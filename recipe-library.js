@@ -6,7 +6,7 @@
    ========================================================================== */
 
 import { ARCHIVE_RECIPES } from './recipe-library-data/index.js';
-import { translateRecipe, normalizeArchivePolishText, normalizeArchivePolishName } from './recipe-translation.js';
+import { translateRecipe, normalizeArchivePolishText, normalizeArchivePolishName, normalizeArchivePolishTag } from './recipe-translation.js';
 
 
 const UNIT_FACTORS = {
@@ -58,7 +58,7 @@ function normalizeArchiveRecipe(r) {
     name: normalizeArchivePolishName(r.name),
     description: normalizeArchivePolishText(r.description),
     notes: normalizeArchivePolishText(r.notes),
-    tags: Array.isArray(r.tags) ? r.tags.map((t) => normalizeArchivePolishText(t)) : [],
+    tags: Array.isArray(r.tags) ? r.tags.map((t) => normalizeArchivePolishTag(t)) : [],
     sections: (r.sections || []).map((s) => ({
       ...s,
       name: normalizeArchivePolishText(s.name),
@@ -66,7 +66,7 @@ function normalizeArchiveRecipe(r) {
     })),
     steps: (r.steps || []).map((s) => ({ ...s, text: normalizeArchivePolishText(s.text) })),
     translationLanguage: 'pl',
-    translationVersion: 31,
+    translationVersion: 32,
   };
   return next;
 }

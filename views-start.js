@@ -14,7 +14,7 @@ const plural = (n) =>
   `${n} ${n === 1 ? 'receptura' : n % 10 >= 2 && n % 10 <= 4 && (n % 100 < 10 || n % 100 >= 20) ? 'receptury' : 'receptur'}`;
 
 export function startView() {
-  const s = screen({ title: 'Kucharek', cls: 'start start-v2' });
+  const s = screen({ title: 'Kucharek', right: null, cls: 'start start-v2' });
   const c = s.content;
   let unsub;
   let unsubInventory;
@@ -68,6 +68,26 @@ export function startView() {
     const heroVisual = heroRecipe || all[0] || { id: 'start-fallback', name: 'Kucharek', category: 'cat-pizza' };
 
     const kids = [];
+
+    const categories = [
+      ['cat-all', 'Wszystkie', 'sparkle', '/recipes'],
+      ['cat-pizza', 'Pizza', 'pizza', '/recipes?cat=cat-pizza'],
+      ['cat-pasta', 'Pasta', 'book', '/recipes?cat=cat-pasta'],
+      ['cat-mieso', 'Mięso', 'chef', '/recipes?cat=cat-mieso'],
+      ['cat-desery', 'Desery', 'sparkle', '/recipes?cat=cat-desery'],
+    ];
+
+    kids.push(
+      h('section', { class: 'start-brand' },
+        h('div', { class: 'start-brand-mark' }, icon('chef', 28)),
+        h('div', { class: 'start-brand-copy' },
+          h('strong', null, 'Kucharek'),
+          h('span', null, 'Twoja kuchnia zawsze pod ręką')),
+        h('button', { type: 'button', class: 'start-brand-search', 'aria-label': 'Szukaj receptury', onClick: () => navigate('/recipes') }, icon('search', 21))),
+      h('div', { class: 'start-category-scroller', role: 'tablist', 'aria-label': 'Kuchnie i kategorie' },
+        categories.map(([id, label, ico, path], i) => h('button', { type: 'button', class: 'start-category' + (i === 0 ? ' on' : ''), 'aria-selected': i === 0, onClick: () => navigate(path) },
+          h('span', { class: 'start-category-icon' }, icon(ico, 21)), h('span', null, label))))
+    );
 
     kids.push(
       h('section', { class: 'start-hero-card' },

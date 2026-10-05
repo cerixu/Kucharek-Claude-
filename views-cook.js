@@ -14,8 +14,8 @@ import { fmtNum, debounce, parseNum } from './util.js';
 import { consumeRecipeIngredients } from './inventory.js';
 import { addItems, addLowStockToShopping } from './shopping.js';
 import { openRecipeAiSheet } from './views-ai.js';
-import { ingredientsInText } from './kitchen.js?v=20261005-63-1.5.3';
-import { startTimer, openTimersSheet } from './timers.js?v=20261005-62-1.5.3';
+import { ingredientsInText } from './kitchen.js';
+import { startTimer, openTimersSheet } from './timers.js';
 
 /* ---------- Widok ---------- */
 

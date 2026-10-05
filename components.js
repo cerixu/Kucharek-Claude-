@@ -3,7 +3,7 @@
    ========================================================================== */
 import { h, icon, toast } from './ui.js';
 import { navigate } from './router.js';
-import { catName, catIcon, ORIGINS, toggleFavorite } from './recipes.js';
+import { catName, catIcon, ORIGINS, toggleFavorite, allIngredients } from './recipes.js';
 import { fmtMinutes, fmtAmount, fmtNum } from './util.js';
 
 export const originOf = (code) => ORIGINS.find((o) => o.code === code);

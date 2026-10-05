@@ -49,7 +49,7 @@ const WORD_NUMBERS = {
 function parseRawQuantity(raw) {
   const text = String(raw || '').trim();
   if (!text) return null;
-  const m = text.match(/^((?:\\d+(?:[.,]\\d+)?|\\d+\\/\\d+|(?:one|two|three|four|five|six|seven|eight|nine|ten|a|an)(?:\\s+(?:and-)?(?:a|one|two|three|four|five|six|seven|eight|nine|ten))?)(?:\\s*[- ](?:half|third|quarter|fourth))?)\\s+(cups?|tablespoons?|tbsp|teaspoons?|tsp|pounds?|lbs?|ounces?|oz|pints?|quarts?|gallons?|inches?|heads?|head)\\b\\s*(.*)$/i);
+  const m = text.match(/^((?:\d+(?:[.,]\d+)?|\d+\/\d+|two-thirds|three-quarters|three-fourths|one-half|(?:one|two|three|four|five|six|seven|eight|nine|ten|a|an)(?:\s+(?:and-)?(?:a|one|two|three|four|five|six|seven|eight|nine|ten))?)(?:\s*[- ](?:half|third|quarter|fourth))?)\s+(cups?|tablespoons?|tbsp|teaspoons?|tsp|pounds?|lbs?|ounces?|oz|pints?|quarts?|gallons?|inches?|heads?|head)\\b\s*(.*)$/i);
   if (!m) return null;
   let q = m[1].toLowerCase().replace(',', '.').trim();
   let amount = Number(q);
@@ -59,7 +59,7 @@ function parseRawQuantity(raw) {
   else if (q.includes('one-half') || q.includes('one half')) amount = 0.5;
   if (!Number.isFinite(amount)) return null;
   const unit = m[2].toLowerCase().replace(/s$/, '');
-  const rest = m[3].trim().replace(/^(?:of|the)\\s+/i, '');
+  const rest = m[3].trim().replace(/^(?:of|the)\s+/i, '');
   return { amount, unit, rest };
 }
 
@@ -68,8 +68,8 @@ function ingredientNameFromRaw(raw, fallback) {
   const source = parsed ? parsed.rest : String(raw || fallback || '');
   const translated = translateRecipe({ name: source, sections: [], steps: [] }).name;
   return normalizeArchivePolishText(translated)
-    .replace(/^[-–—:;,]+\\s*/, '')
-    .replace(/\\s{2,}/g, ' ')
+    .replace(/^[-–—:;,]+\s*/, '')
+    .replace(/\s{2,}/g, ' ')
     .trim();
 }
 

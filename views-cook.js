@@ -14,6 +14,7 @@ import { fmtNum, debounce, parseNum } from './util.js';
 import { consumeRecipeIngredients } from './inventory.js';
 import { addItems, addLowStockToShopping } from './shopping.js';
 import { openRecipeAiSheet } from './views-ai.js';
+import { ingredientsInText } from './kitchen.js?v=20261005-63-1.3.96';
 import { startTimer, openTimersSheet } from './timers.js?v=20261005-62-1.3.95';
 
 /* ---------- Widok ---------- */
@@ -136,10 +137,16 @@ export function cookView({ id }) {
     if (!r.steps.length) return h('p', { class: 'muted' }, 'Brak kroków. Dodaj je w edytorze.');
     return h('div', { class: 'cook-list' }, r.steps.map((st, n) => {
       const t = stepTimer(st.text);
+      const mentioned = ingredientsInText(st.text, r.sections.flatMap((sec) => sec.ingredients || []).filter((i) => i?.name));
+      const links = mentioned.length
+        ? h('div', { class: 'step-ingredients', 'aria-label': 'Składniki używane w tym kroku' },
+            mentioned.map((i) => h('span', { class: 'chip step-ingredient', title: i.name }, i.name)))
+        : null;
       return checkRow(st.id, prog.steps, h('span', { class: 'cook-text' },
         h('span', { class: 'cook-step-n num' }, String(n + 1)),
         h('span', { class: 'cook-step' }, st.text),
-        t ? h('button', { type: 'button', class: 'chip step-timer', 'aria-label': `Uruchom minutnik: ${t.label}`, onClick: (e) => { e.stopPropagation(); startTimer(t.sec, `krok ${n + 1}`); toast(`Minutnik: ${t.label}`); } }, icon('timer', 16), t.label) : null), 'step');
+        t ? h('button', { type: 'button', class: 'chip step-timer', 'aria-label': `Uruchom minutnik: ${t.label}`, onClick: (e) => { e.stopPropagation(); startTimer(t.sec, `krok ${n + 1}`); toast(`Minutnik: ${t.label}`); } }, icon('timer', 16), t.label) : null,
+        links), 'step');
     }));
   }
 

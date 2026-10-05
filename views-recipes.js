@@ -38,8 +38,6 @@ export function recipesView(query) {
   else if (f === 'recent') { vs.chip = 'recent'; vs.q = ''; }
   else if (f === 'cooked') { vs.chip = 'cooked'; vs.q = ''; }
   else if (f === 'trad') { vs.chip = 'trad'; vs.q = ''; }
-  const originParam = query && query.get ? String(query.get('origin') || '').toUpperCase() : '';
-  if (originParam) { vs.origin = originParam; vs.chip = 'all'; }
 
   const search = h('input', { class: 'input search-input', type: 'search', placeholder: 'Szukaj receptury, składnika, tagu…', value: vs.q,
     'aria-label': 'Szukaj', autocomplete: 'off', autocapitalize: 'off', spellcheck: 'false', enterkeyhint: 'search' });
@@ -64,7 +62,6 @@ export function recipesView(query) {
   function matches(all = listRecipes()) {
     const words = norm(vs.q).split(/\s+/).filter(Boolean);
     let list = all.slice();
-    if (vs.origin) list = list.filter((r) => String(r.origin || '').toUpperCase() === vs.origin);
     if (vs.chip === 'fav') list = list.filter((r) => r.favorite);
     else if (vs.chip === 'recent') list = list.filter((r) => r.lastOpenedAt);
     else if (vs.chip === 'cooked') list = list.filter((r) => Number(r.cookCount || 0) > 0 || Number(r.lastCookedAt || 0) > 0);
@@ -93,7 +90,6 @@ export function recipesView(query) {
       mk('recent', 'Ostatnie', all.filter((r) => r.lastOpenedAt).length),
       mk('cooked', 'Gotowane', all.filter((r) => Number(r.cookCount || 0) > 0 || Number(r.lastCookedAt || 0) > 0).length),
       mk('trad', 'Tradycyjne', all.filter((r) => r.traditional).length),
-      h('button', { type: 'button', class: 'chip world-chip', onClick: () => navigate('/world') }, icon('globe', 16), 'Kuchnie świata'),
       ...state.categories.filter((c) => used.has(c.id) || vs.chip === c.id).map((c) => mk(c.id, `${c.icon || ''} ${c.name}`.trim(), all.filter((r) => r.category === c.id).length)),
       h('button', { type: 'button', class: 'chip ghost', 'aria-label': 'Zarządzaj kategoriami', onClick: () => openCategoryManager() }, icon('sliders', 16), 'Kategorie'),
     ];
@@ -117,13 +113,9 @@ export function recipesView(query) {
         button('Importuj', { icon: 'upload', onClick: () => navigate('/import') })));
     } else if (!total) {
       kids.push(emptyState('🔎', 'Nic nie znaleziono', vs.q ? `Brak wyników dla „${vs.q}”.` : 'Zmień filtry lub wyszukiwanie.',
-        button('Wyczyść filtry', { onClick: () => { Object.assign(vs, { q: '', chip: 'all', tag: '', maxTime: 0, favOnly: false, origin: '', visibleCount: 40 }); search.value = ''; paint(); } }),
+        button('Wyczyść filtry', { onClick: () => { Object.assign(vs, { q: '', chip: 'all', tag: '', maxTime: 0, favOnly: false, visibleCount: 40 }); search.value = ''; paint(); } }),
         button('Szukaj w internecie', { icon: 'globe', onClick: () => navigate('/import?q=' + encodeURIComponent(vs.q || '')) })));
     } else {
-      if (vs.origin) kids.push(h('div', { class: 'origin-filter-head' },
-        h('button', { type: 'button', class: 'iconbtn quiet', 'aria-label': 'Wróć do kuchni świata', onClick: () => navigate('/world') }, icon('left', 18)),
-        h('div', null, h('strong', null, 'Kuchnia świata'), h('span', { class: 'muted' }, ' · ' + vs.origin)),
-        h('button', { type: 'button', class: 'chip ghost', onClick: () => { vs.origin = ''; paint(); } }, 'Wszystkie')));
       kids.push(h('p', { class: 'muted counter' }, `${total} ${total === 1 ? 'receptura' : total % 10 >= 2 && total % 10 <= 4 && (total % 100 < 10 || total % 100 >= 20) ? 'receptury' : 'receptur'}`));
       const visibleTrad = trad.slice(0, Math.min(trad.length, vs.visibleCount));
       const remainingBudget = Math.max(0, vs.visibleCount - visibleTrad.length);

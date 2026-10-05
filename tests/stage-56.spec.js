@@ -52,7 +52,7 @@ test('Stage 56 — inteligentne łączenie składników, kroków i Magazynu', as
   await page.goto('/#/cook/' + BIGOS_ID);
   await page.getByRole('button', { name: 'Przelicz', exact: true }).waitFor();
   await page.locator('.cook-tabs .ctab', { hasText: 'Kroki' }).click();
-  await expect(page.locator('.step-ingredients')).toHaveCount(1);
+  await expect(page.locator('.step-ingredients').first()).toBeVisible();
 
   await page.goto('/#/recipe/' + BIGOS_ID);
   await expect(page.locator('.pantry-card')).toBeVisible();

@@ -160,3 +160,31 @@ body{font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","SF Pro Text"
 .start-category.on .start-category-icon{color:#ffd56a}
 .start-category span:last-child{font-size:.68rem;font-weight:720}
 @media(max-width:380px){.start-category{min-width:68px;height:74px}.start-brand-copy strong{font-size:1.42rem}}
+
+
+/* FINAL PASS A · tighter composition from real iPhone render */
+.start-v2 .content{gap:18px!important}
+.start-brand{padding-top:2px!important}
+.start-brand-mark{width:48px!important;height:48px!important;border-radius:17px!important}
+.start-brand-copy strong{font-size:1.34rem!important}
+.start-brand-search{width:43px!important;height:43px!important;border-radius:15px!important}
+.start-category-scroller{gap:8px!important}
+.start-category{min-width:72px!important;height:68px!important;border-radius:20px!important}
+.start-category-icon{width:32px!important;height:28px!important}
+.start-category span:last-child{font-size:.64rem!important}
+.start-hero-card{min-height:334px!important;border-radius:30px!important}
+.start-hero-content{min-height:334px!important;padding:20px!important}
+.start-hero-card h2{font-size:clamp(1.95rem,8.5vw,2.55rem)!important;line-height:.94!important;letter-spacing:-.065em!important}
+.start-hero-recipe{font-size:.91rem!important}
+.start-cook-btn{min-height:52px!important;border-radius:17px!important;font-size:.96rem!important}
+.start-hero-image img{height:72%!important;width:96%!important}
+.start-actions-grid{gap:9px!important}
+.start-action{min-height:106px!important;border-radius:22px!important;padding:14px!important}
+.start-action-ico{width:44px!important;height:44px!important;border-radius:15px!important}
+.start-status-strip>div{min-height:56px!important}
+.start-recent-card{flex-basis:202px!important}
+.start-recent-media{height:136px!important}
+#tabbar{margin:0 9px 8px!important;padding:4px 4px calc(4px + env(safe-area-inset-bottom))!important;min-height:68px!important;border-radius:27px!important}
+.tab{min-height:54px!important;border-radius:20px!important}
+.tab-ico{width:46px!important;height:31px!important}
+.tab-label{font-size:9px!important}

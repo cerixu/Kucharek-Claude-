@@ -135,3 +135,28 @@ body{font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","SF Pro Text"
 @media(prefers-reduced-motion:reduce){
  .start-action,.start-recent-card,.rcard,.btn,.iconbtn,.chip,.tab{transition:none!important}
 }
+
+
+/* START MASTER HEADER */
+.start-v2 .topbar{display:none!important}
+.start-brand{display:flex;align-items:center;gap:12px;padding:8px 2px 0}
+.start-brand-mark{width:52px;height:52px;border-radius:18px;display:grid;place-items:center;color:#ffd66d;
+ background:linear-gradient(145deg,rgba(255,220,130,.18),rgba(255,180,50,.06)),rgba(255,255,255,.045);
+ border:1px solid rgba(255,220,130,.20);box-shadow:0 12px 30px rgba(0,0,0,.25),inset 0 1px 0 rgba(255,255,255,.10)}
+.start-brand-copy{display:flex;flex-direction:column;min-width:0;flex:1}
+.start-brand-copy strong{font-size:1.52rem;font-weight:850;line-height:1;letter-spacing:-.055em}
+.start-brand-copy span{margin-top:5px;font-size:.74rem;color:rgba(255,255,255,.50);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.start-brand-search{width:46px;height:46px;border-radius:17px;color:#f5f4ef;background:rgba(255,255,255,.055);
+ border:1px solid rgba(255,255,255,.11);box-shadow:inset 0 1px 0 rgba(255,255,255,.08),0 10px 25px rgba(0,0,0,.20);
+ -webkit-backdrop-filter:blur(22px);backdrop-filter:blur(22px)}
+.start-category-scroller{display:flex;gap:9px;overflow-x:auto;margin-inline:-2px;padding:0 2px 4px;scrollbar-width:none}
+.start-category-scroller::-webkit-scrollbar{display:none}
+.start-category{flex:0 0 auto;min-width:74px;height:78px;border-radius:22px;color:rgba(255,255,255,.56);
+ border:1px solid rgba(255,255,255,.09);background:rgba(255,255,255,.038);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;
+ box-shadow:inset 0 1px 0 rgba(255,255,255,.055);transition:transform .18s,background .18s,border-color .18s,color .18s}
+.start-category-icon{width:36px;height:32px;display:grid;place-items:center;border-radius:12px}
+.start-category.on{color:#fff;background:linear-gradient(180deg,rgba(255,213,108,.22),rgba(255,185,50,.09));border-color:rgba(255,213,108,.34);
+ box-shadow:0 12px 28px rgba(242,180,58,.10),inset 0 1px 0 rgba(255,255,255,.13)}
+.start-category.on .start-category-icon{color:#ffd56a}
+.start-category span:last-child{font-size:.68rem;font-weight:720}
+@media(max-width:380px){.start-category{min-width:68px;height:74px}.start-brand-copy strong{font-size:1.42rem}}

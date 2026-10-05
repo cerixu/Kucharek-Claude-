@@ -539,7 +539,7 @@ async function removeLegacyLibrarySeeds() {
   return legacy.length;
 }
 
-export const ARCHIVE_TRANSLATION_VERSION = 32;
+export const ARCHIVE_TRANSLATION_VERSION = 33;
 
 async function refreshArchiveTranslations() {
   if (getSetting('archiveTranslationVersion') === ARCHIVE_TRANSLATION_VERSION) return 0;
@@ -560,7 +560,16 @@ async function refreshArchiveTranslations() {
         ...(cs || {}),
         ingredients: (fs.ingredients || []).map(fi => {
           const ci = currentIngredients.find(i => i.id === fi.id);
-          return { ...fi, ...(ci || {}), name: fi.name };
+          // Korpus archive ma być zawsze zgodny z aktualnym tłumaczeniem.
+          // Zachowujemy dane użytkownika (cena, procent, własne pola), ale
+          // nazwę, ilość i jednostkę bierzemy z nowego, zweryfikowanego źródła.
+          return {
+            ...fi,
+            ...(ci || {}),
+            name: fi.name,
+            amount: fi.amount,
+            unit: fi.unit,
+          };
         }),
       };
     });

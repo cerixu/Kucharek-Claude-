@@ -11,7 +11,7 @@ test('Stage 58 — luxury glass visual system and user flow', async ({ page }) =
   await page.waitForFunction(() => window.__kucharek?.ready === true, null, { timeout: 30000 });
 
   const version = await page.evaluate(async () => (await import('./util.js')).APP_VERSION);
-  expect(version).toBe('1.3.98');
+  expect(version).toBe('1.3.99');
 
   await page.evaluate(() => {
     document.documentElement.dataset.theme = 'dark';
@@ -19,6 +19,17 @@ test('Stage 58 — luxury glass visual system and user flow', async ({ page }) =
   });
 
   await expect(page.locator('.start-hero-card')).toBeVisible();
+  const premiumAssets = await page.evaluate(async () => {
+    const { recipeVisual } = await import('./components.js');
+    const make = (name, category, sections=[{ingredients:[]}]) => ({ id:name, name, category, servings:1, sections });
+    const urls = ['Stek wołowy','Pizza Margherita','Spaghetti Carbonara','Ramen z kurczakiem','Burger klasyczny'].map((name, i) => {
+      const cats=['cat-mieso','cat-pizza','cat-pasta','cat-zupy','cat-mieso'];
+      const el = recipeVisual(make(name,cats[i]));
+      return el.getAttribute('src');
+    });
+    return urls;
+  });
+  expect(premiumAssets).toEqual(expect.arrayContaining(['assets/luxury/steak.svg','assets/luxury/pizza.svg','assets/luxury/carbonara.svg','assets/luxury/ramen.svg','assets/luxury/burger.svg']));
   await expect(page.locator('#tabbar')).toBeVisible();
 
   const startStyle = await page.evaluate(() => {

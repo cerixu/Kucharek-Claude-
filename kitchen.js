@@ -52,7 +52,7 @@ export function stem(word) {
 }
 
 export function nameStems(name) {
-  const clean = String(name || '').replace(/([^)]*)/g, ' ');
+  const clean = String(name || '').replace(/\([^)]*\)/g, ' ');
   return norm(clean)
     .split(/[^a-z0-9]+/)
     .filter((t) => t.length >= 3 && !STOP.has(t))

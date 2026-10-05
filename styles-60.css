@@ -1,0 +1,137 @@
+/* ==========================================================================
+   KUCHAREK — STAGE 58/60 MASTER VISUAL SYSTEM
+   Nowa powłoka iPhone-first. Ten plik jest celowo ostatnim arkuszem CSS.
+   Nie zmienia logiki aplikacji. Przebudowuje kompozycję wizualną.
+   ========================================================================== */
+:root{
+  --k-bg:#070809;--k-bg2:#101114;--k-glass:rgba(29,30,34,.58);--k-glass-2:rgba(20,21,24,.76);
+  --k-stroke:rgba(255,255,255,.11);--k-stroke-hi:rgba(255,255,255,.18);
+  --k-text:#f6f5f1;--k-muted:rgba(246,245,241,.58);--k-gold:#f4bd4d;--k-gold-2:#ffd978;
+  --k-shadow:0 25px 80px rgba(0,0,0,.42);--k-r-xl:34px;--k-r-lg:28px;--k-r-md:22px;
+}
+html,body,#app{background:
+  radial-gradient(80% 35% at 45% -8%,rgba(215,151,58,.13),transparent 65%),
+  radial-gradient(65% 60% at 100% 50%,rgba(255,255,255,.025),transparent 70%),var(--k-bg)!important;color:var(--k-text);
+}
+body{font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","SF Pro Text",system-ui,sans-serif!important}
+#app{isolation:isolate}
+#view{background:transparent}
+.screen{background:transparent!important}
+.scroll{padding-left:max(18px,env(safe-area-inset-left))!important;padding-right:max(18px,env(safe-area-inset-right))!important}
+.content{max-width:none!important;padding:8px 0 32px!important;gap:22px!important}
+.topbar{background:linear-gradient(180deg,rgba(7,8,9,.84),rgba(7,8,9,.48))!important;border:0!important;
+  -webkit-backdrop-filter:blur(28px) saturate(1.35)!important;backdrop-filter:blur(28px) saturate(1.35)!important;
+  padding-top:calc(env(safe-area-inset-top) + 3px)!important
+}
+.topbar-row{min-height:64px!important;gap:8px!important}
+.topbar-title{font-size:1.34rem!important;font-weight:820!important;letter-spacing:-.045em!important}
+.iconbtn{width:44px!important;height:44px!important;border-radius:16px!important;background:rgba(255,255,255,.055)!important;
+ border:1px solid rgba(255,255,255,.10)!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.08),0 10px 25px rgba(0,0,0,.14)!important;
+ -webkit-backdrop-filter:blur(20px)!important;backdrop-filter:blur(20px)!important}
+.card,.bigcard,.history-card,.stock-row,.shop-item,.cook-row,.preview-line,.banner{
+ border:1px solid var(--k-stroke)!important;border-radius:var(--k-r-lg)!important;
+ background:linear-gradient(145deg,rgba(255,255,255,.065),transparent 42%),var(--k-glass)!important;
+ box-shadow:inset 0 1px 0 rgba(255,255,255,.06),var(--k-shadow)!important;
+ -webkit-backdrop-filter:blur(26px) saturate(1.28)!important;backdrop-filter:blur(26px) saturate(1.28)!important
+}
+.btn{min-height:52px!important;border-radius:18px!important;border:1px solid var(--k-stroke)!important;
+ background:linear-gradient(145deg,rgba(255,255,255,.075),transparent 45%),rgba(35,36,40,.72)!important;
+ box-shadow:inset 0 1px 0 rgba(255,255,255,.08),0 12px 28px rgba(0,0,0,.18)!important}
+.btn.primary{background:linear-gradient(180deg,#ffd76d,#edaf32)!important;color:#191309!important;
+ border-color:rgba(255,225,155,.42)!important;box-shadow:0 14px 34px rgba(240,178,45,.20),inset 0 1px 0 rgba(255,255,255,.50)!important}
+.chip{min-height:42px!important;border-radius:16px!important;background:rgba(255,255,255,.045)!important;border:1px solid rgba(255,255,255,.09)!important}
+.chip.on{background:linear-gradient(180deg,rgba(255,212,105,.26),rgba(255,184,57,.12))!important;color:#ffd86f!important;border-color:rgba(255,210,110,.30)!important}
+.input{min-height:52px!important;border-radius:17px!important;border:1px solid rgba(255,255,255,.10)!important;background:rgba(255,255,255,.045)!important}
+.muted{color:var(--k-muted)!important}
+
+/* MASTER GLASS DOCK */
+#tabbar{position:relative!important;margin:0 12px 10px!important;padding:5px 5px calc(5px + env(safe-area-inset-bottom))!important;
+ min-height:76px!important;border-radius:30px!important;border:1px solid rgba(255,255,255,.12)!important;
+ background:linear-gradient(145deg,rgba(255,255,255,.09),transparent 44%),rgba(27,28,32,.78)!important;
+ box-shadow:0 24px 55px rgba(0,0,0,.48),inset 0 1px 0 rgba(255,255,255,.10)!important;
+ -webkit-backdrop-filter:blur(32px) saturate(1.45)!important;backdrop-filter:blur(32px) saturate(1.45)!important}
+.tab{min-height:62px!important;border-radius:23px!important;color:rgba(255,255,255,.47)!important}
+.tab-ico{width:52px!important;height:34px!important;border-radius:14px!important}
+.tab.on{color:#fff!important;background:rgba(255,255,255,.04)!important}
+.tab.on .tab-ico{background:linear-gradient(180deg,rgba(255,215,111,.98),rgba(235,169,42,.95))!important;color:#1a1307!important;
+ box-shadow:0 8px 22px rgba(244,188,73,.18),inset 0 1px 0 rgba(255,255,255,.55)!important}
+.tab-label{font-size:10px!important;font-weight:720!important;letter-spacing:.01em!important}
+
+/* START */
+.start-v2 .content{gap:26px!important}
+.start-v2 .topbar{background:transparent!important}
+.start-hero-card{position:relative!important;min-height:440px!important;border-radius:var(--k-r-xl)!important;
+ border:1px solid rgba(255,255,255,.13)!important;background:#0d0e10!important;overflow:hidden!important;
+ box-shadow:0 32px 90px rgba(0,0,0,.50),inset 0 1px 0 rgba(255,255,255,.11)!important}
+.start-hero-backdrop{filter:blur(34px) saturate(1.15) brightness(.55)!important;transform:scale(1.22)!important;opacity:.95!important}
+.start-hero-image{position:absolute!important;inset:0!important;display:flex!important;align-items:flex-start!important;justify-content:flex-end!important;pointer-events:none!important}
+.start-hero-image img{width:94%!important;height:74%!important;object-fit:cover!important;object-position:center!important;
+ border-radius:0 0 0 34px!important;opacity:.98!important;filter:saturate(1.12) contrast(1.06)!important}
+.start-hero-scrim{background:
+ linear-gradient(180deg,rgba(4,5,6,.06) 0%,rgba(4,5,6,.10) 32%,rgba(4,5,6,.70) 61%,rgba(4,5,6,.97) 100%),
+ linear-gradient(90deg,rgba(4,5,6,.90) 0%,rgba(4,5,6,.42) 44%,rgba(4,5,6,.08) 100%)!important}
+.start-hero-content{position:relative!important;min-height:440px!important;padding:24px!important;display:flex!important;flex-direction:column!important;justify-content:space-between!important}
+.start-hero-top{display:flex!important;justify-content:space-between!important;align-items:center!important;gap:10px!important}
+.start-kicker,.start-hero-chip{padding:9px 12px!important;border-radius:14px!important;background:rgba(9,10,12,.50)!important;
+ border:1px solid rgba(255,255,255,.13)!important;-webkit-backdrop-filter:blur(18px)!important;backdrop-filter:blur(18px)!important}
+.start-hero-copy{max-width:88%!important;gap:10px!important}
+.start-hero-card h2{font-size:clamp(2.35rem,10vw,3.35rem)!important;line-height:.92!important;letter-spacing:-.07em!important;font-weight:850!important}
+.start-hero-recipe{font-size:1rem!important;color:rgba(255,255,255,.86)!important}
+.start-cook-btn{width:100%!important;min-height:58px!important;border-radius:19px!important;font-size:1.03rem!important;font-weight:800!important}
+.start-section-head{align-items:end!important}
+.start-section-head h2{font-size:1.24rem!important;letter-spacing:-.045em!important}
+.start-text-link{border:0!important;background:transparent!important;color:rgba(255,255,255,.56)!important}
+.start-search-link{border:1px solid rgba(255,255,255,.10)!important;background:rgba(255,255,255,.045)!important;border-radius:15px!important}
+.start-actions-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:11px!important}
+.start-action{min-height:124px!important;border-radius:25px!important;padding:16px!important;border:1px solid rgba(255,255,255,.10)!important;
+ background:linear-gradient(145deg,rgba(255,255,255,.065),transparent 48%),rgba(29,30,34,.66)!important;
+ box-shadow:0 16px 38px rgba(0,0,0,.20),inset 0 1px 0 rgba(255,255,255,.07)!important}
+.start-action-ico{width:50px!important;height:50px!important;border-radius:17px!important;background:rgba(255,255,255,.065)!important;
+ border:1px solid rgba(255,255,255,.09)!important}
+.start-action-copy strong{font-size:1.02rem!important;letter-spacing:-.02em!important}
+.start-status-strip{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:8px!important}
+.start-status-strip>div{min-height:64px!important;border-radius:19px!important;background:rgba(24,25,28,.64)!important;
+ border:1px solid rgba(255,255,255,.075)!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.055)!important}
+.start-recent-scroller{gap:11px!important;overflow-x:auto!important;scroll-snap-type:x mandatory!important}
+.start-recent-card{flex:0 0 218px!important;scroll-snap-align:start!important;border-radius:25px!important;border:1px solid rgba(255,255,255,.10)!important;
+ background:rgba(29,30,34,.70)!important;box-shadow:0 18px 42px rgba(0,0,0,.20)!important;overflow:hidden!important}
+.start-recent-media{height:154px!important;background:#0e0f11!important}
+.start-recent-copy{padding:12px 14px 15px!important;min-height:76px!important}
+
+/* RECIPE LIST */
+.screen:has(.rcard) .content{gap:16px!important}
+.screen:has(.rcard) .rcard{min-height:128px!important;max-height:none!important;border-radius:25px!important;padding:0!important;
+ background:linear-gradient(145deg,rgba(255,255,255,.06),transparent 48%),rgba(26,27,30,.72)!important}
+.screen:has(.rcard) .rcard-main{min-height:128px!important;padding:10px 54px 10px 10px!important;gap:15px!important}
+.screen:has(.rcard) .rthumb{width:108px!important;min-width:108px!important;height:108px!important;flex-basis:108px!important;border-radius:21px!important;
+ border:1px solid rgba(255,255,255,.10)!important;overflow:hidden!important;background:#101114!important}
+.screen:has(.rcard) .rthumb-img{width:100%!important;height:100%!important;object-fit:cover!important}
+.screen:has(.rcard) .rname{font-size:1.08rem!important;font-weight:820!important;letter-spacing:-.035em!important}
+.screen:has(.rcard) .rmeta{font-size:.77rem!important;color:rgba(255,255,255,.53)!important}
+.screen:has(.rcard) .heart{width:40px!important;height:40px!important;border-radius:14px!important;background:rgba(255,255,255,.045)!important;border:1px solid rgba(255,255,255,.08)!important}
+
+/* DETAIL */
+.screen:has(.hero-photo) .hero-photo.recipe-visual{width:100%!important;aspect-ratio:1/1!important;max-height:none!important;object-fit:cover!important;border-radius:32px!important;
+ box-shadow:0 28px 80px rgba(0,0,0,.42),0 0 0 1px rgba(255,255,255,.09)!important}
+.screen:has(.hero-photo) .detail-head h1{font-size:clamp(2rem,8vw,2.7rem)!important;line-height:.97!important;letter-spacing:-.065em!important}
+.screen:has(.hero-photo) .card{border-radius:26px!important}
+.screen:has(.hero-photo) .fact{border-radius:17px!important;background:rgba(255,255,255,.042)!important;border-color:rgba(255,255,255,.07)!important}
+.screen:has(.hero-photo) .ingredient-icon{width:50px!important;height:50px!important;border-radius:17px!important;background:rgba(255,255,255,.045)!important;border-color:rgba(255,255,255,.08)!important}
+.screen:has(.hero-photo) .ingredient-icon svg{width:38px!important;height:38px!important}
+
+/* SHEETS / OVERLAYS */
+#overlays .sheet,#overlays .dialog{border:1px solid rgba(255,255,255,.13)!important;border-radius:30px 30px 0 0!important;
+ background:linear-gradient(145deg,rgba(255,255,255,.075),transparent 42%),rgba(24,25,29,.90)!important;
+ -webkit-backdrop-filter:blur(34px) saturate(1.35)!important;backdrop-filter:blur(34px) saturate(1.35)!important;box-shadow:0 -20px 70px rgba(0,0,0,.52)!important}
+#overlays .sheet .handle{background:rgba(255,255,255,.22)!important}
+
+/* TOUCH + REDUCED MOTION */
+.start-action,.start-recent-card,.rcard,.btn,.iconbtn,.chip,.tab{transition:transform .18s ease,filter .18s ease,background .18s ease,box-shadow .18s ease!important}
+.start-action:active,.start-recent-card:active,.rcard:active,.btn:active,.iconbtn:active,.chip:active,.tab:active{transform:scale(.975)!important}
+@media(max-width:420px){
+ .start-hero-card,.start-hero-content{min-height:418px!important}.start-hero-card h2{font-size:2.42rem!important}
+ .screen:has(.rcard) .rthumb{width:96px!important;min-width:96px!important;height:96px!important;flex-basis:96px!important}
+}
+@media(prefers-reduced-motion:reduce){
+ .start-action,.start-recent-card,.rcard,.btn,.iconbtn,.chip,.tab{transition:none!important}
+}

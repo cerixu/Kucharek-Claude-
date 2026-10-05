@@ -49,7 +49,7 @@ const WORD_NUMBERS = {
 function parseRawQuantity(raw) {
   const text = String(raw || '').trim();
   if (!text) return null;
-  const m = text.match(/^((?:\d+(?:[.,]\d+)?|\d+\/\d+|two-thirds|three-quarters|three-fourths|one-half|(?:one|two|three|four|five|six|seven|eight|nine|ten|a|an)(?:\s+(?:and-)?(?:a|one|two|three|four|five|six|seven|eight|nine|ten))?)(?:\s*[- ](?:half|third|quarter|fourth))?)\s+(cups?|tablespoons?|tbsp|teaspoons?|tsp|pounds?|lbs?|ounces?|oz|pints?|quarts?|gallons?|inches?|heads?|head)\\b\s*(.*)$/i);
+  const m = text.match(/^((?:\d+(?:[.,]\d+)?|\d+\/\d+|two-thirds|three-quarters|three-fourths|one-half|(?:one|two|three|four|five|six|seven|eight|nine|ten|a|an)(?:\s+(?:and-)?(?:a|one|two|three|four|five|six|seven|eight|nine|ten))?)(?:\s*[- ](?:half|third|quarter|fourth))?)\s+(cups?|tablespoons?|tbsp|teaspoons?|tsp|pounds?|lbs?|ounces?|oz|pints?|quarts?|gallons?|inches?|heads?|head)\b\s*(.*)$/i);
   if (!m) return null;
   let q = m[1].toLowerCase().replace(',', '.').trim();
   let amount = Number(q);

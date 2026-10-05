@@ -2748,3 +2748,44 @@ img {
   .timer-pill { left: 8px; right: 8px; }
   .timer-row { grid-template-columns: 1fr; }
 }
+
+/* ---------- Inteligencja kroków / Magazynu ---------- */
+.step-ingredients {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
+}
+.step-ingredient {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: .76rem;
+}
+.pantry-card { display: grid; gap: 12px; }
+.pantry-score {
+  display: grid;
+  gap: 10px;
+  padding: 12px;
+  border-radius: 18px;
+  background: var(--surface-2);
+}
+.pantry-score-main {
+  display: flex;
+  align-items: baseline;
+  gap: 9px;
+}
+.pantry-score-main strong {
+  font-size: 1.55rem;
+  letter-spacing: -.03em;
+}
+.pantry-missing, .pantry-ok {
+  display: flex;
+  align-items: flex-start;
+  gap: 7px;
+  line-height: 1.35;
+}
+.pantry-ok {
+  color: var(--accent-text);
+}

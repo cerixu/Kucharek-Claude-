@@ -64,8 +64,8 @@ export function startView() {
     const pending = pendingCount();
     const alerts = getSetting('inventoryAlerts') !== false;
     const lowStock = alerts ? listInventory().filter((item) => stockState(item) !== 'ok').length : 0;
-    const heroRecipe = cooked[0] || recent[0] || favs[0] || null;
-    const heroVisual = heroRecipe || all[0] || { id: 'start-fallback', name: 'Kucharek', category: 'cat-pizza' };
+    const heroRecipe = cooked[0] || recent[0] || favs[0] || all.find((r) => r.photo || r.thumb) || all.find((r) => /stek|wołow|rostbef|entrecote/i.test(r.name || '')) || null;
+    const heroVisual = heroRecipe || { id: 'start-fallback', name: 'Stek wołowy z warzywami', category: 'cat-mieso' };
 
     const kids = [];
 

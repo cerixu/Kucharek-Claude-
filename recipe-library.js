@@ -41,6 +41,8 @@ function roundKitchenAmount(n) {
   return Math.round(n * 100) / 100;
 }
 
+const TRAILING_QTY_RE = /^(.*?)[,;]\s*(\d+(?:[.,]\d+)?)\s*(grams?|g|kilograms?|kg|milliliters?|ml|liters?|l)\s*$/i;
+
 const WORD_NUMBERS = {
   a: 1, an: 1, one: 1, two: 2, three: 3, four: 4, five: 5, six: 6, seven: 7, eight: 8, nine: 9, ten: 10,
   eleven: 11, twelve: 12, half: 0.5, quarter: 0.25, third: 1 / 3, fourth: 0.25, few: null, several: null
@@ -65,8 +67,10 @@ function parseRawQuantity(raw) {
 
 function ingredientNameFromRaw(raw, fallback) {
   const parsed = parseRawQuantity(raw);
-  const source = parsed ? parsed.rest : String(raw || fallback || '');
-  const translated = translateRecipe({ name: source, sections: [], steps: [] }).name;
+  const trailing = String(raw || '').match(TRAILING_QTY_RE);
+  const source = parsed ? parsed.rest : (trailing ? trailing[1] : String(raw || fallback || ''));
+  const cleanedSource = source.replace(/[()]/g, '');
+  const translated = translateRecipe({ name: cleanedSource, sections: [], steps: [] }).name;
   return normalizeArchivePolishText(translated)
     .replace(/^[-–—:;,]+\s*/, '')
     .replace(/\s{2,}/g, ' ')
@@ -76,6 +80,7 @@ function ingredientNameFromRaw(raw, fallback) {
 function normalizeArchiveIngredient(i) {
   const raw = String(i.raw || '').trim();
   const parsed = parseRawQuantity(raw);
+  const trailing = raw.match(TRAILING_QTY_RE);
   const next = { ...i };
   next.name = ingredientNameFromRaw(raw, i.name);
   if (parsed && Number.isFinite(parsed.amount)) {
@@ -87,6 +92,10 @@ function normalizeArchiveIngredient(i) {
       next.amount = roundKitchenAmount(parsed.amount);
       next.unit = parsed.unit;
     }
+  } else if (trailing) {
+    next.amount = roundKitchenAmount(Number(trailing[2].replace(',', '.')));
+    const u = trailing[3].toLowerCase();
+    next.unit = /kilogram|^kg$/i.test(u) ? 'kg' : /milliliter|^ml$/i.test(u) ? 'ml' : /liter|^l$/i.test(u) ? 'l' : 'g';
   } else {
     const key = String(i.unit || '').trim().toLowerCase();
     const conversion = UNIT_FACTORS[key];

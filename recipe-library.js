@@ -41,14 +41,61 @@ function roundKitchenAmount(n) {
   return Math.round(n * 100) / 100;
 }
 
+const WORD_NUMBERS = {
+  a: 1, an: 1, one: 1, two: 2, three: 3, four: 4, five: 5, six: 6, seven: 7, eight: 8, nine: 9, ten: 10,
+  eleven: 11, twelve: 12, half: 0.5, quarter: 0.25, third: 1 / 3, fourth: 0.25, few: null, several: null
+};
+
+function parseRawQuantity(raw) {
+  const text = String(raw || '').trim();
+  if (!text) return null;
+  const m = text.match(/^((?:\\d+(?:[.,]\\d+)?|\\d+\\/\\d+|(?:one|two|three|four|five|six|seven|eight|nine|ten|a|an)(?:\\s+(?:and-)?(?:a|one|two|three|four|five|six|seven|eight|nine|ten))?)(?:\\s*[- ](?:half|third|quarter|fourth))?)\\s+(cups?|tablespoons?|tbsp|teaspoons?|tsp|pounds?|lbs?|ounces?|oz|pints?|quarts?|gallons?|inches?|heads?|head)\\b\\s*(.*)$/i);
+  if (!m) return null;
+  let q = m[1].toLowerCase().replace(',', '.').trim();
+  let amount = Number(q);
+  if (!Number.isFinite(amount)) amount = WORD_NUMBERS[q];
+  if (q.includes('two-thirds')) amount = 2 / 3;
+  else if (q.includes('three-quarters') || q.includes('three-fourths')) amount = 3 / 4;
+  else if (q.includes('one-half') || q.includes('one half')) amount = 0.5;
+  if (!Number.isFinite(amount)) return null;
+  const unit = m[2].toLowerCase().replace(/s$/, '');
+  const rest = m[3].trim().replace(/^(?:of|the)\\s+/i, '');
+  return { amount, unit, rest };
+}
+
+function ingredientNameFromRaw(raw, fallback) {
+  const parsed = parseRawQuantity(raw);
+  const source = parsed ? parsed.rest : String(raw || fallback || '');
+  const translated = translateRecipe({ name: source, sections: [], steps: [] }).name;
+  return normalizeArchivePolishText(translated)
+    .replace(/^[-–—:;,]+\\s*/, '')
+    .replace(/\\s{2,}/g, ' ')
+    .trim();
+}
+
 function normalizeArchiveIngredient(i) {
-  const next = { ...i, name: normalizeArchivePolishText(i.name) };
-  const key = String(i.unit || '').trim().toLowerCase();
-  const conversion = UNIT_FACTORS[key];
-  if (!conversion || !Number.isFinite(Number(i.amount))) return next;
-  const [unit, factor] = conversion;
-  next.amount = roundKitchenAmount(Number(i.amount) * factor);
-  next.unit = unit;
+  const raw = String(i.raw || '').trim();
+  const parsed = parseRawQuantity(raw);
+  const next = { ...i };
+  next.name = ingredientNameFromRaw(raw, i.name);
+  if (parsed && Number.isFinite(parsed.amount)) {
+    const conversion = UNIT_FACTORS[parsed.unit];
+    if (conversion) {
+      next.amount = roundKitchenAmount(parsed.amount * conversion[1]);
+      next.unit = conversion[0];
+    } else {
+      next.amount = roundKitchenAmount(parsed.amount);
+      next.unit = parsed.unit;
+    }
+  } else {
+    const key = String(i.unit || '').trim().toLowerCase();
+    const conversion = UNIT_FACTORS[key];
+    if (conversion && Number.isFinite(Number(i.amount))) {
+      next.amount = roundKitchenAmount(Number(i.amount) * conversion[1]);
+      next.unit = conversion[0];
+    }
+  }
+  if (!next.name) next.name = normalizeArchivePolishText(i.name);
   return next;
 }
 
@@ -66,7 +113,7 @@ function normalizeArchiveRecipe(r) {
     })),
     steps: (r.steps || []).map((s) => ({ ...s, text: normalizeArchivePolishText(s.text) })),
     translationLanguage: 'pl',
-    translationVersion: 32,
+    translationVersion: 33,
   };
   return next;
 }

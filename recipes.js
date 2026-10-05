@@ -7,7 +7,7 @@
    ========================================================================== */
 import { db, kv } from './db.js';
 import { uid, norm, fmtAmount, fmtMinutes, fmtDateTime, flagEmoji } from './util.js';
-const ARCHIVE_MODULE_VERSION = '20261005-61-1.5.1';
+const ARCHIVE_MODULE_VERSION = '20261005-61-1.5.2';
 let archiveLibraryPromise = null;
 
 async function getRecipeLibrary() {

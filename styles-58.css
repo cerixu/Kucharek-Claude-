@@ -346,3 +346,25 @@ html, body {
 @media (prefers-reduced-motion: reduce) {
   .start-action, .start-recent-card, .rcard, .btn, .iconbtn, .chip, .fact { transition: none !important; }
 }
+
+
+/* ---------- Premium generated food assets ---------- */
+.premium-food-asset {
+  object-fit: contain !important;
+  object-position: center !important;
+  padding: 3% !important;
+  filter: drop-shadow(0 18px 24px rgba(0,0,0,.32)) saturate(1.08) contrast(1.04);
+  mix-blend-mode: normal;
+}
+.start-hero-image .premium-food-asset {
+  width: 96% !important;
+  height: 96% !important;
+  padding: 0 !important;
+  filter: drop-shadow(0 30px 34px rgba(0,0,0,.44)) saturate(1.12) contrast(1.04);
+}
+.rthumb .premium-food-asset {
+  padding: 5px !important;
+}
+.start-recent-media .premium-food-asset {
+  padding: 4px !important;
+}

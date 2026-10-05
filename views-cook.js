@@ -10,64 +10,11 @@ import { recordCook } from './history.js';
 import { db } from './db.js';
 import { scaleRecipe, factorFromServings } from './calculator.js';
 import { qtyParts, ingredientIcon } from './components.js';
-import { fmtNum, fmtClock, debounce, parseNum } from './util.js';
+import { fmtNum, debounce, parseNum } from './util.js';
 import { consumeRecipeIngredients } from './inventory.js';
 import { addItems, addLowStockToShopping } from './shopping.js';
 import { openRecipeAiSheet } from './views-ai.js';
-
-/* ---------- Minutnik (poziom modułu — działa też po wyjściu z ekranu) ---------- */
-
-let timer = null;                 // { end, total, label, done }
-let tickHandle = null;
-let audioCtx = null;
-const subs = new Set();
-
-function ensureAudio() {
-  try {
-    audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
-    if (audioCtx.state === 'suspended') audioCtx.resume();
-  } catch (_) { /* brak audio */ }
-}
-
-function beep(times = 6) {
-  ensureAudio();
-  if (audioCtx) {
-    const t0 = audioCtx.currentTime;
-    for (let i = 0; i < times; i++) {
-      const o = audioCtx.createOscillator(), g = audioCtx.createGain();
-      o.type = 'sine'; o.frequency.value = i % 2 ? 988 : 784;
-      g.gain.setValueAtTime(0.0001, t0 + i * 0.32);
-      g.gain.exponentialRampToValueAtTime(0.35, t0 + i * 0.32 + 0.02);
-      g.gain.exponentialRampToValueAtTime(0.0001, t0 + i * 0.32 + 0.28);
-      o.connect(g); g.connect(audioCtx.destination);
-      o.start(t0 + i * 0.32); o.stop(t0 + i * 0.32 + 0.3);
-    }
-  }
-  try { if (navigator.vibrate) navigator.vibrate([300, 150, 300, 150, 300]); } catch (_) { /* */ }
-}
-
-function tick() {
-  if (!timer) return;
-  if (!timer.done && Date.now() >= timer.end) {
-    timer.done = true;
-    beep();
-    toast(`Minutnik: koniec${timer.label ? ' — ' + timer.label : ''}!`, { sticky: true, action: { label: 'OK', fn: () => stopTimer() } });
-  }
-  subs.forEach((f) => f());
-}
-
-export function startTimer(seconds, label = '') {
-  ensureAudio();   // musi nastąpić po geście użytkownika (iOS)
-  stopTimer(true);
-  timer = { end: Date.now() + seconds * 1000, total: seconds, label, done: false };
-  tickHandle = setInterval(tick, 250);
-  tick();
-}
-export function stopTimer(silent) {
-  clearInterval(tickHandle); tickHandle = null; timer = null;
-  if (!silent) subs.forEach((f) => f());
-}
-document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') tick(); });
+import { startTimer, openTimersSheet } from './timers.js?v=20261005-62-1.3.95';
 
 /* ---------- Widok ---------- */
 
@@ -108,14 +55,13 @@ export function cookView({ id }) {
   const tabs = h('div', { class: 'cook-tabs' });
   s.top.append(h('div', { class: 'cook-sub' }, tabs, h('div', { class: 'row between' }, progressText), progress));
 
-  const timerBar = h('div', { class: 'timerbar', hidden: true });
   const currentStepText = () => s.content.querySelector('.cook-row.step.current .cook-step')?.textContent?.trim() || '';
   const foot = h('div', { class: 'cookbar' },
     button('AI', { icon: 'sparkle', onClick: () => openRecipeAiSheet({ openSheet, recipe: view(), currentStep: currentStepText() }) }),
-    button('Minutnik', { icon: 'timer', onClick: () => openTimerSheet() }),
+    button('Minutnik', { icon: 'timer', onClick: () => openTimersSheet() }),
     button('Przelicz', { icon: 'swap', onClick: () => openScale() }),
     button('Zakończ', { icon: 'check', kind: 'primary', onClick: () => finish() }));
-  s.el.append(timerBar, foot);
+  s.el.append(foot);
 
   function setTs(d) {
     prog.ts = Math.min(1.8, Math.max(0.9, Math.round((prog.ts + d) * 10) / 10));
@@ -244,22 +190,6 @@ export function cookView({ id }) {
     });
   }
 
-  function openTimerSheet() {
-    let minutes = null;
-    const presets = [[1, '1 min'], [3, '3 min'], [5, '5 min'], [10, '10 min'], [15, '15 min'], [20, '20 min'], [30, '30 min'], [60, '1 h']];
-    const sh = openSheet({
-      title: 'Minutnik', variant: 'sheet',
-      body: h('div', { class: 'stack' },
-        h('div', { class: 'preset-grid' }, presets.map(([m, l]) => h('button', { type: 'button', class: 'btn', onClick: () => { startTimer(m * 60, ''); sh.close(); } }, l))),
-        field('Własny czas (minuty)', numInput({ value: null, label: 'Minuty', dec: 2, placeholder: 'np. 7,5', onInput: (v) => { minutes = v; } })),
-        h('p', { class: 'muted small' }, 'Dźwięk zadziała, gdy aplikacja jest na ekranie. Dlatego ekran nie gaśnie podczas gotowania (można wyłączyć w Ustawieniach).')),
-      actions: [{ label: 'Anuluj', kind: 'ghost' }, { label: 'Start', kind: 'primary', icon: 'timer', onClick: () => {
-        if (!(minutes > 0)) { toast('Wpisz liczbę minut', { type: 'error' }); return false; }
-        startTimer(Math.round(minutes * 60), '');
-      } }],
-    });
-  }
-
   function openMore() {
     const sh = openSheet({
       title: 'Gotuję', variant: 'sheet',
@@ -341,22 +271,6 @@ export function cookView({ id }) {
     goBack('/recipe/' + id);
   }
 
-  /* ----- Minutnik: pasek ----- */
-
-  function paintTimer() {
-    if (!timer) { timerBar.hidden = true; return; }
-    const left = Math.max(0, Math.ceil((timer.end - Date.now()) / 1000));
-    timerBar.hidden = false;
-    timerBar.classList.toggle('done', timer.done);
-    timerBar.replaceChildren(icon('timer', 22),
-      h('span', { class: 'timer-time num' }, timer.done ? 'Koniec!' : fmtClock(left)),
-      timer.label ? h('span', { class: 'muted small' }, timer.label) : null,
-      h('span', { class: 'grow' }),
-      timer.done ? null : button('+1 min', { sm: true, onClick: () => { timer.end += 60000; paintTimer(); } }),
-      button(timer.done ? 'OK' : 'Stop', { sm: true, kind: timer.done ? 'primary' : 'ghost', onClick: () => stopTimer() }));
-  }
-  subs.add(paintTimer);
-
   /* ----- Wake Lock ----- */
 
   let lock = null;
@@ -370,7 +284,7 @@ export function cookView({ id }) {
   /* ----- Start ----- */
 
   s.el.style.setProperty('--cook-ts', String(prog.ts));
-  paint(); paintTimer();
+  paint();
   db.get('cookSessions', id).then((p) => {
     if (p && typeof p === 'object') {
       prog = { ing: {}, steps: {}, factor: 1, tab: 'ing', ts: 1.15, inventoryConsumedAt: 0, inventoryConsumptionId: '', ...p };
@@ -386,7 +300,6 @@ export function cookView({ id }) {
   return {
     el: s.el,
     destroy: () => {
-      subs.delete(paintTimer);
       document.removeEventListener('visibilitychange', onVis);
       if (loaded) saveProg.flush();
       if (notesDirty && notesEl) notesSave.flush(notesEl.value);

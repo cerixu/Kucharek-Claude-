@@ -7,7 +7,8 @@ import { db } from './db.js';
 import { loadAll, state, setSetting, getSetting, normalizeRecipe, DEFAULT_SETTINGS, emit } from './recipes.js';
 import { APP_VERSION } from './util.js';
 
-const FORMAT = 'Kucharzyna';
+const FORMAT = 'Kucharek';
+const LEGACY_FORMAT = 'Kucharzyna';
 const PRO_STORES = ['inventory','inventoryLog','deliveries','lots','stockMovements','suppliers','purchaseOrders','productionBatches','stocktakes','waste','priceHistory'];
 const CORE_STORES = ['recipes','ingredients','categories','shoppingItems','settings','history','cookSessions','cookHistory'];
 const BACKUP_DUE_DAYS = 14;
@@ -34,7 +35,7 @@ export async function buildBackup() {
 
 export const backupFilename = () => {
   const d = new Date(), p = (n) => String(n).padStart(2, '0');
-  return `kucharzyna-kopia-${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}.json`;
+  return `kucharek-kopia-${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}.json`;
 };
 
 /**
@@ -49,7 +50,7 @@ export async function exportBackup() {
   let result = null;
 
   if (navigator.canShare && navigator.canShare({ files: [file] }) && navigator.share) {
-    try { await navigator.share({ files: [file], title: 'Kopia Kucharzyny' }); result = 'shared'; }
+    try { await navigator.share({ files: [file], title: 'Kopia Kucharka' }); result = 'shared'; }
     catch (e) { if (e && e.name === 'AbortError') return 'cancelled'; }
   }
   if (!result) {
@@ -92,7 +93,7 @@ export async function readBackupFile(file) {
 export function parseBackup(text) {
   let obj;
   try { obj = JSON.parse(text); } catch (_) { throw new Error('To nie jest poprawny plik JSON.'); }
-  if (!obj || obj.app !== FORMAT || !obj.data || typeof obj.data !== 'object') throw new Error('To nie jest kopia zapasowa Kucharzyny.');
+  if (!obj || (obj.app !== FORMAT && obj.app !== LEGACY_FORMAT) || !obj.data || typeof obj.data !== 'object') throw new Error('To nie jest kopia zapasowa Kucharzyny.');
   const d = obj.data;
   const arr = (x) => (Array.isArray(x) ? x : []);
   const data = {

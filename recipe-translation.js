@@ -372,3 +372,38 @@ export function translateRecipe(recipe) {
     translationVersion:9
   };
 }
+
+
+/* ---------- Etap 61: końcowa normalizacja polskiego archiwum ---------- */
+const ARCHIVE_NAME_FIXES = new Map([
+  ["Angielskie Muffins", "Muffiny angielskie"],
+  ["Boiled Rifatto all'English", "Gotowane rifatto po angielsku"],
+  ["Catup", "Ketchup"],
+  ["Nogg jajeczny", "Napój jajeczny"],
+  ["Consommé à la Duchesse", "Klarowny bulion po książęcemu"],
+  ["Homary à la Newburg", "Homary po newburgsku"],
+  ["Czekolada po Wiedeńska", "Czekolada po wiedeńsku"],
+  ["rys", "ryż"],
+]);
+
+const ARCHIVE_TEXT_FIXES = [
+  [/\bBeef à la Mode\b/gi, "wołowiny duszonej w stylu paryskim"],
+  [/\bBoiled Rifatto all'English\b/gi, "gotowane rifatto po angielsku"],
+  [/\bEnglish Muffins\b/gi, "muffiny angielskie"],
+  [/\bAngielskie Muffins\b/gi, "muffiny angielskie"],
+  [/\bCatup\b/gi, "ketchup"],
+  [/\bNogg jajeczny\b/gi, "napój jajeczny"],
+  [/\bConsommé à la Duchesse\b/gi, "klarowny bulion po książęcemu"],
+  [/\bHomary à la Newburg\b/gi, "homary po newburgsku"],
+];
+
+export function normalizeArchivePolishText(value) {
+  let out = String(value ?? '');
+  for (const [re, replacement] of ARCHIVE_TEXT_FIXES) out = out.replace(re, replacement);
+  return out.replace(/\s{2,}/g, ' ').trim();
+}
+
+export function normalizeArchivePolishName(value) {
+  const raw = String(value ?? '').trim();
+  return ARCHIVE_NAME_FIXES.get(raw) || normalizeArchivePolishText(raw);
+}

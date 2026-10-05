@@ -122,7 +122,7 @@ function normalizeArchiveRecipe(r) {
     })),
     steps: (r.steps || []).map((s) => ({ ...s, text: normalizeArchivePolishText(s.text) })),
     translationLanguage: 'pl',
-    translationVersion: 33,
+    translationVersion: 34,
   };
   return next;
 }

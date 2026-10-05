@@ -3,32 +3,53 @@ import { test, expect, devices } from '@playwright/test';
 test.use({ ...devices['iPhone 13'], browserName: 'chromium', serviceWorkers: 'block' });
 test.setTimeout(60000);
 
-test('Stage 60 — unified country cuisines', async ({ page }) => {
+test('Stage 60 — master iPhone visual shell', async ({ page }) => {
   const errors = [];
   page.on('pageerror', e => errors.push(String(e)));
 
-  await page.goto('/#/world');
+  await page.goto('/#/');
   await page.waitForFunction(() => window.__kucharek?.ready === true, null, { timeout: 30000 });
+  const version = await page.evaluate(async () => (await import('./util.js')).APP_VERSION);
+  expect(version).toBe('1.4.1');
 
-  await expect(page.locator('.world-intro')).toBeVisible();
-  const japan = page.locator('.world-country[aria-label^="Japonia"]').first();
-  await expect(japan).toBeVisible();
+  await expect(page.locator('.start-brand')).toBeVisible();
+  await expect(page.locator('.start-category-scroller')).toBeVisible();
+  await expect(page.locator('.start-hero-card')).toBeVisible();
+  await expect(page.locator('#tabbar')).toBeVisible();
+  await expect(page.locator('.start-v2 .topbar')).toBeHidden();
 
-  const countLabel = await japan.getAttribute('aria-label');
-  expect(countLabel).toMatch(/^Japonia, \d+ receptur$/);
-
-  await japan.click();
-  await expect(page).toHaveURL(/#\/recipes\?origin=JP/);
-  await expect(page.locator('.origin-filter-head')).toBeVisible();
-
-  const data = await page.evaluate(async () => {
-    const { listRecipes } = await import('./recipes.js');
-    const all = listRecipes();
-    const jp = all.filter(r => String(r.origin || '').toUpperCase() === 'JP');
-    return { all: all.length, jp: jp.length, uniqueSources: [...new Set(jp.map(r => r.archiveCollection || r.source || ''))].length };
+  const metrics = await page.evaluate(() => {
+    const hero = document.querySelector('.start-hero-card');
+    const dock = document.querySelector('#tabbar');
+    const brand = document.querySelector('.start-brand');
+    const cat = document.querySelector('.start-category');
+    const get = (el) => {
+      const s = getComputedStyle(el);
+      return { radius: parseFloat(s.borderTopLeftRadius), blur: s.backdropFilter || s.webkitBackdropFilter, shadow: s.boxShadow };
+    };
+    return { hero: get(hero), dock: get(dock), brand: get(brand), category: get(cat) };
   });
 
-  expect(data.jp).toBeGreaterThan(0);
-  expect(data.uniqueSources).toBeGreaterThanOrEqual(1);
+  expect(metrics.hero.radius).toBeGreaterThanOrEqual(32);
+  expect(metrics.dock.radius).toBeGreaterThanOrEqual(28);
+  expect(metrics.dock.blur).toContain('blur');
+  expect(metrics.hero.shadow).toContain('rgba');
+  expect(metrics.category.radius).toBeGreaterThanOrEqual(18);
+
+  await page.screenshot({ path: 'test-results/stage-60-start.png', fullPage: true });
+
+  await page.goto('/#/recipes');
+  await page.waitForFunction(() => window.__kucharek?.ready === true, null, { timeout: 30000 });
+  const card = page.locator('.rcard').first();
+  await expect(card).toBeVisible();
+  await expect(page.locator('#tabbar')).toBeVisible();
+  await card.locator('.rcard-main').click();
+  await expect(page.locator('.hero-photo.recipe-visual')).toBeVisible();
+
+  const detail = await page.evaluate(() => {
+    const hero = document.querySelector('.hero-photo.recipe-visual');
+    return hero ? getComputedStyle(hero).borderTopLeftRadius : 0;
+  });
+  expect(parseFloat(detail)).toBeGreaterThanOrEqual(28);
   expect(errors, errors.join('\n')).toEqual([]);
 });

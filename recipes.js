@@ -84,7 +84,7 @@ export async function setSetting(k, v) {
 
 /* ---------- Modele ---------- */
 
-const RECIPE_TEXT_REPAIR_VERSION = 3;
+const RECIPE_TEXT_REPAIR_VERSION = 4;
 
 const NUMBER_WORDS = new Map([
   ['jeden', 1], ['jedna', 1], ['jedno', 1], ['one', 1],
@@ -92,75 +92,108 @@ const NUMBER_WORDS = new Map([
   ['pięć', 5], ['piec', 5], ['five', 5], ['sześć', 6], ['six', 6], ['siedem', 7], ['seven', 7],
   ['osiem', 8], ['eight', 8], ['dziewięć', 9], ['dziewiec', 9], ['nine', 9], ['dziesięć', 10], ['dziesiec', 10], ['ten', 10],
 ]);
+
 const UNIT_WORDS = [
-  [/^(łyżka|łyżki|łyzka|lyzki|tablespoon|tablespoons)\\b/i, 'łyżka'],
-  [/^(łyżeczka|łyżeczki|lyzeczka|lyzeczki|teaspoon|teaspoons)\\b/i, 'łyżeczka'],
-  [/^(szklanka|szklanki|cup|cups)\\b/i, 'szklanka'],
-  [/^(kg|kilogram|kilogramy|kilograms)\\b/i, 'kg'],
-  [/^(g|gram|gramy|grams)\\b/i, 'g'],
-  [/^(ml|millilitr|millilitry|milliliters)\\b/i, 'ml'],
-  [/^(l|litr|litry|liters)\\b/i, 'l'],
-  [/^(szt\\.?|sztuki|sztuk|pieces|piece)\\b/i, 'szt.'],
+  [/^(łyżka|łyżki|łyzka|lyzki|tablespoon|tablespoons)\b/i, 'łyżka'],
+  [/^(łyżeczka|łyżeczki|lyzeczka|lyzeczki|teaspoon|teaspoons)\b/i, 'łyżeczka'],
+  [/^(szklanka|szklanki|cup|cups)\b/i, 'szklanka'],
+  [/^(kg|kilogram|kilogramy|kilograms)\b/i, 'kg'],
+  [/^(g|gram|gramy|grams)\b/i, 'g'],
+  [/^(ml|millilitr|millilitry|milliliters)\b/i, 'ml'],
+  [/^(l|litr|litry|liters)\b/i, 'l'],
+  [/^(szt\.?|sztuki|sztuk|pieces|piece)\b/i, 'szt.'],
 ];
 
 function cleanCulinaryText(value) {
   return String(value ?? '')
-    .replace(/\\blyzka\\b/gi, 'łyżka').replace(/\\blyzki\\b/gi, 'łyżki')
-    .replace(/\\blyzeczka\\b/gi, 'łyżeczka').replace(/\\blyzeczki\\b/gi, 'łyżeczki')
-    .replace(/\\bzoltko\\b/gi, 'żółtko').replace(/\\bzoltka\\b/gi, 'żółtka')
-    .replace(/\\bzoltk\\b/gi, 'żółtk')
-    .replace(/[“”]/g, '"').replace(/\\s+/g, ' ').trim();
+    .replace(/\blyzka\b/gi, 'łyżka')
+    .replace(/\blyzki\b/gi, 'łyżki')
+    .replace(/\blyzeczka\b/gi, 'łyżeczka')
+    .replace(/\blyzeczki\b/gi, 'łyżeczki')
+    .replace(/\bzoltko\b/gi, 'żółtko')
+    .replace(/\bzoltka\b/gi, 'żółtka')
+    .replace(/\bzoltk\b/gi, 'żółtk')
+    .replace(/[“”]/g, '"')
+    .replace(/\s+/g, ' ')
+    .trim();
 }
+
+const GENITIVE_FIX = {
+  'soli':'sól','cukru':'cukier','mąki':'mąka','wody':'woda','oleju':'olej','oliwy':'oliwa z oliwek','masła':'masło',
+  'pieprzu':'pieprz','sera':'ser','mleka':'mleko','śmietany':'śmietana','śmietanki':'śmietanka','octu':'ocet','wina':'wino',
+  'miodu':'miód','musztardy':'musztarda','czosnku':'czosnek','cebuli':'cebula','pomidora':'pomidor','pomidorów':'pomidory',
+  'marchewki':'marchew','marchewi':'marchew','selera':'seler','ziemniaka':'ziemniak','ziemniaków':'ziemniaki','jajka':'jajko','żółtka':'żółtko'
+};
 
 function repairIngredient(i) {
   const out = { ...blankIngredient(), ...i };
-  let name = cleanCulinaryText(out.name).replace(/^[-–—:;]+\\s*/, '').replace(/\\s*[,;:]+$/, '');
+  let name = cleanCulinaryText(out.name).replace(/^[-–—:;]+\s*/, '').replace(/\s*[,;:]+$/, '');
   let amount = Number.isFinite(out.amount) ? out.amount : null;
   let unit = cleanCulinaryText(out.unit || '').toLowerCase();
 
   const unitMap = new Map([
-    ['łyżki','łyżka'],['łyzka','łyżka'],['lyzka','łyżka'],['tablespoon','łyżka'],['tablespoons','łyżka'],
-    ['łyżeczki','łyżeczka'],['lyzeczka','łyżeczka'],['lyzeczki','łyżeczka'],['teaspoon','łyżeczka'],['teaspoons','łyżeczka'],
-    ['szklanki','szklanka'],['cup','szklanka'],['cups','szklanka'],['szt','szt.'],['sztuk','szt.'],['pieces','szt.'],['piece','szt.'],
+    ['łyżki','łyżka'], ['łyzka','łyżka'], ['lyzka','łyżka'], ['tablespoon','łyżka'], ['tablespoons','łyżka'],
+    ['łyżeczki','łyżeczka'], ['lyzeczka','łyżeczka'], ['lyzeczki','łyżeczka'], ['teaspoon','łyżeczka'], ['teaspoons','łyżeczka'],
+    ['szklanki','szklanka'], ['cup','szklanka'], ['cups','szklanka'], ['szt','szt.'], ['sztuk','szt.'], ['pieces','szt.'], ['piece','szt.'],
   ]);
   unit = unitMap.get(unit) || unit;
 
-  const leadNum = name.match(/^([0-9]+(?:[.,][0-9]+)?|jeden|jedna|jedno|dwa|dwie|trzy|cztery|pięć|piec|sześć|siedem|osiem|dziewięć|dziewiec|dziesięć|dziesiec|one|two|three|four|five|six|seven|eight|nine|ten)\\s+(.+)$/i);
-  if (leadNum) {
-    const rawN = leadNum[1].toLowerCase().replace(',', '.');
+  const leading = name.match(/^([0-9]+(?:[.,][0-9]+)?|jeden|jedna|jedno|dwa|dwie|trzy|cztery|pięć|piec|sześć|siedem|osiem|dziewięć|dziewiec|dziesięć|dziesiec|one|two|three|four|five|six|seven|eight|nine|ten)\s+(.+)$/i);
+  if (leading) {
+    const rawN = leading[1].toLowerCase().replace(',', '.');
     const n = NUMBER_WORDS.get(rawN) ?? Number(rawN);
-    let rest = cleanCulinaryText(leadNum[2]);
+    const rest = cleanCulinaryText(leading[2]);
+
+    let matchedUnit = false;
     for (const [rx, canonical] of UNIT_WORDS) {
       const m = rest.match(rx);
       if (!m) continue;
-      const after = rest.slice(m[0].length).replace(/^\\s+/, '');
-      if (after) name = after;
+      matchedUnit = true;
+      const after = cleanCulinaryText(rest.slice(m[0].length));
       amount = Number.isFinite(n) ? n : amount;
       unit = canonical;
+      name = after;
       break;
     }
-    if (/^(żółtk[oa]|żółtka|jajko|jajka|egg|eggs|egg yolk|egg yolks)$/i.test(rest)) {
+
+    if (!matchedUnit && /^(żółtk[oa]|żółtka|jajko|jajka|egg|eggs|egg yolk|egg yolks)$/i.test(rest)) {
       amount = Number.isFinite(n) ? n : amount;
       unit = 'szt.';
-      name = rest.replace(/^egg yolks?$/i, 'żółtko').replace(/^eggs?$/i, 'jajko');
+      name = /^(egg|eggs)$/i.test(rest) ? 'jajko' : 'żółtko';
     }
   }
 
-  // Najczęstsze błędy wygenerowane przez automatyczne tłumaczenie.
-  const genitiveFix = {
-    'soli':'sól','cukru':'cukier','mąki':'mąka','wody':'woda','oleju':'olej','oliwy':'oliwa z oliwek','masła':'masło',
-    'pieprzu':'pieprz','sera':'ser','mleka':'mleko','śmietany':'śmietana','śmietanki':'śmietanka','octu':'ocet','wina':'wino',
-    'miodu':'miód','musztardy':'musztarda','czosnku':'czosnek','cebuli':'cebula','pomidora':'pomidor','pomidorów':'pomidory',
-    'marchewki':'marchew','marchewi':'marchew','selera':'seler','ziemniaka':'ziemniak','ziemniaków':'ziemniaki','jajka':'jajko','żółtka':'żółtko'
-  };
-  name = name.replace(/^jeden\\s+łyżka\\s+/i, '').replace(/^jedna\\s+łyżka\\s+/i, '');
-  name = name.replace(/^jeden\\s+żółtko\\b/i, 'żółtko').replace(/^jedna\\s+żółtko\\b/i, 'żółtko');
-  if (genitiveFix[name.toLowerCase()]) name = genitiveFix[name.toLowerCase()];
-  if (/^żółtko$/i.test(name) && (!amount || amount < 1)) { amount = 1; unit = 'szt.'; }
-  if (/^(one|jeden|jedna|jedno)\\s+(egg yolk|żółtko)$/i.test(name)) { amount = amount || 1; unit = 'szt.'; name = 'żółtko'; }
-  if (/^(one|jeden|jedna|jedno)\\s+(egg|jajko)$/i.test(name)) { amount = amount || 1; unit = 'szt.'; name = 'jajko'; }
+  // Ilość/jednostka na końcu nazwy, np. „mąka, 500 g”.
+  const trailing = name.match(/^(.*?)[,;:]?\s+([0-9]+(?:[.,][0-9]+)?)\s*(kg|g|ml|l|łyżka|łyżki|łyżeczka|łyżeczki|szklanka|szklanki|szt\.?|tablespoons?|teaspoons?|cups?|ounces?|pounds?)\s*$/i);
+  if (trailing) {
+    const tn = Number(trailing[2].replace(',', '.'));
+    const tu = trailing[3].toLowerCase();
+    const canonical = unitMap.get(tu) || (
+      /tablespoons?/i.test(tu) ? 'łyżka' :
+      /teaspoons?/i.test(tu) ? 'łyżeczka' :
+      /cups?/i.test(tu) ? 'szklanka' :
+      /ounces?/i.test(tu) ? 'uncja' :
+      /pounds?/i.test(tu) ? 'funt' :
+      /łyżk/.test(tu) ? 'łyżka' :
+      /łyżeczk/.test(tu) ? 'łyżeczka' :
+      /szklank/.test(tu) ? 'szklanka' : tu
+    );
+    if (Number.isFinite(tn)) amount = tn;
+    unit = canonical;
+    name = cleanCulinaryText(trailing[1]);
+  }
 
-  return { ...out, name: name || out.name || '', amount, unit: unit || out.unit || 'g' };
+  if (GENITIVE_FIX[name.toLowerCase()]) name = GENITIVE_FIX[name.toLowerCase()];
+  name = name.replace(/^(?:jeden|jedna|jedno|one)\s+(?=(?:żółtko|zoltko|jajko|egg)\b)/i, '');
+
+  // Samo „jeden łyżka” / „one tablespoon” nie jest nazwą składnika.
+  const unitOnly = /^(?:jeden|jedna|jedno|one|two|dwa|dwie|trzy)\s+(?:łyżka|łyżki|łyżeczka|łyżeczki|szklanka|szklanki|g|kg|ml|l|tablespoon|tablespoons|teaspoon|teaspoons|cup|cups)\s*$/i;
+  if (unitOnly.test(name)) name = '';
+
+  if (/^żółtko$/i.test(name) && (!amount || amount < 1)) { amount = 1; unit = 'szt.'; }
+  if (/^jajko$/i.test(name) && (!amount || amount < 1)) { amount = 1; unit = 'szt.'; }
+
+  return { ...out, name: name.trim(), amount, unit: unit || out.unit || 'g' };
 }
 
 function repairRecipe(r) {
@@ -170,7 +203,7 @@ function repairRecipe(r) {
   o.notes = cleanCulinaryText(o.notes);
   o.sections = (o.sections || []).map(s => ({ ...s,
     name: cleanCulinaryText(s.name),
-    ingredients: (s.ingredients || []).map(repairIngredient),
+    ingredients: (s.ingredients || []).map(repairIngredient).filter(i => i.name),
   }));
   o.steps = (o.steps || []).map(s => ({ ...s, text: cleanCulinaryText(s.text) }));
   return o;

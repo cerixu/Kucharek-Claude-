@@ -668,11 +668,13 @@ async function removeLegacyLibrarySeeds() {
 export const ARCHIVE_TRANSLATION_VERSION = 34;
 
 async function repairAllRecipeText() {
-  if (getSetting('recipeTextRepairVersion') === RECIPE_TEXT_REPAIR_VERSION) return 0;
+  const rawRecipes = await db.getAll('recipes');
   const updates = [];
-  for (const cur of state.recipes.values()) {
-    const fixed = repairRecipe(cur);
-    if (JSON.stringify(fixed) !== JSON.stringify(cur)) updates.push({ ...fixed, updatedAt: cur.updatedAt || Date.now() });
+  for (const raw of rawRecipes) {
+    const fixed = repairRecipe(raw);
+    if (JSON.stringify(fixed) !== JSON.stringify(raw)) {
+      updates.push({ ...raw, ...fixed, updatedAt: raw.updatedAt || Date.now() });
+    }
   }
   if (updates.length) {
     await db.putMany('recipes', updates);

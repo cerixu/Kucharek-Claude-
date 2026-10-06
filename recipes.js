@@ -7,7 +7,7 @@
    ========================================================================== */
 import { db, kv } from './db.js';
 import { uid, norm, fmtAmount, fmtMinutes, fmtDateTime, flagEmoji } from './util.js';
-const ARCHIVE_MODULE_VERSION = '20261005-61-1.5.6';
+const ARCHIVE_MODULE_VERSION = '20261006-62-1.6.0';
 let archiveLibraryPromise = null;
 
 async function getRecipeLibrary() {
@@ -42,7 +42,6 @@ const SEED_MEDIA_VERSION = 12;
 
 export const DEFAULT_SETTINGS = {
   theme: 'auto',          // auto | light | dark
-  mode: 'pro',            // pro | amateur
   tapSize: 'large',       // normal | large | xl
   textScale: 100,         // 90–130 (%)
   pinTraditional: true,
@@ -85,6 +84,91 @@ export async function setSetting(k, v) {
 
 /* ---------- Modele ---------- */
 
+const RECIPE_TEXT_REPAIR_VERSION = 2;
+
+const NUMBER_WORDS = new Map([
+  ['jeden', 1], ['jedna', 1], ['jedno', 1], ['one', 1],
+  ['dwa', 2], ['dwie', 2], ['two', 2], ['trzy', 3], ['three', 3], ['cztery', 4], ['four', 4],
+  ['pięć', 5], ['piec', 5], ['five', 5], ['sześć', 6], ['six', 6], ['siedem', 7], ['seven', 7],
+  ['osiem', 8], ['eight', 8], ['dziewięć', 9], ['dziewiec', 9], ['nine', 9], ['dziesięć', 10], ['dziesiec', 10], ['ten', 10],
+]);
+const UNIT_WORDS = [
+  [/^(łyżka|łyżki|łyzka|lyzki|tablespoon|tablespoons)\\b/i, 'łyżka'],
+  [/^(łyżeczka|łyżeczki|lyzeczka|lyzeczki|teaspoon|teaspoons)\\b/i, 'łyżeczka'],
+  [/^(szklanka|szklanki|cup|cups)\\b/i, 'szklanka'],
+  [/^(kg|kilogram|kilogramy|kilograms)\\b/i, 'kg'],
+  [/^(g|gram|gramy|grams)\\b/i, 'g'],
+  [/^(ml|millilitr|millilitry|milliliters)\\b/i, 'ml'],
+  [/^(l|litr|litry|liters)\\b/i, 'l'],
+  [/^(szt\\.?|sztuki|sztuk|pieces|piece)\\b/i, 'szt.'],
+];
+
+function cleanCulinaryText(value) {
+  return String(value ?? '')
+    .replace(/\\blyzka\\b/gi, 'łyżka').replace(/\\blyzki\\b/gi, 'łyżki')
+    .replace(/\\blyzeczka\\b/gi, 'łyżeczka').replace(/\\blyzeczki\\b/gi, 'łyżeczki')
+    .replace(/\\bzoltko\\b/gi, 'żółtko').replace(/\\bzoltka\\b/gi, 'żółtka')
+    .replace(/\\bzoltk\\b/gi, 'żółtk')
+    .replace(/[“”]/g, '"').replace(/\\s+/g, ' ').trim();
+}
+
+function repairIngredient(i) {
+  const out = { ...blankIngredient(), ...i };
+  let name = cleanCulinaryText(out.name).replace(/^[-–—:;]+\\s*/, '').replace(/\\s*[,;:]+$/, '');
+  let amount = Number.isFinite(out.amount) ? out.amount : null;
+  let unit = cleanCulinaryText(out.unit || '').toLowerCase();
+
+  const unitMap = new Map([
+    ['łyżki','łyżka'],['łyzka','łyżka'],['lyzka','łyżka'],['tablespoon','łyżka'],['tablespoons','łyżka'],
+    ['łyżeczki','łyżeczka'],['lyzeczka','łyżeczka'],['lyzeczki','łyżeczka'],['teaspoon','łyżeczka'],['teaspoons','łyżeczka'],
+    ['szklanki','szklanka'],['cup','szklanka'],['cups','szklanka'],['szt','szt.'],['sztuk','szt.'],['pieces','szt.'],['piece','szt.'],
+  ]);
+  unit = unitMap.get(unit) || unit;
+
+  const leadNum = name.match(/^([0-9]+(?:[.,][0-9]+)?|jeden|jedna|jedno|dwa|dwie|trzy|cztery|pięć|piec|sześć|siedem|osiem|dziewięć|dziewiec|dziesięć|dziesiec|one|two|three|four|five|six|seven|eight|nine|ten)\\s+(.+)$/i);
+  if (leadNum) {
+    const rawN = leadNum[1].toLowerCase().replace(',', '.');
+    const n = NUMBER_WORDS.get(rawN) ?? Number(rawN);
+    let rest = cleanCulinaryText(leadNum[2]);
+    for (const [rx, canonical] of UNIT_WORDS) {
+      const m = rest.match(rx);
+      if (!m) continue;
+      const after = rest.slice(m[0].length).replace(/^\\s+/, '');
+      if (after) name = after;
+      amount = Number.isFinite(n) ? n : amount;
+      unit = canonical;
+      break;
+    }
+    if (/^(żółtk[oa]|żółtka|jajko|jajka|egg|eggs|egg yolk|egg yolks)$/i.test(rest)) {
+      amount = Number.isFinite(n) ? n : amount;
+      unit = 'szt.';
+      name = rest.replace(/^egg yolks?$/i, 'żółtko').replace(/^eggs?$/i, 'jajko');
+    }
+  }
+
+  // Najczęstsze błędy wygenerowane przez automatyczne tłumaczenie.
+  name = name.replace(/^jeden\\s+łyżka\\s+/i, '').replace(/^jedna\\s+łyżka\\s+/i, '');
+  name = name.replace(/^jeden\\s+żółtko\\b/i, 'żółtko').replace(/^jedna\\s+żółtko\\b/i, 'żółtko');
+  if (/^żółtko$/i.test(name) && (!amount || amount < 1)) { amount = 1; unit = 'szt.'; }
+  if (/^(one|jeden|jedna|jedno)\\s+(egg yolk|żółtko)$/i.test(name)) { amount = amount || 1; unit = 'szt.'; name = 'żółtko'; }
+  if (/^(one|jeden|jedna|jedno)\\s+(egg|jajko)$/i.test(name)) { amount = amount || 1; unit = 'szt.'; name = 'jajko'; }
+
+  return { ...out, name: name || out.name || '', amount, unit: unit || out.unit || 'g' };
+}
+
+function repairRecipe(r) {
+  const o = { ...r };
+  o.name = cleanCulinaryText(o.name);
+  o.description = cleanCulinaryText(o.description);
+  o.notes = cleanCulinaryText(o.notes);
+  o.sections = (o.sections || []).map(s => ({ ...s,
+    name: cleanCulinaryText(s.name),
+    ingredients: (s.ingredients || []).map(repairIngredient),
+  }));
+  o.steps = (o.steps || []).map(s => ({ ...s, text: cleanCulinaryText(s.text) }));
+  return o;
+}
+
 export function blankIngredient(over = {}) {
   return { id: uid('ing_'), name: '', amount: null, unit: 'g', percent: null, flour: null,
     price: null, priceUnit: 'kg', packageWeight: null, packageUnit: 'g', ...over };
@@ -106,7 +190,7 @@ export function blankRecipe(over = {}) {
 /** Uzupełnia brakujące pola (np. po imporcie starszego backupu). */
 export function normalizeRecipe(r) {
   const b = blankRecipe();
-  const o = { ...b, ...r };
+  const o = repairRecipe({ ...b, ...r });
   o.tags = Array.isArray(o.tags) ? o.tags.filter(Boolean) : [];
   o.steps = (Array.isArray(o.steps) ? o.steps : []).map((s) => ({ id: s.id || uid('stp_'), text: s.text || '' }));
   o.sections = (Array.isArray(o.sections) && o.sections.length ? o.sections : [blankSection('')]).map((s) => ({
@@ -173,6 +257,7 @@ export async function loadAll() {
         await setSetting('seedLibraryVersion', SEED_MEDIA_VERSION);
       }
       await refreshArchiveTranslations();
+      await repairAllRecipeText();
     } catch (e) {
       console.warn('[Kucharek] Aktualizacja biblioteki w tle nie powiodła się:', e);
     }
@@ -540,6 +625,22 @@ async function removeLegacyLibrarySeeds() {
 }
 
 export const ARCHIVE_TRANSLATION_VERSION = 34;
+
+async function repairAllRecipeText() {
+  if (getSetting('recipeTextRepairVersion') === RECIPE_TEXT_REPAIR_VERSION) return 0;
+  const updates = [];
+  for (const cur of state.recipes.values()) {
+    const fixed = repairRecipe(cur);
+    if (JSON.stringify(fixed) !== JSON.stringify(cur)) updates.push({ ...fixed, updatedAt: cur.updatedAt || Date.now() });
+  }
+  if (updates.length) {
+    await db.putMany('recipes', updates);
+    updates.forEach(r => state.recipes.set(r.id, normalizeRecipe(r)));
+    emit('recipes');
+  }
+  await setSetting('recipeTextRepairVersion', RECIPE_TEXT_REPAIR_VERSION);
+  return updates.length;
+}
 
 async function refreshArchiveTranslations() {
   if (getSetting('archiveTranslationVersion') === ARCHIVE_TRANSLATION_VERSION) return 0;

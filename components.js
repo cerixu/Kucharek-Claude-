@@ -364,8 +364,26 @@ coconut_milk:'M14 12h20v26H14zM18 12v-4h12v4M18 21h12',
     fruit:'M12 28c0-9 5-15 12-15s12 6 12 15-5 11-12 11-12-2-12-11ZM24 13V7M20 9l-4-4M28 9l4-4',
     generic:'M10 24h28M14 18h20l4 18H10l4-18ZM18 18v-5h12v5'
   };
+  const ATLAS_SYMBOL = {
+    flour:'flour', water:'water', salt:'salt', yeast:'yeast', oil:'olive-oil', butter:'butter', milk:'milk', cream:'cream', egg:'egg', cheese:'cheese',
+    tomato:'tomato', herb:'basil2', oregano:'oregano', garlic:'garlic', onion:'onion', potato:'potato', carrot:'carrot', pepper:'pepper', chicken:'chicken',
+    beef:'beef', pork:'pork', shrimp:'shrimp', fish:'fish', salmon:'salmon', pasta:'pasta', rice:'rice', honey:'honey', mustard:'mustard', soy:'soy',
+    lemon:'lemon', mushroom:'mushroom', sugar:'sugar', peppercorn:'peppercorn', generic:'generic',
+  };
+  const atlasId = ATLAS_SYMBOL[kind];
   const NS = 'http://www.w3.org/2000/svg';
-  const span = h('span', { class:'ingredient-icon ingredient-icon-'+kind, 'aria-hidden':'true' });
+  const span = h('span', { class:'ingredient-icon ingredient-icon-'+kind + (atlasId ? ' ingredient-icon-photo' : ''), 'aria-hidden':'true' });
+  if (atlasId) {
+    const svg = document.createElementNS(NS, 'svg');
+    svg.setAttribute('class', 'ingredient-svg ingredient-svg-photo');
+    svg.setAttribute('viewBox', '0 0 40 40');
+    svg.setAttribute('width', '34'); svg.setAttribute('height', '34'); svg.setAttribute('focusable', 'false');
+    const use = document.createElementNS(NS, 'use');
+    const href = new URL('assets/ingredient-icons.svg', document.baseURI).href + '#' + atlasId;
+    use.setAttribute('href', href); use.setAttributeNS('http://www.w3.org/1999/xlink', 'xlink:href', href);
+    use.setAttribute('width', '40'); use.setAttribute('height', '40');
+    svg.appendChild(use); span.appendChild(svg); return span;
+  }
   const svg = document.createElementNS(NS, 'svg');
   svg.setAttribute('class', 'ingredient-svg');
   svg.setAttribute('viewBox', '0 0 48 48');

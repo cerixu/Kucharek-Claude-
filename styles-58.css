@@ -12,21 +12,6 @@
   --lux-accent: #ffc33d;
 }
 
-:root[data-theme="dark"]:not([data-mode="amateur"]),
-:root[data-theme="auto"][data-mode="pro"] {
-  --bg: var(--lux-bg);
-  --surface: #191a1d;
-  --surface-2: #26272b;
-  --line: var(--lux-line);
-  --glass-bg: var(--lux-panel);
-  --glass-line: var(--lux-line);
-  --glass-hi: var(--lux-hi);
-  --glass-shadow: var(--lux-soft-shadow);
-  --accent: var(--lux-accent);
-  --accent-text: #ffd76e;
-  --accent-soft: rgba(255,195,61,.13);
-}
-
 html, body {
   background:
     radial-gradient(90% 44% at 50% -6%, rgba(255,195,61,.085), transparent 62%),

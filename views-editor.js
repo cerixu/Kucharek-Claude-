@@ -394,7 +394,7 @@ export function editorView({ id }, query) {
       field('Adres strony (URL)', textInput({ value: work.sourceUrl, label: 'Adres URL źródła', placeholder: 'https://…', type: 'url', capitalize: 'none', inputmode: 'url', onInput: (v) => { work.sourceUrl = v; touch(); } })),
     ];
     kids.push(switchEl(!!work.bakers, (v) => { work.bakers = v; touch(); paintSections(); }, 'Procenty piekarskie', 'Mąka = 100%, hydracja, sól, drożdże — pokaż i przelicz'));
-    kids.push(field('Cena sprzedaży porcji (zł)', numInput({ value: work.salePrice, label: 'Cena sprzedaży', dec: 2, placeholder: 'do food costu', onInput: (v) => { work.salePrice = v; touch(); } }));
+    kids.push(field('Cena sprzedaży porcji (zł)', numInput({ value: work.salePrice, label: 'Cena sprzedaży', dec: 2, placeholder: 'do food costu', onInput: (v) => { work.salePrice = v; touch(); } })));
     return h('section', { class: 'card stack' }, kids);
   }
 

@@ -30,22 +30,23 @@ const bootStartedAt = performance.now();
 
 /* ---------- Motyw, tryb, rozmiary ---------- */
 
-const BG = { light: { pro: '#f4f4f1', amateur: '#eef7f0' }, dark: { pro: '#111214', amateur: '#0f1a13' } };
+const BG = { light: '#eef0ee', dark: '#0a0d0e' };
 const dark = matchMedia('(prefers-color-scheme: dark)');
 
 function applyAppearance() {
-  const theme = getSetting('theme'), mode = getSetting('mode'), tap = getSetting('tapSize'), ts = getSetting('textScale');
+  const theme = getSetting('theme'), tap = getSetting('tapSize'), ts = getSetting('textScale');
   root.setAttribute('data-theme', theme);
-  root.setAttribute('data-mode', mode);
+  root.removeAttribute('data-mode');
   root.setAttribute('data-tap', tap);
   root.style.setProperty('--ts', String((ts || 100) / 100));
   try {
-    localStorage.setItem('k:theme', theme); localStorage.setItem('k:mode', mode);
+    localStorage.setItem('k:theme', theme);
+    localStorage.removeItem('k:mode');
     localStorage.setItem('k:tap', tap); localStorage.setItem('k:ts', String(ts));
   } catch (_) { /* tryb prywatny */ }
   // Kolor paska systemowego zgodny z faktycznie wybranym motywem (nie tylko z systemowym).
   const eff = theme === 'auto' ? (dark.matches ? 'dark' : 'light') : theme;
-  const color = BG[eff][mode] || BG[eff].pro;
+  const color = BG[eff];
   document.querySelectorAll('meta[name="theme-color"]').forEach((m) => { m.setAttribute('content', color); m.removeAttribute('media'); });
 }
 dark.addEventListener && dark.addEventListener('change', () => { if (getSetting('theme') === 'auto') applyAppearance(); });
@@ -53,21 +54,29 @@ dark.addEventListener && dark.addEventListener('change', () => { if (getSetting(
 /* ---------- Dolna nawigacja ---------- */
 
 const TABS = [
-  ['start', 'Start', 'home', '/'],
   ['recipes', 'Receptury', 'book', '/recipes'],
-  ['cook', 'Gotuję', 'chef', '/cook'],
   ['inventory', 'Magazyn', 'list', '/inventory'],
+  ['add', 'Dodaj', 'plus', null],
+  ['calc', 'Kalkulatory', 'calc', '/calc'],
   ['more', 'Więcej', 'more', null],
 ];
+
+function openQuickAdd() {
+  openSheet({ title: 'Dodaj', variant: 'sheet', body: h('div', { class: 'more-grid quick-add-grid' },
+    button('Nowa receptura', { icon: 'plus', block: true, onClick: () => navigate('/new', { replace: true }) }),
+    button('Importuj recepturę', { icon: 'upload', block: true, onClick: () => navigate('/import', { replace: true }) }),
+    button('Skanuj kod produktu', { icon: 'barcode', block: true, onClick: () => navigate('/inventory', { replace: true }) })
+  ) });
+}
 
 function openMoreMenu() {
   openSheet({
     title: 'Więcej',
     variant: 'sheet',
     body: h('div', { class: 'more-grid' },
-      button('Zakupy', { icon: 'cart', block: true, onClick: () => navigate('/shopping', { replace: true }) }),
+      button('Menu główne', { icon: 'home', block: true, onClick: () => navigate('/', { replace: true }) }),
       button('Historia gotowania', { icon: 'history', block: true, onClick: () => navigate('/history', { replace: true }) }),
-      button('Kalkulatory', { icon: 'calc', block: true, onClick: () => navigate('/calc', { replace: true }) }),
+      button('Zakupy', { icon: 'cart', block: true, onClick: () => navigate('/shopping', { replace: true }) }),
       button('Centrum PRO', { icon: 'coins', block: true, onClick: () => navigate('/pro', { replace: true }) }),
       button('Ustawienia', { icon: 'sliders', block: true, onClick: () => navigate('/settings', { replace: true }) })
     ),
@@ -77,6 +86,10 @@ function openMoreMenu() {
 function buildTabbar() {
   const bar = $('#tabbar');
   bar.replaceChildren(...TABS.map(([id, label, ico, path]) => {
+    if (id === 'add') {
+      return h('button', { type: 'button', class: 'tab tab-add', dataset: { tab: id }, 'aria-label': 'Dodaj', onClick: openQuickAdd },
+        h('span', { class: 'tab-ico' }, icon('plus', 26)), h('span', { class: 'tab-label' }, 'Dodaj'));
+    }
     if (id === 'more') {
       return h('button', {
         type: 'button',
@@ -153,7 +166,7 @@ function watchNetwork() {
 
 /* ---------- Trasy ---------- */
 
-route('/', () => startView(), { tab: 'start' });
+route('/', () => startView(), { tab: null });
 route('/recipes', (p, q) => recipesView(q), { tab: 'recipes' });
 route('/history', () => historyView(), { tab: 'more' });
 route('/recipe/:id', (p) => detailView(p), { tab: 'recipes' });

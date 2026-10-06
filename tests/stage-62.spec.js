@@ -9,58 +9,65 @@ async function ready(page) {
   await page.waitForSelector('#tabbar .tab');
 }
 
-test('Stage 62 — iPhone visual system and click-through', async ({ page }) => {
+test('Stage 62 — nowy shell, dock i czystość receptur', async ({ page }) => {
   const errors = [];
   page.on('pageerror', e => errors.push(String(e)));
 
   await ready(page);
 
+  const version = await page.evaluate(async () => (await import('./util.js')).APP_VERSION);
+  expect(version).toBe('1.6.0');
+
+  await expect(page.locator('.start-menu')).toBeVisible();
+  await expect(page.locator('.menu-grid')).toBeVisible();
+  await expect(page.locator('.menu-hero')).toBeVisible();
+
+  const nav = await page.locator('#tabbar .tab').evaluateAll(nodes =>
+    nodes.map(n => n.querySelector('.tab-label')?.textContent?.trim())
+  );
+  expect(nav).toEqual(['Receptury', 'Magazyn', 'Dodaj', 'Kalkulatory', 'Więcej']);
+  expect(nav).not.toContain('Zakupy');
+
   const shell = await page.evaluate(() => {
-    const root = getComputedStyle(document.documentElement);
     const dock = document.querySelector('#tabbar');
-    const activeIcon = document.querySelector('#tabbar .tab.on .tab-ico');
-    const d = dock ? getComputedStyle(dock) : null;
-    const a = activeIcon ? getComputedStyle(activeIcon) : null;
+    const plus = document.querySelector('.tab-add .tab-ico');
+    const styles = [...document.styleSheets].flatMap(sheet => {
+      try { return [...sheet.cssRules].map(r => r.cssText); } catch (_) { return []; }
+    }).join(' ');
     return {
-      bg: root.getPropertyValue('--k-bg').trim(),
-      dockRadius: d?.borderRadius || '',
-      dockBackdrop: d?.backdropFilter || d?.webkitBackdropFilter || '',
-      activeIconBg: a?.backgroundImage || a?.backgroundColor || '',
-      tabCount: document.querySelectorAll('#tabbar .tab').length
+      dockRadius: parseFloat(getComputedStyle(dock).borderTopLeftRadius),
+      dockBlur: getComputedStyle(dock).backdropFilter || getComputedStyle(dock).webkitBackdropFilter,
+      plusRadius: parseFloat(getComputedStyle(plus).borderTopLeftRadius),
+      modeAttr: document.documentElement.getAttribute('data-mode'),
+      orange: /#f5b400|#ffc21a|#ffb74d|#9a5b00/i.test(styles),
     };
   });
+  expect(shell.dockRadius).toBeGreaterThanOrEqual(26);
+  expect(shell.dockBlur).toContain('blur');
+  expect(shell.plusRadius).toBeGreaterThanOrEqual(28);
+  expect(shell.modeAttr).toBeNull();
+  expect(shell.orange).toBeFalsy();
 
-  expect(shell.bg).toBe('#070809');
-  expect(shell.tabCount).toBe(5);
-  expect(Number.parseFloat(shell.dockRadius)).toBeGreaterThanOrEqual(25);
-  expect(shell.dockBackdrop).toMatch(/blur/i);
-  expect(shell.activeIconBg).toMatch(/rgb|gradient|linear/i);
-
-  await page.screenshot({ path: 'test-results/stage-62-start.png', fullPage: false });
-
-  await page.getByRole('link', { name: 'Receptury' }).click();
-  await expect(page).toHaveURL(/#\/recipes/);
-  await expect(page.locator('.rcard').first()).toBeVisible();
-  await page.screenshot({ path: 'test-results/stage-62-recipes.png', fullPage: false });
-
+  await page.goto('/#/recipes');
+  await page.waitForSelector('.rcard');
   await page.locator('.rcard').first().click();
-  await expect(page).toHaveURL(/#\/recipe\//);
-  await expect(page.locator('.hero-photo, .recipe-visual').first()).toBeVisible();
-  await page.screenshot({ path: 'test-results/stage-62-detail.png', fullPage: false });
+  await expect(page.locator('.detail')).toBeVisible();
+  await expect(page.locator('.detail .hero-photo')).toBeVisible();
 
-  const cookLink = page.getByRole('button', { name: /Gotuj|Zacznij gotować/i }).first();
-  if (await cookLink.count()) await cookLink.click();
-  else await page.locator('#tabbar .tab[data-tab="cook"]').click();
-  await expect(page).toHaveURL(/#\/cook/);
-  await page.screenshot({ path: 'test-results/stage-62-cook.png', fullPage: false });
-
-  await page.locator('#tabbar .tab[data-tab="inventory"]').click();
-  await expect(page).toHaveURL(/#\/inventory/);
-  await page.screenshot({ path: 'test-results/stage-62-inventory.png', fullPage: false });
-
-  await page.locator('#tabbar .tab[data-tab="more"]').click();
-  await expect(page.getByRole('heading', { name: 'Więcej' })).toBeVisible();
-  await page.screenshot({ path: 'test-results/stage-62-more.png', fullPage: false });
-
+  const detail = await page.evaluate(() => {
+    const back = document.querySelector('.detail .topbar .iconbtn');
+    const icons = [...document.querySelectorAll('.detail .ingredient-icon')];
+    const names = [...document.querySelectorAll('.detail .ing-name')].map(e => e.textContent || '');
+    return {
+      backPosition: getComputedStyle(back).position,
+      iconCount: icons.length,
+      photoIconCount: icons.filter(i => i.classList.contains('ingredient-icon-photo')).length,
+      broken: names.filter(n => /\b(?:jeden|jedna|jedno)\s+(?:łyżka|lyzka|żółtko|zoltko)\b/i.test(n)),
+    };
+  });
+  expect(detail.backPosition).toBe('static');
+  expect(detail.iconCount).toBeGreaterThan(0);
+  expect(detail.photoIconCount).toBeGreaterThan(0);
+  expect(detail.broken).toEqual([]);
   expect(errors, errors.join('\n')).toEqual([]);
 });

@@ -36,12 +36,10 @@ const dark = matchMedia('(prefers-color-scheme: dark)');
 function applyAppearance() {
   const theme = getSetting('theme'), tap = getSetting('tapSize'), ts = getSetting('textScale');
   root.setAttribute('data-theme', theme);
-  root.removeAttribute('data-mode');
   root.setAttribute('data-tap', tap);
   root.style.setProperty('--ts', String((ts || 100) / 100));
   try {
     localStorage.setItem('k:theme', theme);
-    localStorage.removeItem('k:mode');
     localStorage.setItem('k:tap', tap); localStorage.setItem('k:ts', String(ts));
   } catch (_) { /* tryb prywatny */ }
   // Kolor paska systemowego zgodny z faktycznie wybranym motywem (nie tylko z systemowym).

@@ -9,7 +9,7 @@
    ZMIANA WERSJI: podbij VERSION (i APP_VERSION w util.js) przy każdej
    aktualizacji plików, żeby urządzenia wykryły nową wersję.
    ========================================================================== */
-const VERSION = 'kucharek-claude-1.5.6';
+const VERSION = 'kucharek-claude-1.6.0';
 const NETWORK_TIMEOUT = 3500;
 
 const CORE = [

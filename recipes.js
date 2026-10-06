@@ -84,7 +84,7 @@ export async function setSetting(k, v) {
 
 /* ---------- Modele ---------- */
 
-const RECIPE_TEXT_REPAIR_VERSION = 2;
+const RECIPE_TEXT_REPAIR_VERSION = 3;
 
 const NUMBER_WORDS = new Map([
   ['jeden', 1], ['jedna', 1], ['jedno', 1], ['one', 1],
@@ -147,8 +147,15 @@ function repairIngredient(i) {
   }
 
   // Najczęstsze błędy wygenerowane przez automatyczne tłumaczenie.
+  const genitiveFix = {
+    'soli':'sól','cukru':'cukier','mąki':'mąka','wody':'woda','oleju':'olej','oliwy':'oliwa z oliwek','masła':'masło',
+    'pieprzu':'pieprz','sera':'ser','mleka':'mleko','śmietany':'śmietana','śmietanki':'śmietanka','octu':'ocet','wina':'wino',
+    'miodu':'miód','musztardy':'musztarda','czosnku':'czosnek','cebuli':'cebula','pomidora':'pomidor','pomidorów':'pomidory',
+    'marchewki':'marchew','marchewi':'marchew','selera':'seler','ziemniaka':'ziemniak','ziemniaków':'ziemniaki','jajka':'jajko','żółtka':'żółtko'
+  };
   name = name.replace(/^jeden\\s+łyżka\\s+/i, '').replace(/^jedna\\s+łyżka\\s+/i, '');
   name = name.replace(/^jeden\\s+żółtko\\b/i, 'żółtko').replace(/^jedna\\s+żółtko\\b/i, 'żółtko');
+  if (genitiveFix[name.toLowerCase()]) name = genitiveFix[name.toLowerCase()];
   if (/^żółtko$/i.test(name) && (!amount || amount < 1)) { amount = 1; unit = 'szt.'; }
   if (/^(one|jeden|jedna|jedno)\\s+(egg yolk|żółtko)$/i.test(name)) { amount = amount || 1; unit = 'szt.'; name = 'żółtko'; }
   if (/^(one|jeden|jedna|jedno)\\s+(egg|jajko)$/i.test(name)) { amount = amount || 1; unit = 'szt.'; name = 'jajko'; }
@@ -229,8 +236,9 @@ export async function loadAll() {
   recipes.forEach((r) => state.recipes.set(r.id, normalizeRecipe(r)));
   state.shopping = shop.sort((a, b) => (a.createdAt || 0) - (b.createdAt || 0));
   state.settings = {};
-  sets.forEach((s) => { if (!String(s.key).includes(':')) state.settings[s.key] = s.value; });
+  sets.forEach((s) => { if (!String(s.key).includes(':') && s.key !== 'mode') state.settings[s.key] = s.value; });
   state.catalog = new Map(ings.map((i) => [i.id, i]));
+  if (sets.some((s) => s.key === 'mode')) await db.delete('settings', 'mode');
   if (!cats.length) { await db.putMany('categories', DEFAULT_CATEGORIES); state.categories = [...DEFAULT_CATEGORIES]; }
   else state.categories = cats.sort((a, b) => a.order - b.order);
   // Pierwszy render nie może czekać na 5+ MB archiwum receptur.

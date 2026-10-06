@@ -13,7 +13,7 @@ async function waitForArchive(page) {
   );
 }
 
-test.describe('Stage 59: biblioteka receptur', () => {
+test.describe('Stage 62: jakość biblioteki receptur', () => {
   test('ładuje pełny korpus 1700+ receptur', async ({ page }) => {
     await waitForArchive(page);
     const result = await page.evaluate(async () => {
@@ -79,4 +79,23 @@ test.describe('Stage 59: biblioteka receptur', () => {
     expect(result.amount).toBe(15);
     expect(result.unit).toBe('g');
   });
+  test('nie ma typowych śmieci tłumaczeniowych w żadnym składniku', async ({ page }) => {
+    await waitForArchive(page);
+    const bad = await page.evaluate(() => {
+      const recipes = [...window.__kucharek.state.recipes.values()].filter(r => String(r.id).startsWith('rcp_archive_'));
+      const rows = [];
+      const badName = /^(?:jeden|jedna|jedno|dwa|dwie|one|two)\s+(?:łyżka|lyzka|łyzki|lyzki|żółtko|zoltko|egg yolk|tablespoon|teaspoon)\b/i;
+      const asciiDiacritics = /\b(?:lyzka|lyzki|lyzeczka|lyzeczki|zoltko|zoltka|zoltk)\b/i;
+      for (const r of recipes) for (const s of r.sections || []) for (const i of s.ingredients || []) {
+        const n = String(i.name || '').trim();
+        if (!n) rows.push({ type: 'empty', recipe: r.name });
+        if (badName.test(n)) rows.push({ type: 'quantity-prefix', recipe: r.name, value: n });
+        if (asciiDiacritics.test(n)) rows.push({ type: 'ascii-diacritic', recipe: r.name, value: n });
+        if (/^(?:łyżka|łyżeczka|szklanka|gram|kilogram|litr|mililitr|g|kg|ml|l)\.?$/i.test(n)) rows.push({ type: 'unit-only', recipe: r.name, value: n });
+      }
+      return rows.slice(0, 50);
+    });
+    expect(bad).toEqual([]);
+  });
+
 });

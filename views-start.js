@@ -1,194 +1,151 @@
 /* ==========================================================================
-   views-start.js — ekran Start: szybkie akcje, stan kuchni, ostatnie receptury.
-   Etap 34B: docelowy Start, hierarchia wizualna i spójność Liquid Glass, iPhone-first.
+   views-start.js — główne menu Kucharka, iPhone-first.
+   Układ inspirowany ekranem Receptur: zdjęcia, sekcje, zwarte karty, szybki start.
    ========================================================================== */
-import { h, icon, screen, button, emptyState } from './ui.js';
+import { h, icon, iconBtn, screen, button } from './ui.js';
 import { navigate } from './router.js';
 import { subscribe, listRecipes, getSetting } from './recipes.js';
 import { recipeVisual } from './components.js';
-import { pendingCount } from './shopping.js';
 import { backupDue, daysSinceBackup } from './backup.js';
 import { loadInventory, listInventory, stockState, subscribeInventory } from './inventory.js';
 
-const plural = (n) =>
-  `${n} ${n === 1 ? 'receptura' : n % 10 >= 2 && n % 10 <= 4 && (n % 100 < 10 || n % 100 >= 20) ? 'receptury' : 'receptur'}`;
+const plural = (n) => {
+  if (n === 1) return '1 receptura';
+  return n + ' ' + (n % 10 >= 2 && n % 10 <= 4 && (n % 100 < 10 || n % 100 >= 20) ? 'receptury' : 'receptur');
+};
 
 export function startView() {
-  const s = screen({ title: 'Kucharek', right: null, cls: 'start start-v2' });
+  const s = screen({
+    title: 'Kucharek',
+    right: h('div', { class: 'row' },
+      iconBtn('search', 'Szukaj receptury', () => navigate('/recipes')),
+      iconBtn('sliders', 'Ustawienia', () => navigate('/settings')),
+    ),
+    cls: 'start start-menu',
+  });
   const c = s.content;
-  let unsub;
-  let unsubInventory;
+  let unsub = null;
+  let unsubInventory = null;
 
-  const link = (label, description, ico, path, cls = '', badge = 0) =>
-    h('a', {
-      class: `start-action ${cls}`.trim(),
-      href: '#' + path,
-      'aria-label': badge ? `${badge} ${label}` : label,
-      onClick: (e) => { e.preventDefault(); navigate(path); },
-    },
-      h('span', { class: 'start-action-ico' }, icon(ico, 23),
-        badge ? h('span', { class: 'badge' }, String(badge > 99 ? '99+' : badge)) : null),
-      h('span', { class: 'start-action-copy' },
-        h('strong', null, label),
-        h('small', { class: 'muted' }, description)),
-      icon('right', 17));
+  const tile = (label, desc, ico, path, cls) => h('a', {
+    class: ('menu-tile ' + (cls || '')).trim(),
+    href: '#' + path,
+    onClick: (e) => { e.preventDefault(); navigate(path); },
+  },
+    h('span', { class: 'menu-tile-icon' }, icon(ico, 24)),
+    h('span', { class: 'menu-tile-copy' }, h('strong', null, label), h('small', { class: 'muted' }, desc)),
+    icon('right', 17)
+  );
 
-  function recentCard(r) {
-    return h('a', {
-      class: 'start-recent-card',
-      href: '#/recipe/' + encodeURIComponent(r.id),
-      'aria-label': r.name || 'Receptura',
-      onClick: (e) => { e.preventDefault(); navigate('/recipe/' + encodeURIComponent(r.id)); },
-    },
-      h('div', { class: 'start-recent-media' }, recipeVisual(r)),
-      h('div', { class: 'start-recent-copy' },
-        h('strong', null, r.name || 'Bez nazwy'),
-        h('span', { class: 'muted small' }, r.traditional ? 'Tradycyjne · receptura' : (r.categoryName || 'Receptura'))));
-  }
+  const recipeCard = (r) => h('a', {
+    class: 'menu-recipe-card',
+    href: '#/recipe/' + encodeURIComponent(r.id),
+    onClick: (e) => { e.preventDefault(); navigate('/recipe/' + encodeURIComponent(r.id)); },
+  },
+    h('div', { class: 'menu-recipe-media' }, recipeVisual(r)),
+    h('div', { class: 'menu-recipe-copy' },
+      h('strong', null, r.name || 'Bez nazwy'),
+      h('span', { class: 'muted small' }, r.traditional ? 'Tradycyjna' : (r.categoryName || 'Receptura')))
+  );
 
   function paint() {
     const all = listRecipes();
-    const recent = all
-      .filter((r) => r.lastOpenedAt)
-      .sort((a, b) => b.lastOpenedAt - a.lastOpenedAt)
-      .slice(0, 6);
-    const cooked = all
-      .filter((r) => Number(r.cookCount || 0) > 0 || Number(r.lastCookedAt || 0) > 0)
-      .sort((a, b) => (b.lastCookedAt || 0) - (a.lastCookedAt || 0))
-      .slice(0, 1);
-    const favs = all
-      .filter((r) => r.favorite)
-      .sort((a, b) => (b.favoritedAt || 0) - (a.favoritedAt || 0))
-      .slice(0, 4);
+    const recent = all.filter(r => r.lastOpenedAt).sort((a,b) => (b.lastOpenedAt||0) - (a.lastOpenedAt||0)).slice(0, 6);
+    const cooked = all.filter(r => Number(r.cookCount || 0) > 0 || Number(r.lastCookedAt || 0) > 0).sort((a,b) => (b.lastCookedAt||0) - (a.lastCookedAt||0));
+    const favs = all.filter(r => r.favorite).sort((a,b) => (b.favoritedAt||0) - (a.favoritedAt||0)).slice(0, 4);
+    const low = getSetting('inventoryAlerts') !== false ? listInventory().filter(i => stockState(i) !== 'ok').length : 0;
+    const hero = cooked[0] || recent[0] || favs[0] || all[0] || null;
 
-    const pending = pendingCount();
-    const alerts = getSetting('inventoryAlerts') !== false;
-    const lowStock = alerts ? listInventory().filter((item) => stockState(item) !== 'ok').length : 0;
-    const heroRecipe = cooked[0] || recent[0] || favs[0] || all.find((r) => r.photo || r.thumb) || all.find((r) => /stek|wołow|rostbef|entrecote/i.test(r.name || '')) || null;
-    const heroVisual = heroRecipe || { id: 'start-fallback', name: 'Stek wołowy z warzywami', category: 'cat-mieso' };
-
-    const kids = [];
-
-    const categories = [
-      ['cat-all', 'Wszystkie', 'sparkle', '/recipes'],
-      ['cat-pizza', 'Pizza', 'pizza', '/recipes?cat=cat-pizza'],
-      ['cat-pasta', 'Pasta', 'book', '/recipes?cat=cat-pasta'],
-      ['cat-mieso', 'Mięso', 'chef', '/recipes?cat=cat-mieso'],
-      ['cat-desery', 'Desery', 'sparkle', '/recipes?cat=cat-desery'],
+    const kids = [
+      h('section', { class: 'menu-welcome' },
+        h('div', { class: 'menu-welcome-mark' }, icon('chef', 30)),
+        h('div', { class: 'menu-welcome-copy' },
+          h('strong', null, 'Twoja kuchnia.'),
+          h('span', { class: 'muted' }, 'Receptury, magazyn i kalkulatory w jednym miejscu.')),
+        h('span', { class: 'menu-count num' }, String(all.length))
+      ),
+      h('div', { class: 'menu-search' },
+        icon('search', 19),
+        h('button', { type: 'button', onClick: () => navigate('/recipes') }, 'Szukaj receptury, składnika lub tagu…'),
+        icon('right', 17)
+      ),
     ];
 
-    kids.push(
-      h('section', { class: 'start-brand' },
-        h('div', { class: 'start-brand-mark' }, icon('chef', 28)),
-        h('div', { class: 'start-brand-copy' },
-          h('strong', null, 'Kucharek'),
-          h('span', null, 'Twoja kuchnia zawsze pod ręką')),
-        h('button', { type: 'button', class: 'start-brand-search', 'aria-label': 'Szukaj receptury', onClick: () => navigate('/recipes') }, icon('search', 21))),
-      h('div', { class: 'start-category-scroller', role: 'tablist', 'aria-label': 'Kuchnie i kategorie' },
-        categories.map(([id, label, ico, path], i) => h('button', { type: 'button', class: 'start-category' + (i === 0 ? ' on' : ''), 'aria-selected': i === 0, onClick: () => navigate(path) },
-          h('span', { class: 'start-category-icon' }, icon(ico, 21)), h('span', null, label))))
-    );
-
-    kids.push(
-      h('section', { class: 'start-hero-card' },
-        h('div', { class: 'start-hero-backdrop' }, recipeVisual(heroVisual, '', { hero: true })),
-        h('div', { class: 'start-hero-image' }, recipeVisual(heroVisual, '', { hero: true })),
-        h('div', { class: 'start-hero-scrim' }),
-        h('div', { class: 'start-hero-content' },
-          h('div', { class: 'start-hero-top' },
-            h('span', { class: 'start-kicker' }, 'Kucharek'),
-            heroRecipe ? h('span', { class: 'start-hero-chip' }, icon('history', 14), 'Ostatnio gotowane') : null),
-          h('div', { class: 'start-hero-bottom' },
-            h('div', { class: 'start-hero-copy' },
-              h('h2', null, 'Co dziś gotujemy?'),
-              h('div', { class: 'start-hero-recipe' },
-                heroRecipe ? icon('chef', 16) : null,
-                h('span', null, heroRecipe ? heroRecipe.name : `${plural(all.length)} · wybierz coś na dziś`))),
-            button('Zacznij gotować', { kind: 'primary', icon: 'chef', cls: 'start-cook-btn', onClick: () => navigate(heroRecipe ? '/cook/' + encodeURIComponent(heroRecipe.id) : '/cook') })
-          ),
+    if (hero) kids.push(
+      h('a', {
+        class: 'menu-hero',
+        href: '#/recipe/' + encodeURIComponent(hero.id),
+        onClick: e => { e.preventDefault(); navigate('/recipe/' + encodeURIComponent(hero.id)); }
+      },
+        h('div', { class: 'menu-hero-media' }, recipeVisual(hero, '', { hero: true })),
+        h('div', { class: 'menu-hero-scrim' }),
+        h('div', { class: 'menu-hero-content' },
+          h('span', { class: 'menu-overline' }, 'DZIŚ GOTUJEMY'),
+          h('h2', null, hero.name || 'Wybierz recepturę'),
+          h('span', { class: 'menu-hero-meta' }, hero.traditional ? 'Tradycyjna receptura' : (hero.categoryName || 'Receptura')),
+          button('Otwórz recepturę', { sm: true, kind: 'primary', icon: 'right', onClick: e => { e.stopPropagation(); navigate('/recipe/' + encodeURIComponent(hero.id)); } })
         )
       )
     );
 
     kids.push(
-      h('section', { class: 'start-section' },
-        h('div', { class: 'start-section-head' },
-          h('div', null,
-            h('h2', null, 'Szybki dostęp'),
-            h('span', { class: 'muted small' }, 'Najważniejsze rzeczy bez szukania')),
-          h('button', { type: 'button', class: 'start-text-link start-search-link', onClick: () => navigate('/recipes') },
-            icon('search', 15), 'Szukaj receptury')),
-        h('div', { class: 'start-actions-grid' },
-          link('Przepisy', 'Znajdź recepturę', 'book', '/recipes'),
-          link('Magazyn', lowStock ? `${lowStock} ${lowStock === 1 ? 'uwaga' : 'uwag'}` : 'Stany produktów', 'list', '/inventory', '', lowStock),
-          link('Zakupy', pending ? `${pending} do kupienia` : 'Lista jest pusta', 'cart', '/shopping', '', pending),
-          link('Ulubione', favs.length ? `${favs.length} zapisane` : 'Twoje ulubione', 'heart', '/recipes?f=fav')
+      h('section', { class: 'menu-section' },
+        h('div', { class: 'menu-section-head' },
+          h('div', null, h('h2', null, 'Najważniejsze'), h('p', { class: 'muted small' }, 'Bez przeklikiwania przez pół aplikacji.'))
+        ),
+        h('div', { class: 'menu-grid' },
+          tile('Receptury', plural(all.length), 'book', '/recipes', 'featured'),
+          tile('Magazyn', low ? (low + (low === 1 ? ' uwaga' : ' uwagi')) : 'Stan składników', 'list', '/inventory'),
+          tile('Kalkulatory', 'Skala, wydajność, food cost', 'calc', '/calc'),
+          tile('Historia', 'Ostatnio gotowane', 'history', '/history'),
+          tile('Tradycyjne', all.filter(r => r.traditional).length + ' receptur', 'star', '/recipes?f=trad'),
+          tile('Ulubione', favs.length + ' zapisane', 'heart', '/recipes?f=fav'),
+          tile('Kuchnie świata', 'Włochy, Polska, Azja i więcej', 'globe', '/recipes'),
+          tile('Importuj', 'URL, tekst lub zdjęcie', 'upload', '/import'),
         )
+      ),
+      h('section', { class: 'menu-status' },
+        h('span', null, icon('book', 16), plural(all.length)),
+        h('span', null, icon('list', 16), low ? (low + ' wymagające uwagi') : 'Magazyn OK'),
+        h('span', null, icon('clock', 16), recent.length ? (recent.length + ' ostatnich') : 'Brak historii')
       )
     );
 
-    kids.push(
-      h('div', { class: 'start-status-strip', role: 'status' },
-        h('div', null, icon('book', 17), h('span', null, `${all.length} ${all.length === 1 ? 'receptura' : 'receptury'}`)),
-        h('div', null, icon('cart', 17), h('span', null, pending ? `${pending} zakupów` : 'Zakupy OK')),
-        h('div', null, icon('list', 17), h('span', null, lowStock ? `${lowStock} uwag` : 'Magazyn OK'))
+    if (recent.length) kids.push(
+      h('section', { class: 'menu-section' },
+        h('div', { class: 'menu-section-head' },
+          h('div', null, h('h2', null, 'Ostatnio otwierane'), h('p', { class: 'muted small' }, 'Wracaj dokładnie tam, gdzie skończyłeś.')),
+          h('button', { type: 'button', class: 'menu-link', onClick: () => navigate('/recipes?f=recent') }, 'Wszystkie', icon('right', 15))
+        ),
+        h('div', { class: 'menu-recipe-strip' }, recent.map(recipeCard))
       )
     );
-
-    if (recent.length) {
-      kids.push(
-        h('section', { class: 'start-section' },
-          h('div', { class: 'start-section-head' },
-            h('h2', null, 'Ostatnio otwierane'),
-            h('button', { type: 'button', class: 'start-text-link', onClick: () => navigate('/recipes?f=recent') }, 'Pokaż wszystkie')),
-          h('div', { class: 'start-recent-scroller' }, recent.map(recentCard))
-        )
-      );
-    }
-
-    if (favs.length) {
-      kids.push(
-        h('section', { class: 'start-section start-favorites' },
-          h('div', { class: 'start-section-head' },
-            h('h2', null, 'Ulubione'),
-            h('button', { type: 'button', class: 'start-text-link', onClick: () => navigate('/recipes?f=fav') }, 'Wszystkie')),
-          h('div', { class: 'list' }, favs.map((r) => h('div', { class: 'start-favorite-row' }, recentCard(r))))
-        )
-      );
-    }
 
     if (backupDue()) {
       const d = daysSinceBackup();
-      kids.push(h('section', { class: 'start-note' },
+      kids.push(h('section', { class: 'menu-backup' },
         icon('download', 19),
-        h('div', { class: 'start-note-copy' },
+        h('div', { class: 'menu-backup-copy' },
           h('strong', null, 'Kopia zapasowa'),
-          h('span', { class: 'muted small' },
-            d == null ? 'Dane są obecnie tylko na tym telefonie.' : `Ostatnia kopia: ${d} dni temu.`)),
+          h('span', { class: 'muted small' }, d == null ? 'Dane są tylko na tym telefonie.' : ('Ostatnia kopia: ' + d + ' dni temu.'))
+        ),
         button('Ustawienia', { sm: true, kind: 'ghost', onClick: () => navigate('/settings') })
       ));
     }
 
-    if (!all.length) {
-      kids.push(emptyState('📒', 'Pusty Kucharek', 'Dodaj pierwszą recepturę albo wklej przepis z internetu.',
-        button('Nowa receptura', { kind: 'primary', icon: 'plus', onClick: () => navigate('/new') }),
-        button('Importuj', { icon: 'upload', onClick: () => navigate('/import') })));
-    }
+    if (!all.length) kids.push(h('section', { class: 'menu-empty' },
+      h('div', { class: 'empty-emoji' }, '📒'),
+      h('h2', null, 'Zacznij od pierwszej receptury'),
+      h('p', { class: 'muted' }, 'Dodaj własną recepturę albo importuj gotową.'),
+      h('div', { class: 'row wrap center' }, button('Nowa receptura', { kind: 'primary', icon: 'plus', onClick: () => navigate('/new') }), button('Importuj', { icon: 'upload', onClick: () => navigate('/import') }))
+    ));
 
     c.replaceChildren(...kids);
   }
 
   paint();
-  loadInventory().then(() => paint()).catch(() => {});
-  unsub = subscribe((t) => { if (t === 'recipes' || t === 'shopping' || t === 'settings') paint(); });
+  loadInventory().then(paint).catch(() => {});
+  unsub = subscribe(t => { if (t === 'recipes' || t === 'settings' || t === 'categories') paint(); });
   unsubInventory = subscribeInventory(paint);
-
-  return {
-    el: s.el,
-    destroy: () => {
-      unsub && unsub();
-      unsubInventory && unsubInventory();
-    },
-  };
+  return { el: s.el, destroy: () => { unsub?.(); unsubInventory?.(); } };
 }
-

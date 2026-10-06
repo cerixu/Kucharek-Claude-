@@ -22,14 +22,6 @@
   --43a-shadow: 0 18px 44px rgba(38,34,23,.11);
 }
 
-:root[data-mode="amateur"][data-theme="dark"] {
-  --43a-glass-top: rgba(255,255,255,.09);
-  --43a-glass-mid: rgba(255,255,255,.055);
-  --43a-glass-low: rgba(255,255,255,.03);
-  --43a-hairline: rgba(255,255,255,.12);
-  --43a-highlight: rgba(255,255,255,.13);
-}
-
 /* ---------- Material / canvas ---------- */
 
 html {

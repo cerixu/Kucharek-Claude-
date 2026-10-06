@@ -24,46 +24,6 @@
   --34e-gap: 12px;
 }
 
-:root:not([data-theme="dark"])[data-mode="pro"] {
-  --34e-bg: #eeece6;
-  --34e-bg-2: #f7f6f1;
-  --34e-glass: rgba(255,255,255,.63);
-  --34e-glass-strong: rgba(255,255,255,.82);
-  --34e-glass-soft: rgba(255,255,255,.46);
-  --34e-stroke: rgba(28,30,32,.10);
-  --34e-stroke-soft: rgba(28,30,32,.06);
-  --34e-text: #18191b;
-  --34e-muted: #656870;
-  --34e-shadow: 0 18px 44px rgba(38,34,23,.10);
-}
-
-:root[data-mode="amateur"] {
-  --34e-radius: 26px;
-  --34e-radius-sm: 19px;
-}
-
-:root[data-mode="amateur"][data-theme="dark"] {
-  --34e-bg: #0b120e;
-  --34e-bg-2: #101a14;
-  --34e-accent: #59ce87;
-  --34e-accent-2: #82e0a4;
-}
-
-:root[data-mode="amateur"]:not([data-theme="dark"]) {
-  --34e-bg: #edf6ef;
-  --34e-bg-2: #f7fbf7;
-  --34e-glass: rgba(255,255,255,.70);
-  --34e-glass-strong: rgba(255,255,255,.90);
-  --34e-glass-soft: rgba(255,255,255,.52);
-  --34e-stroke: rgba(25,85,47,.09);
-  --34e-stroke-soft: rgba(25,85,47,.055);
-  --34e-text: #173020;
-  --34e-muted: #617268;
-  --34e-accent: #269052;
-  --34e-accent-2: #48b873;
-  --34e-shadow: 0 18px 44px rgba(25,75,43,.09);
-}
-
 /* ---------- Global canvas ---------- */
 
 html {
@@ -449,7 +409,7 @@ body {
 .start-cook-btn {
   margin-top: 15px;
   align-self: flex-start;
-  color: #1a1400;
+  color: #03170d;
   background: linear-gradient(180deg, #ffd65d, #ffb900);
 }
 
@@ -835,35 +795,4 @@ body {
 /* ---------- Auto theme: resolve the device appearance explicitly ---------- */
 
 @media (prefers-color-scheme: dark) {
-  :root[data-theme="auto"][data-mode="pro"] {
-    --34e-bg: #0b0c0d;
-    --34e-bg-2: #121416;
-    --34e-glass: rgba(255,255,255,.075);
-    --34e-glass-strong: rgba(255,255,255,.105);
-    --34e-glass-soft: rgba(255,255,255,.045);
-    --34e-stroke: rgba(255,255,255,.11);
-    --34e-stroke-soft: rgba(255,255,255,.065);
-    --34e-text: #f7f6f1;
-    --34e-muted: #a7a8ab;
-    --34e-accent: #ffbd16;
-    --34e-accent-2: #ffd452;
-    --34e-danger: #ff6961;
-    --34e-shadow: 0 18px 46px rgba(0,0,0,.28);
-  }
-
-  :root[data-theme="auto"][data-mode="amateur"] {
-    --34e-bg: #0b120e;
-    --34e-bg-2: #101a14;
-    --34e-glass: rgba(255,255,255,.075);
-    --34e-glass-strong: rgba(255,255,255,.105);
-    --34e-glass-soft: rgba(255,255,255,.045);
-    --34e-stroke: rgba(255,255,255,.11);
-    --34e-stroke-soft: rgba(255,255,255,.065);
-    --34e-text: #edf8f1;
-    --34e-muted: #a0b6a8;
-    --34e-accent: #59ce87;
-    --34e-accent-2: #82e0a4;
-    --34e-danger: #ff6961;
-    --34e-shadow: 0 18px 46px rgba(0,0,0,.34);
-  }
 }

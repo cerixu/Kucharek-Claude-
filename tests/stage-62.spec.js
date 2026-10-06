@@ -7,6 +7,7 @@ async function ready(page) {
   await page.goto('/#/', { waitUntil: 'domcontentloaded' });
   await page.waitForFunction(() => window.__kucharek?.ready === true, null, { timeout: 30000 });
   await page.waitForSelector('#tabbar .tab');
+  await page.waitForFunction(() => window.__kucharek?.state?.recipes?.size >= 1700, null, { timeout: 60000 });
 }
 
 test('Stage 62 — nowy shell, dock i czystość receptur', async ({ page }) => {
@@ -47,6 +48,27 @@ test('Stage 62 — nowy shell, dock i czystość receptur', async ({ page }) => 
   expect(shell.plusRadius).toBeGreaterThanOrEqual(28);
   expect(shell.modeAttr).toBeNull();
   expect(shell.orange).toBeFalsy();
+
+  const quality = await page.evaluate(() => {
+    const recipes = [...window.__kucharek.state.recipes.values()].filter(r => String(r.id).startsWith('rcp_archive_'));
+    const english = /\\b(?:almonds?|cups?|tablespoons?|teaspoons?|pounds?|ounces?|water|butter|flour|sugar|salt|pepper|chicken|beef|pork|cheese|bread|stock|sauce|dough|with|without|the|and)\\b/i;
+    const broken = /^(?:jeden|jedna|jedno|dwa|dwie|one|two)\\s+(?:łyżka|lyzka|łyżeczka|lyzeczka|żółtko|zoltko|egg yolk|tablespoon|teaspoon)\\b/i;
+    const ascii = /\\b(?:lyzka|lyzki|lyzeczka|lyzeczki|zoltko|zoltka|zoltk)\\b/i;
+    const hits = [];
+    for (const r of recipes) {
+      if (english.test(r.name || '')) hits.push({type:'name', value:r.name});
+      for (const s of r.sections || []) for (const i of s.ingredients || []) {
+        if (!String(i.name || '').trim()) hits.push({type:'empty', recipe:r.name});
+        else if (english.test(i.name)) hits.push({type:'english', recipe:r.name, value:i.name});
+        if (broken.test(i.name)) hits.push({type:'quantity', recipe:r.name, value:i.name});
+        if (ascii.test(i.name)) hits.push({type:'ascii', recipe:r.name, value:i.name});
+      }
+    }
+    return {count: recipes.length, versions:[...new Set(recipes.map(r => r.translationVersion))], hits:hits.slice(0,40)};
+  });
+  expect(quality.count).toBe(1700);
+  expect(quality.versions).toEqual([34]);
+  expect(quality.hits).toEqual([]);
 
   await page.goto('/#/recipes');
   await page.waitForSelector('.rcard');

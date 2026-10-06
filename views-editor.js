@@ -74,7 +74,6 @@ export function editorView({ id }, query) {
   let baseline = JSON.stringify(work);
   let issues = [];
   const draftKey = isNew ? 'draft:new' : 'draft:' + id;
-  const amateur = () => state.settings.mode === 'amateur';
 
   const saveDraft = debounce(() => { db.put('drafts', { id: isNew ? 'new' : id, recipeId: isNew ? null : id, savedAt: Date.now(), recipe: work }).catch(() => {}); }, 700);
   const touch = () => { saveDraft(); };
@@ -394,10 +393,8 @@ export function editorView({ id }, query) {
       field('Źródło', textInput({ value: work.source, label: 'Źródło', placeholder: 'np. książka, strona, od kogo', onInput: (v) => { work.source = v; touch(); } })),
       field('Adres strony (URL)', textInput({ value: work.sourceUrl, label: 'Adres URL źródła', placeholder: 'https://…', type: 'url', capitalize: 'none', inputmode: 'url', onInput: (v) => { work.sourceUrl = v; touch(); } })),
     ];
-    if (!amateur()) {
-      kids.push(switchEl(!!work.bakers, (v) => { work.bakers = v; touch(); paintSections(); }, 'Procenty piekarskie', 'Mąka = 100%, hydracja, sól, drożdże — pokaż i przelicz'));
-      kids.push(field('Cena sprzedaży porcji (zł)', numInput({ value: work.salePrice, label: 'Cena sprzedaży', dec: 2, placeholder: 'do food costu', onInput: (v) => { work.salePrice = v; touch(); } })));
-    }
+    kids.push(switchEl(!!work.bakers, (v) => { work.bakers = v; touch(); paintSections(); }, 'Procenty piekarskie', 'Mąka = 100%, hydracja, sól, drożdże — pokaż i przelicz'));
+    kids.push(field('Cena sprzedaży porcji (zł)', numInput({ value: work.salePrice, label: 'Cena sprzedaży', dec: 2, placeholder: 'do food costu', onInput: (v) => { work.salePrice = v; touch(); } }));
     return h('section', { class: 'card stack' }, kids);
   }
 

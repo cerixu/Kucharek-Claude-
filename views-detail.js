@@ -415,7 +415,7 @@ export function detailView({ id }) {
   let notesEl = null;
 
   function ingredientsCard(r, table) {
-    const showPct = !!(table && table.ok && r.bakers && !amateur());
+    const showPct = !!(table && table.ok && r.bakers);
     const pct = new Map(table && table.ok ? table.rows.map((x) => [x.id, x]) : []);
     const secs = r.sections.filter((sec) => sec.ingredients.length || sec.name);
     return h('section', { class: 'card ingredients' },
@@ -505,7 +505,7 @@ export function detailView({ id }) {
     if (sourceUrl) src.push(h('div', null, h('a', { class: 'ext', href: sourceUrl, target: '_blank', rel: 'noopener noreferrer' }, icon('link', 16), hostOf(sourceUrl) || sourceUrl)));
     src.push(h('div', null, `Dodano ${fmtDate(base().createdAt, true)} · zmieniono ${fmtDateTime(base().updatedAt)}`));
     kids.push(h('div', { class: 'meta-foot muted small' }, src));
-    if (!amateur()) kids.push(h('div', { class: 'row center' }, button('Historia zmian', { icon: 'history', kind: 'ghost', onClick: openHistory })));
+    kids.push(h('div', { class: 'row center' }, button('Historia zmian', { icon: 'history', kind: 'ghost', onClick: openHistory })));
 
     s.content.replaceChildren(...kids.filter(Boolean));
   }
